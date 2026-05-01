@@ -46,3 +46,8 @@ mongo_data/
 *.key
 .cache/
 *.tsbuildinfo
+
+
+DEPLOYMENT_GUIDE.md
+repolens.txt
+Makefile
