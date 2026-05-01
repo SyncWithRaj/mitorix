@@ -140,7 +140,7 @@ export default function ChatPanel({
       animFrameRef.current = null;
     }
     if (audioContextRef.current) {
-      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current.close().catch(() => { });
       audioContextRef.current = null;
     }
     analyserRef.current = null;
@@ -247,9 +247,9 @@ export default function ChatPanel({
         if (callStateRef.current === "idle") return;
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         stream.getTracks().forEach((track) => track.stop());
-        
+
         if (callStateRef.current === "processing") {
-            await processAudioMessage(audioBlob);
+          await processAudioMessage(audioBlob);
         }
       };
 
@@ -284,7 +284,7 @@ export default function ChatPanel({
 
         if (res.data.success) {
           console.log("Call Status: RECEIVED AI ANSWER AND CHUNKS");
-          
+
           const { userText, answer, references, chunks } = res.data;
 
           if (addCallMessages && userText) {
@@ -319,9 +319,9 @@ export default function ChatPanel({
     if (callStateRef.current === "idle") return;
 
     if (index >= audioChunks.length) {
-       console.log("Call Status: FINISHED ALL CHUNKS, RESTARTING LISTENING");
-       startListeningPhase();
-       return;
+      console.log("Call Status: FINISHED ALL CHUNKS, RESTARTING LISTENING");
+      startListeningPhase();
+      return;
     }
 
     try {
@@ -338,7 +338,7 @@ export default function ChatPanel({
       if (audioRef.current) {
         audioRef.current.src = audioUrl;
         audioRef.current.onended = () => {
-           playTTSQueue(audioChunks, index + 1);
+          playTTSQueue(audioChunks, index + 1);
         };
         await audioRef.current.play();
       } else {
@@ -362,7 +362,7 @@ export default function ChatPanel({
     const confirmMsg = type === "chat"
       ? "Are you sure you want to delete all chat history? This cannot be undone."
       : "Are you sure you want to delete all call history? This cannot be undone.";
-    
+
     if (confirm(confirmMsg)) {
       onDeleteChat(type);
       toast.success(`${type === "chat" ? "Chat" : "Call"} history deleted`);
@@ -378,10 +378,10 @@ export default function ChatPanel({
             RepoLens AI
           </h3>
           <div className="flex items-center gap-2">
-            {callState === "listening" && <div className="text-xs text-[#ff5858] font-semibold animate-pulse mr-2 flex items-center gap-1"><Mic size={12}/> Recording</div>}
-            {callState === "processing" && <div className="text-xs text-[#58a6ff] font-semibold animate-pulse mr-2 flex items-center gap-1"><Loader2 size={12} className="animate-spin"/> Thinking</div>}
-            {callState === "speaking" && <div className="text-xs text-[#a371f7] font-semibold animate-pulse mr-2 flex items-center gap-1"><Bot size={12}/> Speaking</div>}
-            
+            {callState === "listening" && <div className="text-xs text-[#ff5858] font-semibold animate-pulse mr-2 flex items-center gap-1"><Mic size={12} /> Recording</div>}
+            {callState === "processing" && <div className="text-xs text-[#58a6ff] font-semibold animate-pulse mr-2 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> Thinking</div>}
+            {callState === "speaking" && <div className="text-xs text-[#a371f7] font-semibold animate-pulse mr-2 flex items-center gap-1"><Bot size={12} /> Speaking</div>}
+
             {/* Delete Chat Button */}
             {activeMessages.length > 0 && (
               <button
@@ -392,26 +392,25 @@ export default function ChatPanel({
                 <Trash2 size={14} />
               </button>
             )}
-            
-            <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] animate-pulse ${
-                callState === "listening" ? "text-[#ff5858] bg-[#ff5858]" : 
-                callState === "processing" ? "text-[#58a6ff] bg-[#58a6ff]" : 
-                callState === "speaking" ? "text-[#a371f7] bg-[#a371f7]" : "text-[#2ea043] bg-[#2ea043]"
-            }`}></div>
+
+            <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] animate-pulse ${callState === "listening" ? "text-[#ff5858] bg-[#ff5858]" :
+                callState === "processing" ? "text-[#58a6ff] bg-[#58a6ff]" :
+                  callState === "speaking" ? "text-[#a371f7] bg-[#a371f7]" : "text-[#2ea043] bg-[#2ea043]"
+              }`}></div>
           </div>
         </div>
-        
+
         {/* Tabs */}
         <div className="flex border-t border-[#30363d]/50">
-          <button 
-            onClick={() => setActiveTab("chat")} 
+          <button
+            onClick={() => setActiveTab("chat")}
             className={`cursor-pointer flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold tracking-widest uppercase transition-all duration-300 ${activeTab === "chat" ? "text-[#58a6ff] border-b-2 border-[#58a6ff] bg-[#0d1117]" : "text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#21262d]"}`}
           >
             <MessageSquare size={14} />
             Chat
           </button>
-          <button 
-            onClick={() => setActiveTab("call")} 
+          <button
+            onClick={() => setActiveTab("call")}
             className={`cursor-pointer flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold tracking-widest uppercase transition-all duration-300 ${activeTab === "call" ? "text-[#2ea043] border-b-2 border-[#2ea043] bg-[#0d1117]" : "text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#21262d]"}`}
           >
             <Phone size={14} />
@@ -422,11 +421,11 @@ export default function ChatPanel({
 
       <div className={`flex-1 overflow-y-auto p-4 space-y-6 bg-[#0d1117] custom-scrollbar scroll-smooth relative z-0`}>
         <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-l from-[#58a6ff]/5 to-transparent blur-3xl pointer-events-none -z-10"></div>
-        
+
         {activeMessages.length === 0 ? (
           <div className="text-center py-16 flex flex-col items-center justify-center h-full">
             <div className="w-16 h-16 rounded-full bg-[#161b22] border border-[#30363d] flex items-center justify-center mb-6 shadow-inner">
-               <Bot className="h-8 w-8 text-[#58a6ff]" />
+              <Bot className="h-8 w-8 text-[#58a6ff]" />
             </div>
             <p className="text-base font-medium text-[#c9d1d9] mb-2">{activeTab === "chat" ? "How can I help with this codebase?" : "Speak your mind with RepoLens"}</p>
             <p className="text-sm text-[#8b949e]">{activeTab === "chat" ? "Ask for architecture details, exact files, or component logic." : "I'm listening and ready to dive into the code with you."}</p>
@@ -438,15 +437,13 @@ export default function ChatPanel({
             return (
               <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} animate-fadeInUp group`}>
                 <div
-                  className={`max-w-[90%] md:max-w-[85%] rounded-2xl overflow-hidden transition-all duration-300 ${
-                    msg.role === "user"
+                  className={`max-w-[90%] md:max-w-[85%] rounded-2xl overflow-hidden transition-all duration-300 ${msg.role === "user"
                       ? "bg-gradient-to-br from-[#21262d] to-[#161b22] border border-[#30363d]/50 rounded-tr-sm shadow-[0_4px_20px_rgba(0,0,0,0.15)] group-hover:shadow-[0_4px_25px_rgba(255,255,255,0.05)]"
                       : "glass-panel border border-[rgba(255,255,255,0.05)] border-l-2 border-l-[#58a6ff]/50 rounded-tl-sm shadow-[0_4px_25px_rgba(0,0,0,0.3)] group-hover:shadow-[0_8px_30px_rgba(88,166,255,0.1)]"
-                  }`}
+                    }`}
                 >
-                  <div className={`px-4 py-2 text-[11px] font-bold tracking-wide uppercase flex items-center gap-2 transition-all duration-300 ${
-                    msg.role === "user" ? "text-[#c9d1d9] justify-end" : "text-[#58a6ff] border-b border-[rgba(255,255,255,0.05)] bg-[rgba(0,0,0,0.2)]"
-                  }`}>
+                  <div className={`px-4 py-2 text-[11px] font-bold tracking-wide uppercase flex items-center gap-2 transition-all duration-300 ${msg.role === "user" ? "text-[#c9d1d9] justify-end" : "text-[#58a6ff] border-b border-[rgba(255,255,255,0.05)] bg-[rgba(0,0,0,0.2)]"
+                    }`}>
                     {msg.role === "assistant" && <Bot size={14} className="text-[#58a6ff]" />}
                     {msg.role === "user" ? "You" : "RepoLens"}
                     {msg.role === "user" && <User size={14} className="text-[#8b949e]" />}
@@ -457,12 +454,12 @@ export default function ChatPanel({
                       let blastRadiusInfo = null;
                       const blastRegex = /<blast_radius\s+file="([^"]+)"\s+name="([^"]*)"\s*\/>/;
                       const match = cleanContent.match(blastRegex);
-                      
+
                       if (match) {
                         cleanContent = cleanContent.replace(blastRegex, "").trim();
                         blastRadiusInfo = { file: match[1], name: match[2] };
                       }
-                      
+
                       return (
                         <div className="flex flex-col gap-3">
                           <AssistantMessage
@@ -470,7 +467,7 @@ export default function ChatPanel({
                             shouldStream={isStreamingThis}
                           />
                           {blastRadiusInfo && (
-                            <button 
+                            <button
                               onClick={() => handleBlastRadiusClick(blastRadiusInfo.file, blastRadiusInfo.name)}
                               className="cursor-pointer mt-2 self-start py-2 px-4 flex items-center justify-center gap-2 bg-[#ff5858]/10 hover:bg-[#ff5858]/20 text-[#ff5858] border border-[#ff5858]/30 hover:border-[#ff5858] rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
                             >
@@ -489,7 +486,7 @@ export default function ChatPanel({
                   <div className="mt-2 space-y-1.5 w-full max-w-[85%] self-start ml-2">
                     <span className="text-[10px] font-bold text-[#8b949e] uppercase tracking-wider block mb-1">References</span>
                     <div className="flex flex-wrap gap-2">
-                       {msg.references.map((ref: any, idx: number) => (
+                      {msg.references.map((ref: any, idx: number) => (
                         <div
                           key={idx}
                           onClick={() => openReference(ref)}
@@ -497,10 +494,10 @@ export default function ChatPanel({
                           title="Click to view in editor"
                         >
                           <Code2 className="w-3.5 h-3.5 text-[#58a6ff] group-hover:scale-110 transition-transform" />
-                          <span className="font-mono">{ref.file.split('/').pop()}</span> 
+                          <span className="font-mono">{ref.file.split('/').pop()}</span>
                           <span className="text-[#8b949e] font-mono">L{ref.startLine}</span>
                         </div>
-                       ))}
+                      ))}
                     </div>
                   </div>
                 )}
@@ -543,28 +540,28 @@ export default function ChatPanel({
               rows={1}
             />
             <button
-               onClick={sendMessage}
-               disabled={loading || !input.trim()}
-               className="mb-1 mr-1 p-2.5 rounded-xl bg-[#2ea043] hover:bg-[#3fb950] active:scale-95 text-white disabled:opacity-50 disabled:bg-[#30363d]/50 disabled:text-[#8b949e] transition-all flex items-center justify-center cursor-pointer disabled:cursor-not-allowed shadow-sm border border-[rgba(255,255,255,0.1)] disabled:border-transparent shrink-0"
-             >
-               <Send size={16} className={loading || !input.trim() ? "" : "translate-x-[-1px]"} />
-             </button>
+              onClick={sendMessage}
+              disabled={loading || !input.trim()}
+              className="mb-1 mr-1 p-2.5 rounded-xl bg-[#2ea043] hover:bg-[#3fb950] active:scale-95 text-white disabled:opacity-50 disabled:bg-[#30363d]/50 disabled:text-[#8b949e] transition-all flex items-center justify-center cursor-pointer disabled:cursor-not-allowed shadow-sm border border-[rgba(255,255,255,0.1)] disabled:border-transparent shrink-0"
+            >
+              <Send size={16} className={loading || !input.trim() ? "" : "translate-x-[-1px]"} />
+            </button>
           </div>
           <div className="w-full mt-3 flex justify-center">
-             <span className="text-[10px] text-[#8b949e] font-medium tracking-wide opacity-80 flex items-center gap-1.5">
-                RepoLens Assistant <span className="w-1 h-1 rounded-full bg-[#484f58]"></span> AI can make mistakes
-             </span>
+            <span className="text-[10px] text-[#8b949e] font-medium tracking-wide opacity-80 flex items-center gap-1.5">
+              RepoLens Assistant <span className="w-1 h-1 rounded-full bg-[#484f58]"></span> AI can make mistakes
+            </span>
           </div>
         </div>
       ) : (
         <div className="px-4 py-8 bg-[#0d1117] border-t border-[#30363d] relative z-10 flex flex-col items-center justify-center min-h-[160px]">
           <audio ref={audioRef} className="hidden" />
-          
+
           {callState === "idle" ? (
             <>
               <button
-                 onClick={startListeningPhase}
-                 className="cursor-pointer w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 bg-[#2ea043] border border-[#2ea043] text-white hover:bg-[#238636] hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(46,160,67,0.3)]"
+                onClick={startListeningPhase}
+                className="cursor-pointer w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 bg-[#2ea043] border border-[#2ea043] text-white hover:bg-[#238636] hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(46,160,67,0.3)]"
               >
                 <Phone size={32} />
               </button>
@@ -573,62 +570,61 @@ export default function ChatPanel({
               </span>
             </>
           ) : (
-             <div className="flex flex-col items-center gap-6 w-full">
-                {/* Audio level visualizer during listening */}
-                {callState === "listening" && (
-                  <div className="flex items-end justify-center gap-[3px] h-10 mb-1">
-                    {Array.from({ length: 7 }).map((_, i) => {
-                      const barScale = [0.5, 0.7, 0.85, 1, 0.85, 0.7, 0.5][i];
-                      const normalizedLevel = Math.min(audioLevel / 60, 1);
-                      const barHeight = Math.max(4, normalizedLevel * 32 * barScale);
-                      return (
-                        <div
-                          key={i}
-                          className="w-[4px] rounded-full bg-[#ff5858] transition-all duration-100"
-                          style={{ height: `${barHeight}px`, opacity: 0.5 + normalizedLevel * 0.5 }}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
-
-                <div className="flex items-center gap-6">
-                  <div className="relative">
-                    {callState === "listening" && (
-                       <div className={`w-16 h-16 rounded-full bg-[#161b22] border-2 border-[#ff5858] flex items-center justify-center shadow-[0_0_20px_rgba(255,88,88,0.3)] ${audioLevel > SILENCE_THRESHOLD ? 'scale-105' : 'scale-100'} transition-transform duration-150`}>
-                         <Mic className="w-8 h-8 text-[#ff5858]" />
-                       </div>
-                    )}
-                    {callState === "processing" && (
-                       <div className="w-16 h-16 rounded-full bg-[#161b22] border-2 border-[#58a6ff] flex items-center justify-center shadow-[0_0_15px_rgba(88,166,255,0.3)]">
-                         <Loader2 className="w-8 h-8 text-[#58a6ff] animate-spin" />
-                       </div>
-                    )}
-                    {callState === "speaking" && (
-                       <div className="w-16 h-16 rounded-full bg-[#161b22] border-2 border-[#a371f7] flex items-center justify-center shadow-[0_0_15px_rgba(163,113,247,0.3)] animate-pulse">
-                         <Bot className="w-8 h-8 text-[#a371f7]" />
-                       </div>
-                    )}
-                  </div>
-
-                  <button
-                     onClick={cleanupCall}
-                     className="cursor-pointer w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 bg-[#ff5858] text-white shadow-[0_4px_15px_rgba(255,88,88,0.4)] hover:bg-[#d73a49] hover:scale-105 active:scale-95"
-                     title="End Call"
-                  >
-                     <PhoneOff size={24} />
-                  </button>
+            <div className="flex flex-col items-center gap-6 w-full">
+              {/* Audio level visualizer during listening */}
+              {callState === "listening" && (
+                <div className="flex items-end justify-center gap-[3px] h-10 mb-1">
+                  {Array.from({ length: 7 }).map((_, i) => {
+                    const barScale = [0.5, 0.7, 0.85, 1, 0.85, 0.7, 0.5][i];
+                    const normalizedLevel = Math.min(audioLevel / 60, 1);
+                    const barHeight = Math.max(4, normalizedLevel * 32 * barScale);
+                    return (
+                      <div
+                        key={i}
+                        className="w-[4px] rounded-full bg-[#ff5858] transition-all duration-100"
+                        style={{ height: `${barHeight}px`, opacity: 0.5 + normalizedLevel * 0.5 }}
+                      />
+                    );
+                  })}
                 </div>
-                
-                <span className={`text-sm tracking-wide font-medium ${
-                    callState === "listening" ? "text-[#ff5858]" : 
-                    callState === "processing" ? "text-[#58a6ff]" : "text-[#a371f7]"
+              )}
+
+              <div className="flex items-center gap-6">
+                <div className="relative">
+                  {callState === "listening" && (
+                    <div className={`w-16 h-16 rounded-full bg-[#161b22] border-2 border-[#ff5858] flex items-center justify-center shadow-[0_0_20px_rgba(255,88,88,0.3)] ${audioLevel > SILENCE_THRESHOLD ? 'scale-105' : 'scale-100'} transition-transform duration-150`}>
+                      <Mic className="w-8 h-8 text-[#ff5858]" />
+                    </div>
+                  )}
+                  {callState === "processing" && (
+                    <div className="w-16 h-16 rounded-full bg-[#161b22] border-2 border-[#58a6ff] flex items-center justify-center shadow-[0_0_15px_rgba(88,166,255,0.3)]">
+                      <Loader2 className="w-8 h-8 text-[#58a6ff] animate-spin" />
+                    </div>
+                  )}
+                  {callState === "speaking" && (
+                    <div className="w-16 h-16 rounded-full bg-[#161b22] border-2 border-[#a371f7] flex items-center justify-center shadow-[0_0_15px_rgba(163,113,247,0.3)] animate-pulse">
+                      <Bot className="w-8 h-8 text-[#a371f7]" />
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={cleanupCall}
+                  className="cursor-pointer w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 bg-[#ff5858] text-white shadow-[0_4px_15px_rgba(255,88,88,0.4)] hover:bg-[#d73a49] hover:scale-105 active:scale-95"
+                  title="End Call"
+                >
+                  <PhoneOff size={24} />
+                </button>
+              </div>
+
+              <span className={`text-sm tracking-wide font-medium ${callState === "listening" ? "text-[#ff5858]" :
+                  callState === "processing" ? "text-[#58a6ff]" : "text-[#a371f7]"
                 }`}>
-                  {callState === "listening" && "Listening... speak now"}
-                  {callState === "processing" && "Processing..."}
-                  {callState === "speaking" && "Agent Speaking..."}
-                </span>
-             </div>
+                {callState === "listening" && "Listening... speak now"}
+                {callState === "processing" && "Processing..."}
+                {callState === "speaking" && "Agent Speaking..."}
+              </span>
+            </div>
           )}
         </div>
       )}

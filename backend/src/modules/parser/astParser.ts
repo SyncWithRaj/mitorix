@@ -12,7 +12,7 @@ import { RubyParser } from "./parsers/RubyParser";
 import { PhpParser } from "./parsers/PhpParser";
 
 // Export the types so other files can still import them from astParser.ts
-export { ParsedEntity, ParsedRelationship, ParsedFileMetadata };
+export type { ParsedEntity, ParsedRelationship, ParsedFileMetadata };
 
 export async function parseRepository(
     repoId: string,

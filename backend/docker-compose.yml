@@ -17,3 +17,36 @@ services:
     ports:
       - "6379:6379"
     restart: unless-stopped
+
+  mongodb:
+    image: mongo:7
+    container_name: repolens_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  backend:
+    image: repolens-backend:latest
+    container_name: repolens_backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongodb:27017/RepoLens
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      # The rest are picked up from the .env file automatically
+    depends_on:
+      - mongodb
+      - redis
+      - qdrant
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
