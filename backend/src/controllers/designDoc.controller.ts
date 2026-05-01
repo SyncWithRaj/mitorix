@@ -18,7 +18,8 @@ export const generateSystemDesignDoc = async (req: Request, res: Response): Prom
             return res.status(404).json({ success: false, message: "Repository not found" });
         }
 
-        if (repo.systemDesignDoc) {
+        // Return cached doc only if it looks like valid mermaid (not a cached error)
+        if (repo.systemDesignDoc && repo.systemDesignDoc.includes("graph") && !repo.systemDesignDoc.includes("experiencing high load")) {
             return res.status(200).json({
                 success: true,
                 mermaid: repo.systemDesignDoc
