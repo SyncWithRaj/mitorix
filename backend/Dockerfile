@@ -45,7 +45,7 @@ USER appuser
 EXPOSE 5000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:5000/api/v1/ || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:5000/api/v1/health || exit 1
 
 # Use tsx to run TypeScript directly (same as dev mode)
 # This avoids ESM import extension issues that tsc compilation produces

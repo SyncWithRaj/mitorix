@@ -9,7 +9,8 @@ export default function LoginPage() {
     const router = useRouter();
 
     const loginWithGithub = () => {
-        window.location.href = "http://localhost:5000/api/v1/auth/github";
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+        window.location.href = `${baseUrl}/auth/github`;
     };
 
     useEffect(() => {

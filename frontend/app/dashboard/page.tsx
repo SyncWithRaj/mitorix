@@ -11,8 +11,9 @@ function RepoProgressTracker({ jobId, onComplete }: { jobId: string, onComplete:
     const [progress, setProgress] = useState(0);
 
     useEffect(() => {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
         const eventSource = new EventSource(
-            `http://localhost:5000/api/v1/repos/jobs/${jobId}/status`,
+            `${baseUrl}/repos/jobs/${jobId}/status`,
             { withCredentials: true }
         );
 

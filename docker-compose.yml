@@ -8,7 +8,7 @@ services:
       - "6333:6333"
       - "6334:6334"
     volumes:
-      - ./qdrant_storage:/qdrant/storage
+      - ./backend/qdrant_storage:/qdrant/storage
     restart: unless-stopped
 
   redis:
@@ -29,11 +29,12 @@ services:
 
   backend:
     image: repolens-backend:latest
+    build: ./backend
     container_name: repolens_backend
     ports:
       - "5000:5000"
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       - NODE_ENV=production
       - MONGO_URI=mongodb://mongodb:27017/RepoLens
@@ -46,6 +47,21 @@ services:
       - mongodb
       - redis
       - qdrant
+    restart: unless-stopped
+
+  frontend:
+    image: repolens-frontend:latest
+    build: ./frontend
+    container_name: repolens_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # Important: In production, the browser needs to talk to the backend.
+      # If accessing via localhost:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+    depends_on:
+      - backend
     restart: unless-stopped
 
 volumes:
