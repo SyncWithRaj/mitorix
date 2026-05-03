@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "seed": "tsx test/seeding/seed.ts",
+    "unseed": "tsx test/seeding/unseed.ts"
   },
   "keywords": [],
   "author": "",

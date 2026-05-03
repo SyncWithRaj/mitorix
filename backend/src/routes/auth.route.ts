@@ -2,6 +2,7 @@ import { Router } from "express";
 import passport from "passport";
 import jwt from "jsonwebtoken";
 import { protect } from "../middlewares/auth.middleware.js";
+import { User } from "../models/auth.model.js";
 
 const router = Router();
 
@@ -59,5 +60,41 @@ router.post("/logout", (req, res) => {
     message: "Logged out successfully",
   });
 });
+
+// 👉 Dev Login (development only — bypasses GitHub OAuth)
+// Used by contributors who ran `npm run seed` to test the UI
+if (process.env.NODE_ENV !== "production") {
+  router.post("/dev-login", async (req, res) => {
+    try {
+      const user = await User.findOne({ githubId: "demo-dev-00000" });
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "Demo user not found. Run 'npm run seed' first.",
+        });
+      }
+
+      const token = jwt.sign(
+        { id: user._id },
+        process.env.JWT_SECRET!,
+        { expiresIn: "7d" }
+      );
+
+      res.json({
+        success: true,
+        token,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          avatar: user.avatar,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Dev login failed" });
+    }
+  });
+}
 
 export default router;
