@@ -12,6 +12,10 @@
   "author": "",
   "license": "ISC",
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@langchain/core": "^1.1.41",
