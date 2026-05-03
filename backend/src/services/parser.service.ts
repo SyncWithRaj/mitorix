@@ -127,19 +127,19 @@ export async function processRepositoryParsing(
   }
 
 
-  // 🔥 insert entities
+  // Insert entities
   if (entities.length) {
     await CodeEntity.insertMany(entities, { ordered: false });
   }
 
 
-  // 🔥 insert relationships
+  // Insert relationships
   if (relationships.length) {
     await CodeRelationship.insertMany(relationships, { ordered: false });
   }
 
 
-  // 🔥 insert file metadata
+  // Insert file metadata
   if (fileMetadata.length) {
     await FileMetadata.insertMany(fileMetadata, { ordered: false });
   }

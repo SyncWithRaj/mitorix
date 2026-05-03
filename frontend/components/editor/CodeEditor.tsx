@@ -27,7 +27,7 @@ export default function CodeEditor() {
     const model = editor.getModel();
     if (!model) return;
 
-    // 🔥 SMOOTH SCROLL + HIGHLIGHT (only if line present)
+    // Smooth scroll and highlight (only if valid line number)
     if (editorState?.startLine) {
       setTimeout(() => {
         // ScrollType.Smooth = 0
@@ -99,7 +99,7 @@ export default function CodeEditor() {
 
       <div className="flex-grow relative bg-[#0d1117] z-10">
         <MonacoEditor
-          key={editorState?.filePath} // 🔥 force reload
+          key={editorState?.filePath} // Force remount on file change
           height="100%"
           language={editorState?.language || "javascript"}
           value={editorState?.content || ""}

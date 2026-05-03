@@ -5,7 +5,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// ✅ Attach JWT token from cookie as Authorization header
+// Attach JWT token from cookie as Authorization header
 // This bypasses cross-origin cookie issues with modern browsers
 api.interceptors.request.use((config) => {
   if (typeof document !== "undefined") {

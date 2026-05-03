@@ -165,7 +165,7 @@ export async function parseRepoController(
     let repoPath = repo.localPath;
 
     if (!fs.existsSync(repoPath) || fs.readdirSync(repoPath).length === 0) {
-      console.log("⚠️ Temp clone missing, re-cloning repo...");
+      console.log("Warning: Temp clone missing, re-cloning repository.");
 
       // Re-clone into a fresh /tmp path
       const userId = repo.user.toString();
@@ -184,7 +184,7 @@ export async function parseRepoController(
           "--depth", "1",
           "-c", "credential.helper=",
         ]);
-        console.log("✅ Re-clone successful");
+        console.log("Re-clone successful");
 
         // Update localPath in DB
         repo.localPath = repoPath;
@@ -250,13 +250,13 @@ export async function parseRepoController(
     console.log("🔧 Starting AST parsing for", filePaths.length, "files...");
 
     const result = await processRepositoryParsing(id, filePaths);
-    console.log("✅ AST parsing complete:", result);
+    console.log("AST parsing complete:", result);
 
 
     // 📁 Save all file tree + contents to MongoDB before cleanup
     console.log("📁 Saving file tree and contents to MongoDB...");
     const savedFilesCount = await saveRepoFilesToDB(id, repoPath);
-    console.log(`✅ Saved ${savedFilesCount} files/dirs to MongoDB`);
+    console.log(`Saved ${savedFilesCount} files and directories to MongoDB`);
 
 
     // 🧹 Cleanup temp clone from /tmp — MongoDB data is safe
@@ -266,7 +266,7 @@ export async function parseRepoController(
 
     repo.status = "indexed";
     await repo.save();
-    console.log("✅ Repo status set to indexed");
+    console.log("Repository status updated to indexed");
 
 
     return res.status(200).json({

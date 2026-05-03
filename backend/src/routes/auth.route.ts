@@ -6,13 +6,13 @@ import { User } from "../models/auth.model.js";
 
 const router = Router();
 
-// 👉 Redirect to GitHub
+// Redirect to GitHub for OAuth
 router.get(
   "/github",
   passport.authenticate("github", { scope: ["user:email"] })
 );
 
-// 👉 GitHub Callback
+// GitHub OAuth Callback
 router.get(
   "/github/callback",
   passport.authenticate("github", { session: false }),
@@ -25,7 +25,7 @@ router.get(
       { expiresIn: "7d" }
     );
 
-    // ✅ Set cookie on backend domain (for direct API calls)
+    // Set cookie on backend domain for direct API calls
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
@@ -33,14 +33,14 @@ router.get(
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    // ✅ Also pass token via URL so frontend can set its own cookie
+    // Pass token via URL parameters for frontend consumption
     // This is the reliable fix for cross-origin cookie issues
     const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === "production" ? "http://localhost" : "http://localhost:3000");
     res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
   }
 );
 
-// 👉 Get current user
+// Retrieve current authenticated user
 router.get("/me", protect, (req, res) => {
   res.json({
     success: true,
@@ -48,7 +48,7 @@ router.get("/me", protect, (req, res) => {
   });
 });
 
-// 👉 Logout
+// Logout user
 router.post("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
@@ -62,7 +62,7 @@ router.post("/logout", (req, res) => {
   });
 });
 
-// 👉 Dev Login (development only — bypasses GitHub OAuth)
+// Dev Login (development only — bypasses GitHub OAuth)
 // Used by contributors who ran `npm run seed` to test the UI
 if (process.env.NODE_ENV !== "production") {
   router.post("/dev-login", async (req, res) => {

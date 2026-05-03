@@ -49,11 +49,11 @@ chmod +x setup.sh
 ```
 
 The setup script will:
-1. ✅ Validate Node.js v22+
-2. ✅ Install OS-level build tools (for tree-sitter native compilation)
-3. ✅ Run `npm ci` in `backend/` and `frontend/`
-4. ✅ Scaffold `backend/.env` from the example template
-5. ✅ Skip reinstall on re-runs if dependencies haven't changed
+1. Validate Node.js v22+
+2. Install OS-level build tools (for tree-sitter native compilation)
+3. Run `npm ci` in `backend/` and `frontend/`
+4. Scaffold `backend/.env` from the example template
+5. Skip reinstall on re-runs if dependencies haven't changed
 
 ### Step 2: Configure Environment
 

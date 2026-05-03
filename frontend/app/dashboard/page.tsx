@@ -194,7 +194,7 @@ export default function Dashboard() {
                             JavaScript, TypeScript, HTML, and CSS repositories.
                         </p>
                         <p className="text-xs text-[#8b949e] mt-1">
-                            More languages and frameworks will be supported in future updates. Stay tuned! 🚀
+                            More languages and frameworks will be supported in future updates. Stay tuned!
                         </p>
                     </div>
                 </div>

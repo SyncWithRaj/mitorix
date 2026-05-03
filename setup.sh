@@ -237,7 +237,7 @@ fi
 
 printf "\n"
 printf "${BOLD}${GREEN}╔══════════════════════════════════════════════════╗${NC}\n"
-printf "${BOLD}${GREEN}║         🚀  RepoLens setup complete!             ║${NC}\n"
+printf "${BOLD}${GREEN}║             RepoLens setup complete!             ║${NC}\n"
 printf "${BOLD}${GREEN}╚══════════════════════════════════════════════════╝${NC}\n"
 printf "\n"
 printf "  Next steps:\n"

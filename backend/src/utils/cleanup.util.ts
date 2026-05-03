@@ -27,7 +27,7 @@ export function cleanupTempRepo(repoPath: string): boolean {
 
     if (!resolved.startsWith(base)) {
         console.warn(
-            `⚠️ SAFETY: Refused to delete path outside temp directory: ${resolved}`
+            `Safety Check: Refused to delete path outside temp directory: ${resolved}`
         );
         return false;
     }

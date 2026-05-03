@@ -63,7 +63,7 @@ export const addRepository = async (req: Request, res: Response) => {
         await repo.save();
 
         try {
-            console.log("🚀 Cloning repo...");
+            console.log("Initiating repository clone...");
 
             // Disable any stored credential helpers that might provide stale/bad creds
             await git.clone(githubUrl, repoPath, [
@@ -71,7 +71,7 @@ export const addRepository = async (req: Request, res: Response) => {
                 "-c", "credential.helper=",
             ]);
 
-            console.log("✅ CLONE DONE");
+            console.log("Clone operation completed successfully");
 
             const files = fs.readdirSync(repoPath);
             console.log("FILES AFTER CLONE:", files);
@@ -91,7 +91,7 @@ export const addRepository = async (req: Request, res: Response) => {
 
             await repo.save();
 
-            console.log("✅ REPO SAVED WITH CLONED STATUS");
+            console.log("Repository status saved: cloned");
 
         } catch (cloneError) {
             console.error("❌ CLONE ERROR:", cloneError);

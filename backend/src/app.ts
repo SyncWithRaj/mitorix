@@ -17,10 +17,10 @@ import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
 
-// ✅ Trust proxy (Render runs behind a reverse proxy)
+// Trust proxy (Render runs behind a reverse proxy)
 app.set("trust proxy", 1);
 
-// ✅ CORS FIX (Dynamic for dev vs prod)
+// Configure dynamic CORS policy based on environment
 const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === "production" ? "http://localhost" : "http://localhost:3000");
 
 app.use(

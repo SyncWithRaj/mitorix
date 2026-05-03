@@ -13,7 +13,7 @@ async function run() {
     }
   });
 
-  console.log("✅ repo_entities collection created");
+  console.log("repo_entities collection successfully created");
 }
 
 run();

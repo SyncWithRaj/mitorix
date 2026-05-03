@@ -69,9 +69,9 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
                     });
 
                     cloneUrl = `https://x-access-token:${token}@github.com/${owner}/${repoName}.git`;
-                    console.log(`[Worker] ✅ Installation Token successfully generated for ${owner}/${repoName}. Securely cloning private repository!`);
+                    console.log(`[Worker] Installation Token successfully generated for ${owner}/${repoName}. Securely cloning private repository.`);
                 } catch (e: any) {
-                    console.log(`[Worker] ⚠️ Could not negotiate GitHub App token (Maybe app is not installed on this repo?): ${e.message}`);
+                    console.log(`[Worker] Warning: Could not negotiate GitHub App token (verify installation status): ${e.message}`);
                     console.log(`[Worker] Falling back to public anonymous clone attempt...`);
                 }
             }

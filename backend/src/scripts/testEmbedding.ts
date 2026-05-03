@@ -17,7 +17,7 @@ function createUser(req,res){
     // Step 1 — check embedding generation
     const vector = await embeddingModel.embedQuery(text);
 
-    console.log("Vector generated ✅");
+    console.log("Vector generation successful");
     console.log("Vector length:", vector.length);
 
     // Step 2 — insert into Qdrant using LangChain
@@ -31,7 +31,7 @@ function createUser(req,res){
       },
     ]);
 
-    console.log("Inserted into Qdrant ✅");
+    console.log("Insertion into Qdrant successful");
 
   } catch (err) {
     console.error("Error ❌", err);

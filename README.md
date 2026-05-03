@@ -17,7 +17,7 @@ RepoLens is an AI-powered architectural copilot that uses vector embeddings, mul
 
 ---
 
-## ✨ Features
+## Features
 
 ### 🧠 Contextual AI Chat (RAG)
 Ask natural language questions like *"Where is the authentication logic?"* or *"How does the payment flow work?"* and get exact code snippets, file references, and architectural explanations — powered by **Google Gemini** with semantic vector search over your indexed codebase.
@@ -107,7 +107,7 @@ User → GitHub OAuth → Paste Repo URL
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -142,7 +142,7 @@ cd backend && npm run dev
 cd frontend && npm run dev
 ```
 
-Open **http://localhost:3000/login** → click **"Dev Login"** → you're in! 🎉
+Open **http://localhost:3000/login** → click **"Dev Login"** → you're in!
 
 > **What does `setup.sh` do?**
 > Validates Node 22, installs OS build tools for native addons (tree-sitter/node-gyp), runs `npm ci` in both backend and frontend, and scaffolds `backend/.env` from the example template. Smart caching skips reinstall if dependencies haven't changed.
@@ -177,13 +177,13 @@ cp backend/.env.production.example backend/.env
 
 | Variable | Required | Description |
 |---|---|---|
-| `GITHUB_CLIENT_ID` | ✅ | GitHub OAuth App client ID |
-| `GITHUB_CLIENT_SECRET` | ✅ | GitHub OAuth App client secret |
-| `JWT_SECRET` | ✅ | Random string for JWT signing (`openssl rand -hex 32`) |
-| `GOOGLE_API_KEY` | ✅ | Google Gemini API key |
-| `MONGO_URI` | ✅ | MongoDB connection string |
-| `QDRANT_URL` | ✅ | Qdrant vector DB URL |
-| `REDIS_HOST` / `REDIS_PORT` | ✅ | Redis connection for BullMQ |
+| `GITHUB_CLIENT_ID` | Required | GitHub OAuth App client ID |
+| `GITHUB_CLIENT_SECRET` | Required | GitHub OAuth App client secret |
+| `JWT_SECRET` | Required | Random string for JWT signing (`openssl rand -hex 32`) |
+| `GOOGLE_API_KEY` | Required | Google Gemini API key |
+| `MONGO_URI` | Required | MongoDB connection string |
+| `QDRANT_URL` | Required | Qdrant vector DB URL |
+| `REDIS_HOST` / `REDIS_PORT` | Required | Redis connection for BullMQ |
 | `GITHUB_APP_ID` | Optional | GitHub App ID (private repo access) |
 | `GITHUB_APP_PRIVATE_KEY` | Optional | GitHub App private key |
 | `MURF_API_KEY` | Optional | Murf AI key (voice TTS) |
