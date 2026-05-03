@@ -1,4 +1,8 @@
-.PHONY: start stop restart logs build clean wipe
+.PHONY: dev start stop restart logs build clean wipe showdb
+
+# Start only the infrastructure (MongoDB, Redis, Qdrant) for local development
+dev:
+	docker compose up -d mongodb redis qdrant
 
 # Start the full application in the background
 start:
@@ -30,3 +34,6 @@ wipe:
 	docker compose down -v
 	rm -rf backend/qdrant_storage
 	@echo "All data has been completely wiped. You can run 'make start' to begin fresh."
+
+showdb:
+	docker exec -it repolens_mongo mongosh RepoLens

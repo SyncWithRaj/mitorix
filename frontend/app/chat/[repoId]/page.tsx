@@ -94,17 +94,21 @@ export default function ChatPage() {
       if (res.data.references?.length > 0) {
         const ref = res.data.references[0];
 
-        const fileRes = await api.get("/files/content", {
-          params: { repoId, path: ref.file },
-        });
+        try {
+          const fileRes = await api.get("/files/content", {
+            params: { repoId, path: ref.file },
+          });
 
-        setEditorState({
-          filePath: ref.file,
-          content: fileRes.data.content,
-          language: getLanguage(ref.file),
-          startLine: ref.startLine,
-          endLine: ref.endLine
-        });
+          setEditorState({
+            filePath: ref.file,
+            content: fileRes.data.content,
+            language: getLanguage(ref.file),
+            startLine: ref.startLine,
+            endLine: ref.endLine
+          });
+        } catch (err) {
+          console.warn(`Failed to auto-open reference file (${ref.file}) - it might not exist.`);
+        }
       }
 
       setChatMessages((prev) => {

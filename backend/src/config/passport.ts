@@ -5,12 +5,14 @@ import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import { User } from "../models/auth.model.js";
 
+const backendUrl = process.env.BACKEND_URL || (process.env.NODE_ENV === "production" ? "http://localhost" : "http://localhost:5000");
+
 passport.use(
     new GitHubStrategy(
         {
             clientID: process.env.GITHUB_CLIENT_ID,
             clientSecret: process.env.GITHUB_CLIENT_SECRET,
-            callbackURL: `${process.env.BACKEND_URL || "http://localhost"}/api/v1/auth/github/callback`,
+            callbackURL: `${backendUrl}/api/v1/auth/github/callback`,
         },
         async (_accessToken, _refreshToken, profile, done) => {
             try {

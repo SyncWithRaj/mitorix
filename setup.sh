@@ -218,17 +218,17 @@ smart_npm_ci "${SCRIPT_DIR}/frontend" "frontend"
 header "Step 5/5 — Environment setup"
 
 BACKEND_ENV="${SCRIPT_DIR}/backend/.env"
-BACKEND_ENV_EXAMPLE="${SCRIPT_DIR}/backend/.env.production.example"
+BACKEND_ENV_EXAMPLE="${SCRIPT_DIR}/backend/.env.development.example"
 
 if [[ -f "$BACKEND_ENV" ]]; then
   success "backend/.env already exists — skipping ✓"
 else
   if [[ -f "$BACKEND_ENV_EXAMPLE" ]]; then
     cp "$BACKEND_ENV_EXAMPLE" "$BACKEND_ENV"
-    warn "Created backend/.env from .env.production.example"
-    warn "→ Please edit backend/.env and fill in your secrets (API keys, GitHub OAuth, etc.)"
+    warn "Created backend/.env from .env.development.example"
+    warn "→ Please edit backend/.env and fill in your JWT_SECRET"
   else
-    warn "No .env or .env.production.example found in backend/."
+    warn "No .env or .env.development.example found in backend/."
     warn "→ You will need to create backend/.env manually before starting the server."
   fi
 fi
@@ -242,18 +242,20 @@ printf "${BOLD}${GREEN}╚══════════════════
 printf "\n"
 printf "  Next steps:\n"
 printf "\n"
-printf "  1. Configure secrets:\n"
+printf "  1. Configure your secrets:\n"
 printf "     ${CYAN}nano backend/.env${NC}\n"
 printf "\n"
 printf "  2. Start infrastructure (MongoDB, Redis, Qdrant):\n"
 printf "     ${CYAN}docker compose up -d mongodb redis qdrant${NC}\n"
 printf "\n"
-printf "  3. Run the backend:\n"
+printf "  3. Seed demo data (creates a test user + parses a sample project):\n"
+printf "     ${CYAN}cd backend && npm run seed${NC}\n"
+printf "\n"
+printf "  4. Run the backend:\n"
 printf "     ${CYAN}cd backend && npm run dev${NC}\n"
 printf "\n"
-printf "  4. Run the frontend (in a new terminal):\n"
+printf "  5. Run the frontend (in a new terminal):\n"
 printf "     ${CYAN}cd frontend && npm run dev${NC}\n"
 printf "\n"
-printf "  Or start everything via Docker:\n"
-printf "     ${CYAN}make start${NC}\n"
+printf "  Once running, open http://localhost:3000/login and click \"Dev Login\"!\n"
 printf "\n"

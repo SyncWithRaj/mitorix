@@ -35,7 +35,8 @@ router.get(
 
     // ✅ Also pass token via URL so frontend can set its own cookie
     // This is the reliable fix for cross-origin cookie issues
-    res.redirect(`http://localhost:3000/auth/callback?token=${token}`);
+    const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === "production" ? "http://localhost" : "http://localhost:3000");
+    res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
   }
 );
 
@@ -92,6 +93,7 @@ if (process.env.NODE_ENV !== "production") {
         },
       });
     } catch (error) {
+      console.error("Dev login error:", error);
       res.status(500).json({ success: false, message: "Dev login failed" });
     }
   });

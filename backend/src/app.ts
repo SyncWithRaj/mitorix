@@ -20,10 +20,12 @@ const app = express();
 // ✅ Trust proxy (Render runs behind a reverse proxy)
 app.set("trust proxy", 1);
 
-// ✅ CORS FIX
+// ✅ CORS FIX (Dynamic for dev vs prod)
+const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === "production" ? "http://localhost" : "http://localhost:3000");
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: frontendUrl,
     credentials: true,
   })
 );
