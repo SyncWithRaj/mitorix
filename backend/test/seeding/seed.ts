@@ -37,9 +37,9 @@ const DEMO_USER = {
 
 const DEMO_REPO = {
   name: "todo-express-app",
-  githubUrl: "https://github.com/repolens/todo-express-app",
+  githubUrl: "local://test/seeding/test_project",
   defaultBranch: "main",
-  localPath: "/tmp/seed-test-project",
+  localPath: "seeded-from-local",
 };
 
 // ─── Colors ──────────────────────────────────────────────────

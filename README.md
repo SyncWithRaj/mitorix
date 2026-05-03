@@ -127,22 +127,28 @@ chmod +x setup.sh
 ./setup.sh
 
 # 3. Configure your secrets
-nano backend/.env
+nano backend/.env    # At minimum, set JWT_SECRET
 
 # 4. Start infrastructure services
 docker compose up -d mongodb redis qdrant
 
-# 5. Start backend (terminal 1)
+# 5. Seed demo data (creates a test user + parses a sample project)
+cd backend && npm run seed
+
+# 6. Start backend (terminal 1)
 cd backend && npm run dev
 
-# 6. Start frontend (terminal 2)
+# 7. Start frontend (terminal 2)
 cd frontend && npm run dev
 ```
 
-Open **http://localhost:3000** — you're in! 🎉
+Open **http://localhost:3000/login** → click **"Dev Login"** → you're in! 🎉
 
 > **What does `setup.sh` do?**
 > Validates Node 22, installs OS build tools for native addons (tree-sitter/node-gyp), runs `npm ci` in both backend and frontend, and scaffolds `backend/.env` from the example template. Smart caching skips reinstall if dependencies haven't changed.
+
+> **What does `npm run seed` do?**
+> Creates a demo user (bypasses GitHub OAuth) and runs the real parsing pipeline on a bundled Express todo app. The dashboard, graph, editor, and file browser work immediately — no API keys needed for basic testing.
 
 ### Docker Production Deployment
 

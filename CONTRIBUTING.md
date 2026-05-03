@@ -34,17 +34,16 @@ By participating in this project, you agree to maintain a respectful and inclusi
 | **Git** | Latest | Required by backend at runtime too |
 | **OS build tools** | — | `python3`, `make`, `g++` (setup.sh handles this) |
 
-### One-Command Setup
+### Step 1: Clone & Install
 
 ```bash
-# Clone and enter the project
 git clone https://github.com/your-org/repolens.git
 cd repolens
 
-# Switch to the correct Node version (if using nvm)
+# Switch to Node 22 (if using nvm)
 nvm use
 
-# Run the setup script
+# Install all dependencies (backend + frontend)
 chmod +x setup.sh
 ./setup.sh
 ```
@@ -56,7 +55,7 @@ The setup script will:
 4. ✅ Scaffold `backend/.env` from the example template
 5. ✅ Skip reinstall on re-runs if dependencies haven't changed
 
-### Configure Environment
+### Step 2: Configure Environment
 
 Edit `backend/.env` and fill in your secrets:
 
@@ -65,24 +64,56 @@ nano backend/.env
 ```
 
 At minimum, you need:
-- `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` — [Create a GitHub OAuth App](https://github.com/settings/developers)
-- `GOOGLE_API_KEY` — [Get a Gemini API key](https://aistudio.google.com/apikey)
 - `JWT_SECRET` — Generate with `openssl rand -hex 32`
 
-### Start Development
+Optional (for full functionality):
+- `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` — [Create a GitHub OAuth App](https://github.com/settings/developers) (not needed if using Dev Login)
+- `GOOGLE_API_KEY` — [Get a Gemini API key](https://aistudio.google.com/apikey) (needed for chat/RAG, not for graph/editor)
+
+### Step 3: Start Infrastructure & Seed Data
 
 ```bash
-# Terminal 1: Start infrastructure
+# Start MongoDB, Redis, and Qdrant in Docker
 docker compose up -d mongodb redis qdrant
 
-# Terminal 2: Start backend
+# Seed a demo user and a pre-parsed test repository
+cd backend && npm run seed
+```
+
+The seed script:
+- Creates a **demo user** you can log in with (no GitHub OAuth needed)
+- Runs the **real RepoLens parsing pipeline** on a bundled Express todo app
+- Populates MongoDB with file tree, code entities, and relationships
+- If `GOOGLE_API_KEY` is set, also embeds into Qdrant (enables chat)
+
+### Step 4: Start Development Servers
+
+```bash
+# Terminal 1: Backend (auto-reloads on changes)
 cd backend && npm run dev
 
-# Terminal 3: Start frontend
+# Terminal 2: Frontend (auto-reloads on changes)
 cd frontend && npm run dev
 ```
 
-Open **http://localhost:3000** to see the app.
+### Step 5: Open & Login
+
+Open **http://localhost:3000/login** and click the **"Dev Login (Seeded User)"** button.
+
+You'll be redirected to the dashboard with the seeded repository — graph, editor, and file browser all work immediately. No GitHub OAuth or API keys required for basic UI development.
+
+> **Note:** The "Dev Login" button only appears in development mode (`NODE_ENV=development`). It is completely absent in production builds.
+
+### Quick Reference
+
+| Command | Description |
+|---|---|
+| `./setup.sh` | Install all dependencies (smart — skips if up to date) |
+| `docker compose up -d mongodb redis qdrant` | Start infrastructure services |
+| `cd backend && npm run seed` | Seed demo user + test repository |
+| `cd backend && npm run unseed` | Remove all seeded data |
+| `cd backend && npm run dev` | Start backend dev server (tsx watch, port 5000) |
+| `cd frontend && npm run dev` | Start frontend dev server (Turbopack, port 3000) |
 
 ---
 
@@ -100,18 +131,6 @@ main              ← production-ready code
 1. Always branch off `dev` (or `main` if `dev` doesn't exist).
 2. Keep branches focused — one feature or fix per branch.
 3. Rebase on the base branch before opening a PR.
-
-### Running the Project
-
-| Command | Description |
-|---|---|
-| `./setup.sh` | Install all dependencies (smart — skips if up to date) |
-| `cd backend && npm run dev` | Start backend dev server (tsx watch, port 5000) |
-| `cd frontend && npm run dev` | Start frontend dev server (Next.js Turbopack, port 3000) |
-| `docker compose up -d mongodb redis qdrant` | Start only infrastructure services |
-| `make build` | Build & start everything in Docker (production mode) |
-| `make logs` | Tail live Docker logs |
-| `make clean` | Stop everything & delete database volumes |
 
 ### Backend
 
