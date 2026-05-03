@@ -1,196 +1,272 @@
-# RepoLens AI Engine - Understand your Codebase faster than ever!
+# RepoLens — Architectural Copilot for Your Codebase
 
 ![RepoLens AI Engine](https://img.shields.io/badge/RepoLens-AI_Engine-58a6ff?style=for-the-badge)
+![Node.js](https://img.shields.io/badge/Node.js-22_LTS-339933?style=for-the-badge&logo=nodedotjs)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
-![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=nodedotjs)
-![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-4DB33D?style=for-the-badge&logo=mongodb)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)
+![MongoDB](https://img.shields.io/badge/MongoDB-7-4DB33D?style=for-the-badge&logo=mongodb)
 ![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI-4285F4?style=for-the-badge&logo=google)
 ![Qdrant](https://img.shields.io/badge/Qdrant-Vector_DB-FF5252?style=for-the-badge)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)
 
 **Understand your codebase. Faster than ever.**
 
-RepoLens utilizes advanced AI vector embeddings to visually map and comprehend your entire repository. Stop reading thousands of lines of code—start asking questions and get exact, contextual explanations instantly. Built for High-Velocity Teams, Engineers, Architects, and New Hires to navigate, analyze, and comprehend massive codebases without opening a single IDE window.
+RepoLens is an AI-powered architectural copilot that uses vector embeddings, multi-language AST parsing, and Retrieval-Augmented Generation (RAG) to let you visually map, explore, and interrogate any codebase through natural language. Stop reading thousands of lines of code — start asking questions and get exact, contextual explanations instantly.
 
-> **Supported Languages:** Currently supports **JavaScript**, **TypeScript**, **CSS**, and **HTML** repositories. We built the extraction pipeline to be highly modular and will extend support to more languages very soon!
-
----
-
-## ✨ Key Features
-
-1. **Intelligent Indexing & Parsing**
-   Paste your repository URL and let our cluster extract, parse, and embed every function and structure using Abstract Syntax Trees (ASTs). Supports JS, TS, HTML, and CSS environments.
-2. **Contextual Chat AI**
-   Ask natural language questions like "Where is the authentication logic?" and get exact code snippets, file references, and architectural explanations contextually synthesized via **RAG** (Retrieval-Augmented Generation).
-3. **Unified Workspace & Advanced Graph Visualization**
-   Visualize your deeply nested architecture as an interconnected **2D Force-Graph**. Our graph visualization accurately maps the proper relationships and dependencies between files and folders, enabling you to instantly grasp the project's structure, identify bottlenecks, and intuitively navigate the entire codebase. Slide open the integrated **Monaco code editor**, file browser, and chat to seamlessly switch paradigms.
-4. **Interactive Voice Calls & Seamless Conversational Agent**
-   Includes a dedicated calling pipeline designed for the lowest latency and best conversational experience. Call the AI agent natively in your browser to explore your architectural queries hands-free! 
-   *Pipeline:* **Speech-to-Text (STT) using AssemblyAI ➔ LLM / RAG Synthesis ➔ Text-to-Speech (TTS) using Murf AI**.
-5. **Vector-Powered Code Search**
-   Replaces legacy regex and raw text indexing with a high-dimensional vector space. RepoLens understands the *intent* behind the code, instantly leaping across modules and microservices to give you factual architectural answers.
-6. **Security & Sandboxing**
-   Zero data retention on disk. Your codebase is parsed ephemerally, embedded securely into the vector database, and never utilized for general LLM training.
+> **Supported Languages:** JavaScript, TypeScript, Python, Go, Rust, Java, C, C++, C#, PHP, Ruby — powered by [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) for high-fidelity AST parsing.
 
 ---
 
-## 🏗 System Design & Architecture
+## ✨ Features
 
-Our architecture is expressly designed to provide high-speed semantic search, interactive visualization, and conversational code analysis while keeping server overhead to an absolute minimum.
+### 🧠 Contextual AI Chat (RAG)
+Ask natural language questions like *"Where is the authentication logic?"* or *"How does the payment flow work?"* and get exact code snippets, file references, and architectural explanations — powered by **Google Gemini** with semantic vector search over your indexed codebase.
 
-### The Challenge: Storage & Disk Bottlenecks
-In early iterations, cloning remote repositories natively onto the server's disk to serve files and feed the codebase into an AI caused critical **storage bottlenecks**. Storing raw files persistently on a production filesystem becomes impossible to scale when numerous users are processing massive monorepos. 
+### 🌐 Interactive Force-Graph Visualization
+Visualize your repository as an interconnected **2D Force-Graph** that maps real relationships and dependencies between files, functions, and modules. Click any node to navigate, highlight blast-radius impacts, and understand the architecture at a glance.
 
-### Our Infrastructure Solution: Ephemeral Parsing & State Persistence
-To resolve disk bloat, we overhauled the system workflow to utilize an **ephemeral cloning pipeline** alongside **robust MongoDB data models**.
+### 💥 Blast Radius Analysis
+Before making a change, ask: *"If I modify `authenticateUser`, what else breaks?"* — the AI identifies affected files and renders an interactive blast-radius view on the graph, highlighting all dependent components in red.
 
-**Workflow Pipeline:**
-**`Login` ➔ `Paste Repo Link` ➔ `Clone to /tmp` ➔ `AST Parse` ➔ `Persist Metadata to DB` ➔ `Delete Clone` ➔ `Chat/Call Contextually`**
+### 📊 Auto-Generated Architecture Diagrams
+One-click generation of **Mermaid.js** architecture diagrams from your codebase structure. The AI analyzes your AST relationships and produces system design diagrams you can embed in documentation.
 
-1. **Ephemeral Clone**: When a user inputs a repository link, the server securely clones the repository into an isolated, temporary `/tmp` environment.
-2. **AST Parsing Validation**: We parse support files (JavaScript, TypeScript, CSS, HTML), generating full Abstract Syntax Trees (ASTs). This gives the system a deterministic breakdown of all modules, functions, classes, and their relationships.
-3. **Smart Database Modeling (MongoDB)**: Instead of keeping the file on disk, we serialize vital repository data into strict MongoDB Models:
-   - **`File Tree & Contents Model`**: We store the entire hierarchical file tree and the text contents of the files directly in MongoDB. *Why?* So our frontend Monaco Code Editor and file explorer can instantly retrieve and display code via an API endpoint, completely eliminating the need to serve the file from the server's disk.
-   - **`Code Entities & Relationships Model`**: The extracted relationships between files and functions are persisted in MongoDB. *Why?* To power our interactive 2D Force-Graph visualization in real-time. Storing these node-links in the database avoids having to repetitively re-parse ASTs every time the user opens the visualizer.
-   - **`Chat History & Profiles Model`**: Retains user sessions, settings, and complex previous AI interactions.
-4. **Vector Embedding (Qdrant)**: The distilled AST node representations are converted into high-dimensional vectors and securely sent to our **Qdrant Vector Database**.
-5. **Garbage Collection (Cleanup)**: Immediately after extraction and DB serialization, the physical repository stored in `/tmp` is wiped clean. This strictly confines storage to databases and vector-stores, saving massive amounts of block storage on our production servers.
-6. **Retrieval-Augmented Generation (RAG)**: When a user asks a question, we query Qdrant to find semantically relevant code chunks and map them back to our MongoDB structural records to construct a highly factual prompt. The Gemini LLM then streams the explanation to the chat UI or routes it through the AssemblyAI / MurfAI voice pipeline.
+### 📖 Onboarding Guide Generation
+New to a codebase? Click "Generate Onboarding Guide" and RepoLens identifies entry points, core schemas, and key components, then creates a step-by-step walkthrough tailored to the repository's language and structure.
+
+### 🔍 Monaco Code Editor
+Integrated web-based code editor with syntax highlighting, file tree navigation, and resizable panels — browse and read code without leaving the browser.
+
+### 📞 Voice-Powered Code Exploration
+Call the AI agent directly in your browser for hands-free architectural queries.
+**Pipeline:** Speech-to-Text (AssemblyAI) → RAG/LLM Synthesis (Gemini) → Text-to-Speech (Murf AI)
+
+### 🔒 Ephemeral & Secure
+Repositories are cloned temporarily, parsed into ASTs, embedded into the vector database, and then deleted from disk. Zero persistent file storage on the server.
 
 ---
 
-## 🛠 Technology Stack
+## 🏗 Architecture
 
-### Frontend (User Interface & Visualization)
-- **Framework**: [Next.js 16](https://nextjs.org/) & **React 19**
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Visuals & Editing**: 
-  - `@monaco-editor/react` (integrated web IDE)
-  - `react-force-graph-2d` (interactive file/folder dependency mapping)
-  - `lucide-react` (beautiful iconography)
-  - `react-resizable-panels` (fluid slide-out workspace UI)
+```
+User → GitHub OAuth → Paste Repo URL
+                          ↓
+               ┌─────────────────────┐
+               │   BullMQ Job Queue  │ ← Redis
+               └────────┬────────────┘
+                         ↓
+              ┌──────────────────────┐
+              │  Worker: Clone Repo  │
+              │  → AST Parse (Tree-  │
+              │    sitter, 11 langs) │
+              │  → Extract Entities  │
+              │    & Relationships   │
+              │  → Vector Embed      │
+              │  → Delete Clone      │
+              └──────────┬───────────┘
+                         ↓
+         ┌───────────────┼───────────────┐
+         ↓               ↓               ↓
+    ┌─────────┐    ┌──────────┐    ┌──────────┐
+    │ MongoDB │    │  Qdrant  │    │  Redis   │
+    │ metadata│    │ vectors  │    │ sessions │
+    │ files   │    │ search   │    │ queues   │
+    └─────────┘    └──────────┘    └──────────┘
+         ↑               ↑
+         └───────┬───────┘
+                 ↓
+         ┌──────────────┐
+         │  RAG Engine  │ → Gemini LLM → Chat / Voice / Diagrams
+         └──────────────┘
+```
 
-### Backend (Core Processing & API)
-- **Framework**: **Node.js** with **Express** (written in **TypeScript**)
-- **Authentication**: **Passport.js** (GitHub OAuth2 via `passport-github2`)
-- **Database**: **MongoDB** with **Mongoose** (user profiles, file trees, relationships, chat history)
-- **Git & AST Processing**: `simple-git` (ephemeral cloning), `ts-morph` (AST generation).
+**Key Design Decisions:**
+- **Ephemeral Cloning** — Repos are cloned to `/tmp`, parsed, then wiped. No persistent file storage.
+- **Event-Driven Processing** — BullMQ + Redis workers handle repo parsing asynchronously. The API returns `202 Accepted` immediately.
+- **Multi-Language AST** — Tree-sitter replaces ts-morph for universal language support across 11 languages.
+- **MongoDB for Metadata** — File trees, code entities, relationships, and chat history are persisted in structured documents.
+- **Qdrant for Semantics** — Code chunks are embedded as vectors for semantic similarity search during RAG queries.
 
-### AI & Machine Learning Infrastructure
-- **LLM Engine**: **Google Gemini AI** (`@google/generative-ai`, `@langchain/google-genai`)
-- **Vector Database**: **Qdrant** (`qdrant-client`, `@qdrant/js-client-rest`)
-- **Call / Voice Chat Integration**: 
-  - Text-to-Speech (TTS): **Murf AI**
-  - Speech-to-Text (STT): **AssemblyAI**
-  
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | Next.js 16, React 19, Tailwind CSS v4 |
+| **UI Components** | Monaco Editor, react-force-graph-2d, Mermaid.js, lucide-react, react-resizable-panels |
+| **Backend** | Node.js 22, Express 5, TypeScript 5 |
+| **AST Parsing** | Tree-sitter (JS, TS, Python, Go, Rust, Java, C, C++, C#, PHP, Ruby) |
+| **AI / LLM** | Google Gemini (`@google/generative-ai`, LangChain) |
+| **Vector DB** | Qdrant (semantic code search) |
+| **Database** | MongoDB 7 + Mongoose 9 |
+| **Queue** | BullMQ + Redis (async job processing) |
+| **Auth** | Passport.js (GitHub OAuth2), JWT |
+| **Voice Pipeline** | AssemblyAI (STT) → Gemini → Murf AI (TTS) |
+| **Infrastructure** | Docker Compose, Nginx reverse proxy |
+
 ---
 
 ## 🚀 Getting Started
 
-Ensure you have **Node.js 20+**, **MongoDB**, and **Docker** installed on your system.
+### Prerequisites
 
-### 0. Clone repository
+- **Node.js 22** (LTS) — [install via nvm](https://github.com/nvm-sh/nvm)
+- **Docker & Docker Compose** — for infrastructure services
+- **Git** — for repo cloning
+
+### Quick Setup (Recommended)
+
 ```bash
-git clone https://github.com/raj-ribadiya/repolens-murfai.git
+# 1. Clone the repository
+git clone https://github.com/your-org/repolens.git
+cd repolens
+
+# 2. Run the setup script (installs everything)
+chmod +x setup.sh
+./setup.sh
+
+# 3. Configure your secrets
+nano backend/.env
+
+# 4. Start infrastructure services
+docker compose up -d mongodb redis qdrant
+
+# 5. Start backend (terminal 1)
+cd backend && npm run dev
+
+# 6. Start frontend (terminal 2)
+cd frontend && npm run dev
 ```
 
-### 1. Set Up Qdrant Vector DB via Docker Compose 🐳 
-Instead of downloading or configuring Qdrant manually through the Docker Engine or Docker Desktop UI, you can spin it up directly and easily using our included `docker-compose.yml` file.
+Open **http://localhost:3000** — you're in! 🎉
 
-1. Navigate to the root folder:
-   ```bash
-   cd repolens-murfai
-   ```
-2. Start the Qdrant container in detached mode but first uncomment the code in docker-compose file:
-   ```bash
-   docker-compose up -d
-   ```
-   *This commands isolates and starts the Qdrant instance locally, binding it safely to ports `6333` and `6334`.*
+> **What does `setup.sh` do?**
+> Validates Node 22, installs OS build tools for native addons (tree-sitter/node-gyp), runs `npm ci` in both backend and frontend, and scaffolds `backend/.env` from the example template. Smart caching skips reinstall if dependencies haven't changed.
 
-### 2. Backend Setup
-1. Open a new terminal and navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Set up Environment Variables:
-   Create a `.env` file in the `backend` directory. Ensure you include your database and ML keys (MongoDB URL, Gemini API Key, Qdrant URL, Assembly AI key, Murf AI key, Session Secrets, etc.).
+### Docker Production Deployment
 
-   ```bash
-   GITHUB_CLIENT_ID=your_github_client_id
-   GITHUB_CLIENT_SECRET=your_github_client_secret
-   JWT_SECRET=supersecretkey
+```bash
+# Build and start everything (backend, frontend, MongoDB, Redis, Qdrant, Nginx)
+make build
 
-   GOOGLE_API_KEY=your_gemini_api_key
-   QDRANT_URL=http://localhost:6333
+# Other commands
+make start     # Start without rebuilding
+make stop      # Stop all services
+make restart   # Stop + start
+make logs      # Tail live logs
+make clean     # Stop + delete database volumes
+make wipe      # Nuclear: stop + delete volumes + Qdrant storage
+```
 
-   MURF_API_KEY=your_murfai_api_key
-   ASSEMBLYAI_API_KEY=your_assembly_api_key
-   ```
+Once running, open **http://localhost** (port 80) — Nginx serves the frontend and proxies API requests to the backend.
 
-4. Start the development server:
-   ```bash
-   npm run dev
-   ```
+### Environment Variables
 
-### 3. Frontend Setup
-1. Open a new terminal and navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Next.js development server:
-   ```bash
-   npm run dev
-   ```
+Copy the example and fill in your secrets:
 
-### 4. Open the Application
-Navigate to `http://localhost:3000` to access the RepoLens AI Engine workspace!
+```bash
+cp backend/.env.production.example backend/.env
+```
+
+| Variable | Required | Description |
+|---|---|---|
+| `GITHUB_CLIENT_ID` | ✅ | GitHub OAuth App client ID |
+| `GITHUB_CLIENT_SECRET` | ✅ | GitHub OAuth App client secret |
+| `JWT_SECRET` | ✅ | Random string for JWT signing (`openssl rand -hex 32`) |
+| `GOOGLE_API_KEY` | ✅ | Google Gemini API key |
+| `MONGO_URI` | ✅ | MongoDB connection string |
+| `QDRANT_URL` | ✅ | Qdrant vector DB URL |
+| `REDIS_HOST` / `REDIS_PORT` | ✅ | Redis connection for BullMQ |
+| `GITHUB_APP_ID` | Optional | GitHub App ID (private repo access) |
+| `GITHUB_APP_PRIVATE_KEY` | Optional | GitHub App private key |
+| `MURF_API_KEY` | Optional | Murf AI key (voice TTS) |
+| `ASSEMBLYAI_API_KEY` | Optional | AssemblyAI key (voice STT) |
 
 ---
 
-## 📂 Core Directory Structure
+## 📂 Project Structure
 
-```text
-repolens-murfai/
-├── docker-compose.yml       # Quick-start Qdrant Vector DB configuration
+```
+repolens/
+├── setup.sh                     # One-command project setup
+├── docker-compose.yml           # Full-stack orchestration
+├── Makefile                     # Dev workflow shortcuts
+├── .nvmrc                       # Node 22 version pin
+│
 ├── backend/
 │   ├── src/
-│   │   ├── config/          # Configurations (Passport, DB)
-│   │   ├── controllers/     # API logic (Repository, Query, Authentication)
-│   │   ├── middlewares/     # Error Handlers, Auth Protection
-│   │   ├── models/          # MongoDB Schemas (User, ChatHistory, FileTree, CodeEntities)
-│   │   ├── modules/         # Parsing and Scanning logic written here (astParser, indexing)
-│   │   ├── routes/          # Express Routes (/api/v1/...)
-│   │   ├── services/        # Core business & AI logic (LangChain, Qdrant integration)
-│   │   ├── utils/           # Helper scripts (Tokenizers, formatters)
-│   │   └── server.ts        # Backend Entry Point
+│   │   ├── server.ts            # Entry point
+│   │   ├── app.ts               # Express app configuration
+│   │   ├── config/              # Database & Passport config
+│   │   ├── controllers/         # Route handlers
+│   │   │   ├── repo.controller.ts         # Repository onboarding
+│   │   │   ├── parser.controller.ts       # AST parsing orchestration
+│   │   │   ├── query.controller.ts        # RAG chat queries
+│   │   │   ├── graph.controller.ts        # Force-graph data
+│   │   │   ├── call.controller.ts         # Voice call pipeline
+│   │   │   ├── designDoc.controller.ts    # Mermaid diagram generation
+│   │   │   └── onboarding.controller.ts   # Onboarding guide generation
+│   │   ├── models/              # MongoDB schemas
+│   │   │   ├── repo.model.ts              # Repository metadata
+│   │   │   ├── codeEntity.model.ts        # Functions, classes, exports
+│   │   │   ├── relationship.model.ts      # File/entity dependencies
+│   │   │   ├── fileContent.model.ts       # File tree & source code
+│   │   │   └── chatHistory.model.ts       # Conversation persistence
+│   │   ├── modules/
+│   │   │   ├── parser/          # Multi-language AST parsing
+│   │   │   │   ├── astParser.ts           # Tree-sitter orchestrator
+│   │   │   │   └── parsers/               # Per-language parsers (11 langs)
+│   │   │   ├── indexer/         # Code entity indexing
+│   │   │   └── repo/            # Repository management
+│   │   ├── services/            # Business logic
+│   │   │   ├── rag.service.ts             # RAG pipeline
+│   │   │   ├── llm.service.ts             # Gemini LLM integration
+│   │   │   ├── qdrant.service.ts          # Vector DB operations
+│   │   │   └── embedding.service.ts       # Vector embedding
+│   │   ├── queue/               # BullMQ job definitions
+│   │   ├── workers/             # Async job processors
+│   │   ├── middlewares/         # Auth, rate limiting, error handling
+│   │   ├── routes/              # Express route definitions
+│   │   └── utils/               # Helpers & formatters
+│   ├── Dockerfile               # Production multi-stage build
 │   └── package.json
 │
-└── frontend/
-    ├── app/                 # Next.js 16 App Router (Landing, Chat, Graph, Layout)
-    ├── components/          # Reusable UI Components (ChatPanel, GraphView, Editor)
-    ├── lib/                 # Utility functions & axios instances
-    └── package.json
+├── frontend/
+│   ├── app/                     # Next.js 16 App Router
+│   │   ├── page.tsx             # Landing page
+│   │   ├── dashboard/           # Repository dashboard
+│   │   ├── chat/                # AI chat interface
+│   │   ├── graph/               # Force-graph visualization
+│   │   ├── auth/                # GitHub OAuth flow
+│   │   └── login/               # Login page
+│   ├── components/
+│   │   ├── chat/                # ChatPanel, message rendering
+│   │   ├── editor/              # Monaco editor integration
+│   │   ├── files/               # File tree browser
+│   │   ├── graph/               # Force-graph component
+│   │   └── layout/              # Navigation, sidebar
+│   ├── context/                 # React context (EditorContext)
+│   ├── lib/                     # Axios instance
+│   ├── Dockerfile               # Production multi-stage build
+│   └── package.json
+│
+└── nginx/
+    └── nginx.conf               # Reverse proxy config
 ```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/raj-ribadiya/repolens-murfai/issues). 
-
-1. Fork the Project.
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the Branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on getting started, coding standards, and the pull request process.
 
 ---
 
-*Designed for Enterprise Security. Built for Developers.*
+## 📄 License
+
+This project is licensed under the ISC License.
+
+---
+
+*Built for developers who want to understand code, not just read it.*
