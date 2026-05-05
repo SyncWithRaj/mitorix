@@ -7,6 +7,8 @@ import api from "@/lib/axios";
 import { Flame, XCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
+import toast from "react-hot-toast";
+
 // Dynamically import ForceGraph2D (avoids SSR window undef errors)
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), { ssr: false });
 
@@ -109,27 +111,48 @@ export default function GraphView({ repoId }: { repoId: string }) {
     return { nodes, links };
   }, [graphData, collapsedNodes]);
 
-  const triggerBlastRadius = useCallback((targetNode: any) => {
-    const affected = new Set<string>();
-    const queue = [targetNode.id];
-    affected.add(targetNode.id);
-
-    while (queue.length > 0) {
-      const curr = queue.shift()!;
-      // Find nodes that depend on curr (source -> curr)
-      graphData.links.forEach((l: any) => {
-        const s = l.source?.id || l.source;
-        const t = l.target?.id || l.target;
-        if (t === curr && l.label !== "contains" && !affected.has(s)) {
-          affected.add(s);
-          queue.push(s);
-        }
-      });
+  const triggerBlastRadius = useCallback(async (targetNode: any) => {
+    if (targetNode.type === "folder") {
+      toast.error("Blast radius analysis is currently only available for files and functions.");
+      return;
     }
+    
+    const filePath = targetNode.type === "file" ? targetNode.id : targetNode.path;
+    
+    if (!filePath) return;
 
-    setBlastRadius({ targetId: targetNode.id, affectedNodeIds: affected });
-    setHoverNode(null); // Hide tooltip
-  }, [graphData.links]);
+    try {
+      const toastId = toast.loading("Analyzing structural impact...", { id: "blast-radius" });
+      
+      const res = await api.get(`/codeflow/blast/${repoId}/${encodeURIComponent(filePath)}`);
+      
+      toast.dismiss(toastId);
+      
+      if (res.data.success && res.data.blast) {
+        const { affected, transitive } = res.data.blast;
+        const affectedFiles = new Set<string>([filePath, ...affected, ...transitive]);
+        
+        const affectedNodeIds = new Set<string>();
+        
+        graphData.nodes.forEach((n: any) => {
+          if (n.type === "file" && affectedFiles.has(n.id)) {
+            affectedNodeIds.add(n.id);
+          }
+          else if (n.type !== "folder" && n.type !== "file" && n.path && affectedFiles.has(n.path)) {
+            affectedNodeIds.add(n.id);
+          }
+        });
+        
+        setBlastRadius({ targetId: targetNode.id, affectedNodeIds });
+      } else {
+        toast.error("Failed to calculate blast radius.", { id: "blast-radius" });
+      }
+    } catch (err: unknown) {
+      toast.error(err.response?.data?.message || "Failed to calculate blast radius.", { id: "blast-radius" });
+    } finally {
+      setHoverNode(null);
+    }
+  }, [repoId, graphData.nodes]);
 
   // Auto-trigger blast radius if query parameter is present
   useEffect(() => {
