@@ -7,6 +7,10 @@ import toast from "react-hot-toast";
 import ResizablePanel from "./ResizablePanel";
 import { ArrowLeft, Menu, Settings } from "lucide-react";
 import Link from "next/link";
+import HealthRing from "./sidebar/HealthRing";
+import ColorModeSelector from "./sidebar/ColorModeSelector";
+import StatsGrid from "./sidebar/StatsGrid";
+import TreeExplorer from "./sidebar/TreeExplorer";
 
 export default function CodeflowLayout({
   repoId,
@@ -15,7 +19,7 @@ export default function CodeflowLayout({
   repoId: string;
   children: React.ReactNode;
 }) {
-  const { setAnalysisData, setIsLoading } = useCodeflow();
+  const { analysisData, setAnalysisData, setIsLoading } = useCodeflow();
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
 
@@ -115,15 +119,32 @@ export default function CodeflowLayout({
           maxWidth={400}
           className={`${leftOpen ? 'flex absolute inset-y-0 left-0 z-40' : 'hidden'} md:relative md:flex`}
         >
-          <div className="p-3 border-b border-[#30363d] bg-[#161b22]">
-            <h2 className="text-[10px] font-bold text-[#8b949e] uppercase tracking-wider mb-2">
-              Codebase Explorer
-            </h2>
-            <div className="text-xs text-[#c9d1d9] italic opacity-50">Sidebar components pending Phase 4</div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-2">
-            {/* TreeExplorer and HealthRing will go here */}
-          </div>
+          {analysisData ? (
+            <div className="flex flex-col h-full bg-[#0d1117]">
+              {/* Upper Section: Fixed/Scrollable logic similar to index.html */}
+              <div className="flex-none p-4 space-y-5 border-b border-[#30363d] overflow-y-auto max-h-[65%] custom-scrollbar">
+                <HealthRing 
+                  score={analysisData.health?.score || 0} 
+                  grade={analysisData.health?.grade || "F"} 
+                />
+                <ColorModeSelector />
+                <StatsGrid />
+              </div>
+              
+              {/* Lower Section: Tree Explorer */}
+              <div className="flex-1 overflow-hidden p-3 pt-4">
+                <TreeExplorer />
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-[#8b949e]">
+              <div className="w-12 h-12 mb-4 opacity-50 flex items-center justify-center rounded-full bg-[#21262d]">
+                <Menu size={24} />
+              </div>
+              <h3 className="text-[#c9d1d9] font-bold text-sm mb-1">No Repository</h3>
+              <p className="text-xs">Analyzing architecture and calculating metrics...</p>
+            </div>
+          )}
         </ResizablePanel>
 
         {/* Center Canvas */}
