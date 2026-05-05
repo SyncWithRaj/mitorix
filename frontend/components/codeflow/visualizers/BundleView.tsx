@@ -1,0 +1,168 @@
+"use client";
+
+import React, { useEffect, useRef } from "react";
+import * as d3 from "d3";
+import { useCodeflow } from "../../../context/CodeflowContext";
+import { COLORS } from "../../../lib/codeflow.constants";
+
+export default function BundleView() {
+  const { analysisData, folderFilter, setSelectedFile } = useCodeflow();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!analysisData || !containerRef.current) return;
+
+    const container = d3.select(containerRef.current);
+    container.selectAll('*').remove();
+
+    const w = containerRef.current.clientWidth || 800;
+    const h = containerRef.current.clientHeight || 600;
+    const radius = Math.min(w, h) / 2 - 120;
+
+    const svg = container.append('svg').attr('width', w).attr('height', h).style('cursor', 'grab');
+    const g = svg.append('g').attr('transform', `translate(${w / 2},${h / 2})`);
+
+    const zoom = d3.zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.4, 3])
+      .on('zoom', (e) => {
+        g.attr('transform', `translate(${w / 2 + e.transform.x},${h / 2 + e.transform.y}) scale(${e.transform.k})`);
+        svg.style('cursor', e.transform.k > 1 ? 'grab' : 'default');
+      });
+
+    svg.call(zoom);
+
+    const filteredFiles = folderFilter 
+      ? analysisData.files.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
+      : analysisData.files;
+
+    const files = filteredFiles.slice(0, 100);
+    const filePaths = new Set(files.map(f => f.path));
+
+    const hier: any = { name: 'root', children: [] };
+    const folderMap: Record<string, any> = {};
+
+    files.forEach(f => {
+      const folder = f.folder || 'root';
+      if (!folderMap[folder]) {
+        folderMap[folder] = { name: folder.split('/').pop() || 'root', fullPath: folder, children: [] };
+      }
+      folderMap[folder].children.push({ name: f.name, path: f.path, folder });
+    });
+
+    hier.children = Object.values(folderMap);
+
+    const root = d3.hierarchy(hier);
+    const cluster = d3.cluster().size([2 * Math.PI, radius]);
+    cluster(root);
+
+    const nodeByPath: Record<string, any> = {};
+    root.leaves().forEach((d: any) => { nodeByPath[d.data.path] = d; });
+
+    const links: any[] = [];
+    analysisData.connections.forEach(c => {
+      const src = c.source;
+      const tgt = c.target;
+      if (filePaths.has(src) && filePaths.has(tgt) && src !== tgt) {
+        if (nodeByPath[src] && nodeByPath[tgt]) {
+          links.push(nodeByPath[src].path(nodeByPath[tgt]));
+        }
+      }
+    });
+
+    const line = d3.lineRadial<any>()
+      .curve(d3.curveBundle.beta(0.85))
+      .radius(d => d.y)
+      .angle(d => d.x);
+
+    const link = g.append('g')
+      .selectAll('path.bundle-link')
+      .data(links)
+      .join('path')
+      .attr('class', 'bundle-link')
+      .attr('d', line)
+      .attr('fill', 'none')
+      .attr('stroke', '#30363d')
+      .attr('stroke-width', 1.5)
+      .attr('stroke-opacity', 0.4);
+
+    const node = g.append('g')
+      .selectAll('g.bundle-node')
+      .data(root.leaves())
+      .join('g')
+      .attr('class', 'bundle-node')
+      .attr('transform', (d: any) => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`)
+      .style('cursor', 'pointer');
+
+    node.append('circle')
+      .attr('r', 4)
+      .attr('fill', (d: any) => {
+        const folderIdx = analysisData.folders.indexOf(d.data.folder) || 0;
+        return COLORS[folderIdx % COLORS.length] || COLORS[0];
+      });
+
+    node.append('text')
+      .attr('dy', '0.31em')
+      .attr('x', (d: any) => d.x < Math.PI ? 6 : -6)
+      .attr('text-anchor', (d: any) => d.x < Math.PI ? 'start' : 'end')
+      .attr('transform', (d: any) => d.x >= Math.PI ? 'rotate(180)' : null)
+      .attr('fill', '#8b949e')
+      .attr('font-size', '10px')
+      .attr('font-family', '"JetBrains Mono", monospace')
+      .text((d: any) => {
+        const n = d.data.name.replace(/\.[^.]+$/, '');
+        return n.length > 18 ? n.slice(0, 16) + '…' : n;
+      });
+
+    node.on('mouseenter', function(e, d: any) {
+      d3.select(this).select('text').attr('fill', '#c9d1d9').attr('font-weight', 'bold');
+      d3.select(this).select('circle').attr('r', 6).attr('fill', '#58a6ff');
+
+      link
+        .attr('stroke', l => {
+          if (l[0] === d) return '#58a6ff'; // outgoing
+          if (l[l.length - 1] === d) return '#ff7b72'; // incoming
+          return '#30363d';
+        })
+        .attr('stroke-opacity', l => l[0] === d || l[l.length - 1] === d ? 0.8 : 0.05)
+        .attr('stroke-width', l => l[0] === d || l[l.length - 1] === d ? 2 : 1)
+        .raise();
+    })
+    .on('mouseleave', function() {
+      d3.select(this).select('text').attr('fill', '#8b949e').attr('font-weight', 'normal');
+      d3.select(this).select('circle').attr('r', 4).attr('fill', (d: any) => {
+        const folderIdx = analysisData.folders.indexOf(d.data.folder) || 0;
+        return COLORS[folderIdx % COLORS.length] || COLORS[0];
+      });
+
+      link
+        .attr('stroke', '#30363d')
+        .attr('stroke-opacity', 0.4)
+        .attr('stroke-width', 1.5);
+    })
+    .on('click', (e, d: any) => {
+      e.stopPropagation();
+      setSelectedFile(d.data.path);
+    });
+
+    // Custom toolbar events
+    const handleZoomIn = () => svg.transition().duration(300).call(zoom.scaleBy, 1.3);
+    const handleZoomOut = () => svg.transition().duration(300).call(zoom.scaleBy, 1 / 1.3);
+    const handleResetZoom = () => svg.transition().duration(300).call(zoom.scaleTo, 1);
+    const handleFitView = () => svg.transition().duration(300).call(zoom.scaleTo, 1);
+
+    window.addEventListener("codeflow:zoomIn", handleZoomIn);
+    window.addEventListener("codeflow:zoomOut", handleZoomOut);
+    window.addEventListener("codeflow:resetZoom", handleResetZoom);
+    window.addEventListener("codeflow:fitView", handleFitView);
+
+    return () => {
+      window.removeEventListener("codeflow:zoomIn", handleZoomIn);
+      window.removeEventListener("codeflow:zoomOut", handleZoomOut);
+      window.removeEventListener("codeflow:resetZoom", handleResetZoom);
+      window.removeEventListener("codeflow:fitView", handleFitView);
+    };
+
+  }, [analysisData, folderFilter, setSelectedFile]);
+
+  return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
+}
