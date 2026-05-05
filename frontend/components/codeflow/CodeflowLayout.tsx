@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useCodeflow } from "../../context/CodeflowContext";
+import type { RightTab } from "../../context/CodeflowContext";
 import api from "../../lib/axios";
 import toast from "react-hot-toast";
 import ResizablePanel from "./ResizablePanel";
@@ -19,6 +20,12 @@ import DendrogramView from "./visualizers/DendrogramView";
 import SankeyView from "./visualizers/SankeyView";
 import DisjointView from "./visualizers/DisjointView";
 import BundleView from "./visualizers/BundleView";
+import FileInspector from "./panels/FileInspector";
+import IssuesPanel from "./panels/IssuesPanel";
+import PatternsPanel from "./panels/PatternsPanel";
+import SecurityPanel from "./panels/SecurityPanel";
+import SuggestionsPanel from "./panels/SuggestionsPanel";
+import DrillDownModal from "./panels/DrillDownModal";
 
 export default function CodeflowLayout({
   repoId,
@@ -27,7 +34,7 @@ export default function CodeflowLayout({
   repoId: string;
   children: React.ReactNode;
 }) {
-  const { analysisData, setAnalysisData, setIsLoading, graphConfig } = useCodeflow();
+  const { analysisData, setAnalysisData, setIsLoading, graphConfig, selectedFile, rightTab, setRightTab, setDrillDown } = useCodeflow();
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
 
@@ -51,6 +58,28 @@ export default function CodeflowLayout({
 
     fetchAnalysis();
   }, [repoId, setAnalysisData, setIsLoading]);
+
+  const tabs: { key: RightTab; label: string; badge?: number }[] = [
+    {
+      key: "details",
+      label: selectedFile ? "FILE" : "ISSUES",
+    },
+    {
+      key: "patterns",
+      label: "PATTERNS",
+      badge: analysisData?.patterns?.length,
+    },
+    {
+      key: "security",
+      label: "SECURITY",
+      badge: analysisData?.stats?.security,
+    },
+    {
+      key: "suggestions",
+      label: "ACTIONS",
+      badge: analysisData?.suggestions?.length,
+    },
+  ];
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-[#0d1117] text-[#c9d1d9] overflow-hidden font-mono">
@@ -129,7 +158,7 @@ export default function CodeflowLayout({
         >
           {analysisData ? (
             <div className="flex flex-col h-full bg-[#0d1117]">
-              {/* Upper Section: Fixed/Scrollable logic similar to index.html */}
+              {/* Upper Section */}
               <div className="flex-none p-4 space-y-5 border-b border-[#30363d] overflow-y-auto max-h-[65%] custom-scrollbar">
                 <HealthRing 
                   score={analysisData.health?.score || 0} 
@@ -180,29 +209,56 @@ export default function CodeflowLayout({
           maxWidth={500}
           className={`${rightOpen ? 'flex absolute inset-y-0 right-0 z-40' : 'hidden'} lg:relative lg:flex`}
         >
-          <div className="flex border-b border-[#30363d] bg-[#161b22]">
-            <button className="flex-1 py-2 text-[10px] font-bold text-[#58a6ff] border-b-2 border-[#58a6ff]">
-              INSPECTOR
-            </button>
-            <button className="flex-1 py-2 text-[10px] font-bold text-[#8b949e] hover:text-[#c9d1d9] border-b-2 border-transparent hover:border-[#30363d]">
-              ISSUES
-            </button>
+          {/* Tab Bar */}
+          <div className="flex border-b border-[#30363d] bg-[#161b22] shrink-0">
+            {tabs.map(tab => (
+              <button
+                key={tab.key}
+                className={`flex-1 py-2 text-[10px] font-bold transition flex items-center justify-center gap-1 ${
+                  rightTab === tab.key
+                    ? "text-[#58a6ff] border-b-2 border-[#58a6ff]"
+                    : "text-[#8b949e] hover:text-[#c9d1d9] border-b-2 border-transparent hover:border-[#30363d]"
+                }`}
+                onClick={() => { setRightTab(tab.key); setDrillDown(null); }}
+              >
+                {tab.label}
+                {tab.badge !== undefined && tab.badge > 0 && (
+                  <span className={`ml-1 px-1 py-0 rounded text-[8px] font-bold ${
+                    tab.key === "security" && tab.badge > 0
+                      ? "bg-red-500/20 text-red-400"
+                      : "bg-[#30363d] text-[#8b949e]"
+                  }`}>
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
-          <div className="flex-1 overflow-y-auto p-3 bg-[#0d1117]">
-             <div className="text-xs text-[#c9d1d9] italic opacity-50 mb-4">Right Panel components pending Phase 6</div>
-             
-             {/* Temporary placeholder cards */}
-             <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 mb-2">
-               <h3 className="text-xs font-semibold mb-1">Impact Analysis</h3>
-               <div className="h-16 bg-[#0d1117] border border-[#30363d] rounded opacity-30 mt-2"></div>
-             </div>
-             <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 mb-2">
-               <h3 className="text-xs font-semibold mb-1">Patterns</h3>
-               <div className="h-24 bg-[#0d1117] border border-[#30363d] rounded opacity-30 mt-2"></div>
-             </div>
+
+          {/* Panel Content */}
+          <div className="flex-1 overflow-y-auto p-3 bg-[#0d1117] custom-scrollbar">
+            {analysisData ? (
+              <>
+                {rightTab === "details" && (
+                  selectedFile ? <FileInspector /> : <IssuesPanel />
+                )}
+                {rightTab === "patterns" && <PatternsPanel />}
+                {rightTab === "security" && <SecurityPanel />}
+                {rightTab === "suggestions" && <SuggestionsPanel />}
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-[#8b949e]">
+                <div className="text-3xl mb-3 opacity-30">📊</div>
+                <div className="text-xs font-semibold mb-1">Analysis</div>
+                <div className="text-[10px] text-center opacity-60">Analyze a repo to see insights</div>
+              </div>
+            )}
           </div>
         </ResizablePanel>
       </div>
+
+      {/* Drill-Down Modal */}
+      <DrillDownModal />
     </div>
   );
 }
