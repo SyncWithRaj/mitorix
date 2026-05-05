@@ -1,88 +1,357 @@
 "use client";
 
-import React, { useEffect, useRef, useMemo, useState } from "react";
-import dynamic from "next/dynamic";
+import React, { useEffect, useRef } from "react";
 import { useCodeflow } from "../../context/CodeflowContext";
 import { COLORS, LAYER_COLORS } from "../../lib/codeflow.constants";
 import * as d3 from "d3";
 
-// Dynamically import ForceGraph2D
-const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), { ssr: false });
-
 export default function ForceGraph() {
   const { analysisData, colorMode, graphConfig, setHoveredNode, folderFilter, blastRadius, setSelectedFile } = useCodeflow();
-  const fgRef = useRef<any>(null);
-  const [graphData, setGraphData] = useState<{ nodes: any[]; links: any[] }>({ nodes: [], links: [] });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const simRef = useRef<any>(null);
 
-  // Transform AnalysisData into ForceGraph node/link format
   useEffect(() => {
-    if (!analysisData) return;
+    if (!analysisData || !containerRef.current) return;
 
-    const filteredFiles = folderFilter 
-      ? analysisData.files.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
+    const el = containerRef.current;
+    // Clean up previous
+    d3.select(el).selectAll('*').remove();
+
+    const w = el.clientWidth || 800;
+    const h = el.clientHeight || 600;
+
+    // --- Data preparation (identical to index.html) ---
+    const filteredFiles = folderFilter
+      ? analysisData.files.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/'))
       : analysisData.files;
 
     const fileIds = new Set(filteredFiles.map(f => f.path));
 
-    const nodes = filteredFiles.map(f => ({
+    const nodes: any[] = filteredFiles.map(f => ({
       id: f.path,
       name: f.name,
       folder: f.folder,
       fnCount: f.functions?.length || 0,
       layer: f.layer,
       churn: f.churn || 0,
-      val: Math.max(8, Math.min(24, 5 + (f.functions?.length || 0) * 0.8)),
     }));
 
-    const linkMap = new Map();
+    const linkMap = new Map<string, any>();
     analysisData.connections.forEach(c => {
       if (!fileIds.has(c.source) || !fileIds.has(c.target)) return;
-      if (c.source === c.target) return; // Skip self-links
-      
+      if (c.source === c.target) return;
       const k = `${c.source}|${c.target}`;
-      if (!linkMap.has(k)) {
-        linkMap.set(k, { source: c.source, target: c.target, count: 0 });
+      if (!linkMap.has(k)) linkMap.set(k, { source: c.source, target: c.target, count: 0 });
+      linkMap.get(k)!.count += c.count;
+    });
+    const links = Array.from(linkMap.values());
+
+    // --- Helpers (identical to index.html) ---
+    function getR(d: any) { return Math.max(8, Math.min(24, 5 + d.fnCount * 0.8)); }
+
+    const colorMap: Record<string, string> = {};
+    if (colorMode === 'folder') {
+      analysisData.folders.forEach((f, i) => { colorMap[f] = COLORS[i % COLORS.length]; });
+      colorMap['root'] = COLORS[0];
+    } else if (colorMode === 'layer') {
+      analysisData.files.forEach(f => { colorMap[f.path] = LAYER_COLORS[f.layer] || COLORS[0]; });
+    } else if (colorMode === 'churn') {
+      const maxC = Math.max(...analysisData.files.map(f => f.churn || 0)) || 1;
+      analysisData.files.forEach(f => {
+        const r = (f.churn || 0) / maxC;
+        colorMap[f.path] = r > 0.7 ? '#ff5f5f' : r > 0.4 ? '#ff9f43' : '#22c55e';
+      });
+    }
+
+    function getC(d: any) {
+      if (blastRadius) {
+        if (d.id === blastRadius.targetId) return '#ffffff';
+        if (blastRadius.affectedNodeIds.has(d.id)) return '#ff5858';
+        return '#30363d';
       }
-      linkMap.get(k).count += c.count;
+      if (colorMode === 'folder') return colorMap[d.folder] || COLORS[0];
+      if (colorMode === 'layer') return LAYER_COLORS[d.layer] || LAYER_COLORS['unknown'];
+      if (colorMode === 'churn') return colorMap[d.id] || '#22c55e';
+      return COLORS[0];
+    }
+
+    // --- Folder centers (identical to index.html) ---
+    const folders = [...new Set(nodes.map(n => n.folder))];
+    const cols = Math.max(2, Math.ceil(Math.sqrt(folders.length)));
+    const cw = w / (cols + 1);
+    const ch = h / (Math.ceil(folders.length / cols) + 1);
+    const centers: Record<string, { x: number; y: number }> = {};
+    folders.forEach((f, i) => {
+      centers[f] = { x: (i % cols + 1) * cw, y: (Math.floor(i / cols) + 1) * ch };
     });
 
-    const links = Array.from(linkMap.values());
-    setGraphData({ nodes, links });
-    
-  }, [analysisData, folderFilter]);
+    // --- SVG Setup ---
+    const svg = d3.select(el).append('svg')
+      .attr('width', w)
+      .attr('height', h)
+      .style('cursor', 'grab')
+      .style('background', '#0a0a0f');
 
-  // Adjust force graph physics
-  useEffect(() => {
-    if (fgRef.current && graphData.nodes.length > 0) {
-      fgRef.current.d3Force('charge').strength(-graphConfig.spacing);
-      fgRef.current.d3Force('link').distance(graphConfig.linkDist);
-      fgRef.current.d3Force('center', d3.forceCenter(0, 0));
-      
-      // Reheat simulation
-      fgRef.current.d3ReheatSimulation();
-    }
-  }, [graphData, graphConfig.spacing, graphConfig.linkDist]);
+    const container = svg.append('g');
+    const defs = svg.append('defs');
+    defs.append('marker')
+      .attr('id', 'arr')
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 14)
+      .attr('markerWidth', 4)
+      .attr('markerHeight', 4)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-4L10,0L0,4')
+      .attr('fill', '#444');
 
-  const getColor = (node: any) => {
-    if (blastRadius) {
-      if (node.id === blastRadius.targetId) return "#ffffff";
-      if (blastRadius.affectedNodeIds.has(node.id)) return "#ff5858";
-      return "#30363d"; // Dim unaffected
+    const hullLayer = container.append('g');
+    const linkLayer = container.append('g');
+    const nodeLayer = container.append('g');
+
+    // --- Zoom ---
+    const zoom = d3.zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.2, 5])
+      .on('zoom', (e) => { container.attr('transform', e.transform); });
+    svg.call(zoom);
+
+    // --- Force Simulation (identical to index.html) ---
+    const sim = d3.forceSimulation(nodes);
+
+    if (graphConfig.viewMode === 'force') {
+      sim
+        .force('link', d3.forceLink(links).id((d: any) => d.id).distance(graphConfig.linkDist).strength(0.3))
+        .force('charge', d3.forceManyBody().strength(-graphConfig.spacing).distanceMax(400))
+        .force('collision', d3.forceCollide().radius((d: any) => getR(d) + 12))
+        .force('x', d3.forceX((d: any) => centers[d.folder] ? centers[d.folder].x : w / 2).strength(0.15))
+        .force('y', d3.forceY((d: any) => centers[d.folder] ? centers[d.folder].y : h / 2).strength(0.15));
+    } else if (graphConfig.viewMode === 'radial') {
+      const r = Math.min(w, h) * 0.35;
+      nodes.forEach((n, i) => {
+        n.angle = i / nodes.length * 2 * Math.PI;
+        n.targetX = w / 2 + Math.cos(n.angle) * r;
+        n.targetY = h / 2 + Math.sin(n.angle) * r;
+      });
+      sim
+        .force('link', d3.forceLink(links).id((d: any) => d.id).distance(graphConfig.linkDist * 0.5).strength(0.05))
+        .force('charge', d3.forceManyBody().strength(-graphConfig.spacing * 0.3))
+        .force('collision', d3.forceCollide().radius((d: any) => getR(d) + 8))
+        .force('x', d3.forceX((d: any) => d.targetX).strength(0.8))
+        .force('y', d3.forceY((d: any) => d.targetY).strength(0.8));
+    } else if (graphConfig.viewMode === 'hierarchical') {
+      const layerOrder: Record<string, number> = { util: 0, model: 1, service: 2, controller: 3, view: 4, test: 5, config: 6, modules: 7, forms: 8, classes: 9 };
+      const layerGroups: Record<string, any[]> = {};
+      nodes.forEach(n => { const l = n.layer || 'util'; if (!layerGroups[l]) layerGroups[l] = []; layerGroups[l].push(n); });
+      const sortedLayers = Object.keys(layerGroups).sort((a, b) => (layerOrder[a] || 99) - (layerOrder[b] || 99));
+      sortedLayers.forEach((l, li) => {
+        const g = layerGroups[l];
+        const colW = w / (sortedLayers.length + 1);
+        g.forEach((n, ni) => { n.targetX = (li + 1) * colW; n.targetY = (ni + 1) * h / (g.length + 1); });
+      });
+      sim
+        .force('link', d3.forceLink(links).id((d: any) => d.id).distance(graphConfig.linkDist).strength(0.1))
+        .force('charge', d3.forceManyBody().strength(-graphConfig.spacing * 0.5).distanceMax(200))
+        .force('collision', d3.forceCollide().radius((d: any) => getR(d) + 10))
+        .force('x', d3.forceX((d: any) => d.targetX || w / 2).strength(0.9))
+        .force('y', d3.forceY((d: any) => d.targetY || h / 2).strength(0.3));
+    } else if (graphConfig.viewMode === 'grid') {
+      const gridCols = Math.ceil(Math.sqrt(nodes.length));
+      const cellW = w / (gridCols + 1);
+      const cellH = h / (Math.ceil(nodes.length / gridCols) + 1);
+      nodes.forEach((n, i) => { n.targetX = (i % gridCols + 1) * cellW; n.targetY = (Math.floor(i / gridCols) + 1) * cellH; });
+      sim
+        .force('link', d3.forceLink(links).id((d: any) => d.id).distance(graphConfig.linkDist * 1.5).strength(0.02))
+        .force('collision', d3.forceCollide().radius((d: any) => getR(d) + 15))
+        .force('x', d3.forceX((d: any) => d.targetX).strength(1))
+        .force('y', d3.forceY((d: any) => d.targetY).strength(1));
+    } else if (graphConfig.viewMode === 'metro') {
+      const roots = nodes.filter(n => !links.some(l => (l.target.id || l.target) === n.id));
+      if (!roots.length && nodes.length) roots.push(nodes[0]);
+      const lineY = 80;
+      const lineSpacing = Math.min(120, (h - 160) / Math.max(1, roots.length));
+      roots.forEach((root, li) => {
+        const visited = new Set<string>();
+        const queue = [root.id];
+        let x = 80;
+        while (queue.length) {
+          const id = queue.shift()!;
+          if (visited.has(id)) continue;
+          visited.add(id);
+          const node = nodes.find(n => n.id === id);
+          if (node) { node.targetX = x; node.targetY = lineY + li * lineSpacing; x += graphConfig.spacing * 0.8; }
+          links.forEach(l => {
+            const s = l.source.id || l.source;
+            const t = l.target.id || l.target;
+            if (s === id && !visited.has(t)) queue.push(t);
+          });
+        }
+      });
+      nodes.filter(n => !n.targetX).forEach((n, i) => { n.targetX = 80 + i * 50; n.targetY = h - 80; });
+      sim
+        .force('link', d3.forceLink(links).id((d: any) => d.id).distance(graphConfig.linkDist).strength(0.05))
+        .force('collision', d3.forceCollide().radius((d: any) => getR(d) + 12))
+        .force('x', d3.forceX((d: any) => d.targetX || w / 2).strength(0.95))
+        .force('y', d3.forceY((d: any) => d.targetY || h / 2).strength(0.95));
     }
-    
-    if (colorMode === "folder") {
-      const folderIdx = analysisData?.folders.indexOf(node.folder) ?? 0;
-      return COLORS[folderIdx % COLORS.length] || COLORS[0];
+
+    // Adaptive simulation parameters
+    const isLargeGraph = nodes.length > 300;
+    sim.velocityDecay(isLargeGraph ? 0.7 : 0.6).alphaDecay(isLargeGraph ? 0.08 : 0.05);
+    simRef.current = sim;
+
+    // --- Links ---
+    const link = linkLayer.selectAll('path')
+      .data(links)
+      .join('path')
+      .attr('fill', 'none')
+      .attr('stroke', '#333')
+      .attr('stroke-width', (d: any) => Math.max(1, Math.min(2, Math.sqrt(d.count) * 0.3)))
+      .attr('stroke-opacity', 0.4)
+      .attr('marker-end', 'url(#arr)');
+
+    // --- Nodes ---
+    const node = nodeLayer.selectAll<SVGGElement, any>('g')
+      .data(nodes)
+      .join('g')
+      .style('cursor', 'pointer');
+
+    // Drag
+    node.call(d3.drag<SVGGElement, any>()
+      .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.1).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+      .on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }) as any);
+
+    // Click
+    node.on('click', (e, d) => { e.stopPropagation(); setSelectedFile(d.id); });
+
+    // Hover
+    node.on('mouseenter', (e, d) => {
+      setHoveredNode(d);
+    }).on('mouseleave', () => {
+      setHoveredNode(null);
+    });
+
+    // Clear selection on background click
+    svg.on('click', (e) => {
+      if (e.target === svg.node()) {
+        setSelectedFile(null);
+      }
+    });
+
+    // Node circles
+    node.append('circle')
+      .attr('class', 'nc')
+      .attr('r', getR)
+      .attr('fill', getC)
+      .attr('stroke', (d: any) => {
+        const c = d3.color(getC(d));
+        return c ? c.brighter(0.3).formatHex() : '#fff';
+      })
+      .attr('stroke-width', 1.5);
+
+    // Labels
+    if (!isLargeGraph || graphConfig.showLabels) {
+      node.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', 0)
+        .attr('fill', '#eee')
+        .attr('font-size', (d: any) => Math.max(6, Math.min(10, getR(d) * 0.6)) + 'px')
+        .attr('font-family', '"JetBrains Mono", monospace')
+        .attr('font-weight', '500')
+        .attr('pointer-events', 'none')
+        .text((d: any) => {
+          const n = d.name.replace(/\.[^.]+$/, '');
+          const maxLen = Math.max(4, Math.floor(getR(d) / 2));
+          return n.length > maxLen + 1 ? n.slice(0, maxLen) + '…' : n;
+        });
     }
-    if (colorMode === "layer") {
-      return LAYER_COLORS[node.layer] || LAYER_COLORS["unknown"];
+
+    // --- Hulls (identical to index.html) ---
+    const nodesByFolder: Record<string, any[]> = {};
+    folders.forEach(f => { nodesByFolder[f] = nodes.filter(n => n.folder === f); });
+
+    function updateHulls() {
+      hullLayer.selectAll('*').remove();
+      folders.forEach(f => {
+        const fn = nodesByFolder[f];
+        if (!fn || fn.length < 1) return;
+        const pad = 30;
+        const pts: [number, number][] = [];
+        fn.forEach(n => {
+          if (n.x && n.y) {
+            pts.push([n.x - pad, n.y - pad], [n.x + pad, n.y - pad], [n.x - pad, n.y + pad], [n.x + pad, n.y + pad]);
+          }
+        });
+        if (pts.length < 3) return;
+        const hull = d3.polygonHull(pts);
+        if (hull) {
+          const color = colorMap[f] || COLORS[folders.indexOf(f) % COLORS.length];
+          hullLayer.append('path')
+            .attr('d', 'M' + hull.join('L') + 'Z')
+            .attr('fill', color)
+            .attr('fill-opacity', 0.04)
+            .attr('stroke', color)
+            .attr('stroke-width', 2)
+            .attr('stroke-opacity', 0.25)
+            .attr('rx', 8);
+          const cx = d3.mean(fn, (n: any) => n.x);
+          const cy = (d3.min(fn, (n: any) => n.y) || 0) - pad - 8;
+          hullLayer.append('text')
+            .attr('x', cx || 0)
+            .attr('y', cy)
+            .attr('text-anchor', 'middle')
+            .attr('fill', color)
+            .attr('font-size', '10px')
+            .attr('font-family', '"JetBrains Mono", monospace')
+            .attr('font-weight', '600')
+            .attr('opacity', 0.7)
+            .text(f || 'root');
+        }
+      });
     }
-    if (colorMode === "churn") {
-      const r = (node.churn || 0) / 10; // simplistic normalization for now
-      return r > 0.7 ? "#ff5f5f" : r > 0.4 ? "#ff9f43" : "#22c55e";
-    }
-    return COLORS[0];
-  };
+
+    // --- Tick ---
+    const hullInterval = isLargeGraph ? 5 : 1;
+    let tickCount = 0;
+
+    sim.on('tick', () => {
+      if (graphConfig.curvedLinks) {
+        link.attr('d', (d: any) => {
+          const dx = d.target.x - d.source.x;
+          const dy = d.target.y - d.source.y;
+          const dr = Math.sqrt(dx * dx + dy * dy);
+          return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+        });
+      } else {
+        link.attr('d', (d: any) => `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`);
+      }
+      node.attr('transform', (d: any) => `translate(${d.x},${d.y})`);
+      tickCount++;
+      if (tickCount % hullInterval === 0) updateHulls();
+    });
+
+    // Labels visibility
+    node.selectAll('text').attr('opacity', graphConfig.showLabels ? 1 : 0);
+
+    // --- Toolbar events ---
+    const handleZoomIn = () => svg.transition().duration(300).call(zoom.scaleBy, 1.3);
+    const handleZoomOut = () => svg.transition().duration(300).call(zoom.scaleBy, 1 / 1.3);
+    const handleResetZoom = () => svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+    const handleFitView = () => svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+
+    window.addEventListener("codeflow:zoomIn", handleZoomIn);
+    window.addEventListener("codeflow:zoomOut", handleZoomOut);
+    window.addEventListener("codeflow:resetZoom", handleResetZoom);
+    window.addEventListener("codeflow:fitView", handleFitView);
+
+    return () => {
+      sim.stop();
+      window.removeEventListener("codeflow:zoomIn", handleZoomIn);
+      window.removeEventListener("codeflow:zoomOut", handleZoomOut);
+      window.removeEventListener("codeflow:resetZoom", handleResetZoom);
+      window.removeEventListener("codeflow:fitView", handleFitView);
+    };
+  }, [analysisData, colorMode, graphConfig, folderFilter, blastRadius, setHoveredNode, setSelectedFile]);
 
   if (!analysisData) {
     return (
@@ -92,84 +361,5 @@ export default function ForceGraph() {
     );
   }
 
-  return (
-    <div className="w-full h-full relative overflow-hidden bg-[#0a0a0f]">
-      <ForceGraph2D
-        ref={fgRef}
-        graphData={graphData}
-        nodeId="id"
-        nodeVal="val"
-        onNodeHover={(node: any) => {
-          setHoveredNode(node);
-          if (node) {
-            document.body.style.cursor = 'pointer';
-          } else {
-            document.body.style.cursor = '';
-          }
-        }}
-        onNodeClick={(node: any) => {
-          setSelectedFile(node.id);
-        }}
-        onBackgroundClick={() => {
-          setSelectedFile(null);
-        }}
-        nodeCanvasObject={(node: any, ctx, globalScale) => {
-          const color = getColor(node);
-          const r = Math.sqrt(Math.max(4, node.val)) * 1.5;
-
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
-          ctx.fillStyle = color;
-          ctx.fill();
-
-          // Stroke highlighting for blast radius or selection
-          if (blastRadius && node.id === blastRadius.targetId) {
-            ctx.strokeStyle = '#e3b341';
-            ctx.lineWidth = 3 / globalScale;
-            ctx.stroke();
-          } else if (blastRadius && blastRadius.affectedNodeIds.has(node.id)) {
-            ctx.strokeStyle = '#ff5858';
-            ctx.lineWidth = 2 / globalScale;
-            ctx.stroke();
-          }
-
-          // Labels
-          if (graphConfig.showLabels && (globalScale >= 1.2 || node.val > 15)) {
-            const fontSize = 10 / globalScale;
-            const textY = node.y + r + fontSize / 2 + 2;
-            
-            ctx.font = `${fontSize}px "JetBrains Mono", monospace`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            let textColor = blastRadius && !blastRadius.affectedNodeIds.has(node.id) 
-              ? "rgba(255,255,255,0.1)" 
-              : '#c9d1d9';
-            
-            ctx.fillStyle = textColor;
-            ctx.fillText(node.name, node.x, textY);
-          }
-        }}
-        linkColor={(link: any) => {
-          if (blastRadius) {
-            const sId = link.source?.id || link.source;
-            const tId = link.target?.id || link.target;
-            if (blastRadius.affectedNodeIds.has(sId) && blastRadius.affectedNodeIds.has(tId)) {
-              return "rgba(255, 88, 88, 0.8)";
-            }
-            return "rgba(255, 255, 255, 0.05)";
-          }
-          return "rgba(139, 148, 158, 0.3)";
-        }}
-        linkWidth={(link: any) => {
-           return Math.max(1, Math.min(3, Math.sqrt(link.count) * 0.5));
-        }}
-        linkDirectionalArrowLength={(link: any) => {
-           if (blastRadius && !blastRadius.affectedNodeIds.has(link.source?.id || link.source)) return 0;
-           return 4;
-        }}
-        linkDirectionalArrowRelPos={1}
-      />
-    </div>
-  );
+  return <div ref={containerRef} className="w-full h-full relative overflow-hidden bg-[#0a0a0f]" />;
 }
