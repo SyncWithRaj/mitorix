@@ -12,6 +12,7 @@ import vectorInitRoutes from "./routes/vectorInit.route.js";
 import fileRoute from "./routes/file.routes.js";
 import callRoutes from "./routes/call.route.js";
 import historyRoutes from "./routes/history.route.js";
+import codeflowRoutes from "./routes/codeflow.routes.js";
 
 import { errorHandler } from "./middlewares/error.middleware.js";
 
@@ -44,6 +45,7 @@ app.use("/api/v1/vector", vectorInitRoutes);
 app.use("/api/v1/files", fileRoute);
 app.use("/api/v1/call", callRoutes);
 app.use("/api/v1/history", historyRoutes);
+app.use("/api/v1/codeflow", codeflowRoutes);
 
 app.use(errorHandler);
 
