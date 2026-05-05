@@ -6,7 +6,7 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function BundleView() {
-  const { analysisData, folderFilter, setSelectedFile } = useCodeflow();
+  const { analysisData, folderFilter, selectFile } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -141,7 +141,7 @@ export default function BundleView() {
     })
     .on('click', (e, d: any) => {
       e.stopPropagation();
-      setSelectedFile(d.data.path);
+      selectFile(d.data.path);
     });
 
     // Custom toolbar events
@@ -162,7 +162,7 @@ export default function BundleView() {
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
 
-  }, [analysisData, folderFilter, setSelectedFile]);
+  }, [analysisData, folderFilter, selectFile]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }

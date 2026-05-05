@@ -104,7 +104,7 @@ const TreeNode = ({
 };
 
 export default function TreeExplorer() {
-  const { analysisData, selectedFile, setSelectedFile, folderFilter, setFolderFilter } = useCodeflow();
+  const { analysisData, selectedFile, selectFile, folderFilter, setFolderFilter } = useCodeflow();
   
   // Track expanded folder paths
   const [expandedPaths, setExpandedPaths] = useState<Record<string, boolean>>({
@@ -137,7 +137,7 @@ export default function TreeExplorer() {
         <TreeNode
           node={analysisData.tree as FolderTree}
           selectedFile={selectedFile}
-          onSelect={setSelectedFile}
+          onSelect={selectFile}
           expandedPaths={expandedPaths}
           togglePath={togglePath}
           folderFilter={folderFilter}

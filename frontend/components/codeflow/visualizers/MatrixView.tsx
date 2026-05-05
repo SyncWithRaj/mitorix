@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import { useCodeflow } from "../../../context/CodeflowContext";
 
 export default function MatrixView() {
-  const { analysisData, folderFilter, setSelectedFile } = useCodeflow();
+  const { analysisData, folderFilter, selectFile } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export default function MatrixView() {
         return name.length > 12 ? name.slice(0, 10) + '…' : name;
       })
       .style('cursor', 'pointer')
-      .on('click', (e, d) => setSelectedFile(d.path));
+      .on('click', (e, d) => selectFile(d.path));
 
     // Rows
     const rowLabels = g.selectAll('text.row-label')
@@ -95,7 +95,7 @@ export default function MatrixView() {
         return name.length > 12 ? name.slice(0, 10) + '…' : name;
       })
       .style('cursor', 'pointer')
-      .on('click', (e, d) => setSelectedFile(d.path));
+      .on('click', (e, d) => selectFile(d.path));
 
     const cellData: any[] = [];
     files.forEach((f, i) => {
@@ -167,7 +167,7 @@ export default function MatrixView() {
     })
     .on('click', (e, d: any) => {
       e.stopPropagation();
-      setSelectedFile(d.source.path);
+      selectFile(d.source.path);
     });
 
     // Custom toolbar events
@@ -188,7 +188,7 @@ export default function MatrixView() {
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
 
-  }, [analysisData, folderFilter, setSelectedFile]);
+  }, [analysisData, folderFilter, selectFile]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f] flex items-center justify-center" />;
 }

@@ -6,7 +6,7 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function DisjointView() {
-  const { analysisData, folderFilter, setSelectedFile } = useCodeflow();
+  const { analysisData, folderFilter, selectFile } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -182,7 +182,7 @@ export default function DisjointView() {
     })
     .on('click', (e, d: any) => {
       e.stopPropagation();
-      setSelectedFile(d.id);
+      selectFile(d.id);
     });
 
     sim.on('tick', () => {
@@ -213,7 +213,7 @@ export default function DisjointView() {
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
 
-  }, [analysisData, folderFilter, setSelectedFile]);
+  }, [analysisData, folderFilter, selectFile]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }

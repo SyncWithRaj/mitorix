@@ -6,7 +6,7 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function DendrogramView() {
-  const { analysisData, folderFilter, setSelectedFile, setFolderFilter } = useCodeflow();
+  const { analysisData, folderFilter, selectFile, setFolderFilter } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -149,7 +149,7 @@ export default function DendrogramView() {
     .on('click', (e, d: any) => {
       e.stopPropagation();
       if (d.data.path) {
-        setSelectedFile(d.data.path);
+        selectFile(d.data.path);
       } else if (d.data.fullPath) {
         setFolderFilter(d.data.fullPath);
       }
@@ -173,7 +173,7 @@ export default function DendrogramView() {
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
 
-  }, [analysisData, folderFilter, setSelectedFile, setFolderFilter]);
+  }, [analysisData, folderFilter, selectFile, setFolderFilter]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }

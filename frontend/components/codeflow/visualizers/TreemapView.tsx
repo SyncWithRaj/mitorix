@@ -6,7 +6,7 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function TreemapView() {
-  const { analysisData, folderFilter, colorMode, setSelectedFile, selectedFile, blastRadius } = useCodeflow();
+  const { analysisData, folderFilter, colorMode, selectFile, selectedFile, blastRadius } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -124,7 +124,7 @@ export default function TreemapView() {
     .on('mouseleave', function(e, d: any) {
       tooltip.style('display', 'none');
       const isSelected = d.data.path === selectedFile;
-      const isAffected = blastRadius && blastRadius.affectedNodeIds.has(d.data.path);
+      const isAffected = blastRadius && blastRadius.affected.includes(d.data.path);
       
       d3.select(this).select('rect')
         .transition().duration(150)
@@ -134,7 +134,7 @@ export default function TreemapView() {
     })
     .on('click', (e, d: any) => {
       e.stopPropagation();
-      if (d.data.path) setSelectedFile(d.data.path);
+      if (d.data.path) selectFile(d.data.path);
     });
 
     // Custom toolbar events
@@ -155,7 +155,7 @@ export default function TreemapView() {
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
 
-  }, [analysisData, folderFilter, colorMode, selectedFile, blastRadius, setSelectedFile]);
+  }, [analysisData, folderFilter, colorMode, selectedFile, blastRadius, selectFile]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }
