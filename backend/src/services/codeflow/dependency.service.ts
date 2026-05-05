@@ -83,17 +83,60 @@ export function buildDependencyGraph(
     }
   }
 
+  // Build a lookup of module/file names -> defining file
+  const moduleToFile: Record<string, string> = {};
+  for (const f of files) {
+    const relPath = f.path.replace(/\\/g, "/");
+    const parts = relPath.split("/");
+    const fileName = parts[parts.length - 1];
+    const fileNameNoExt = fileName.split(".")[0];
+    
+    // Index by filename
+    moduleToFile[fileName] = f.path;
+    moduleToFile[fileNameNoExt] = f.path;
+    
+    // Index by relative module path (e.g. services/rag or services.rag)
+    const repoMarker = "/tmp/repolens-repos/";
+    if (f.path.includes(repoMarker)) {
+      const subPath = f.path.split(repoMarker)[1];
+      const repoPathParts = subPath.split("/");
+      if (repoPathParts.length > 2) {
+        // repoPathParts[0] is user id, [1] is repo id, [2+] is the actual project path
+        const projectParts = repoPathParts.slice(2);
+        for (let j = 0; j < projectParts.length; j++) {
+          const suffixParts = projectParts.slice(j);
+          const suffix = suffixParts.join("/");
+          const suffixNoExt = suffix.includes(".") ? suffix.split(".").slice(0, -1).join(".") : suffix;
+          
+          if (!moduleToFile[suffix]) moduleToFile[suffix] = f.path;
+          if (!moduleToFile[suffixNoExt]) moduleToFile[suffixNoExt] = f.path;
+          const dotted = suffixNoExt.replace(/\//g, ".");
+          if (!moduleToFile[dotted]) moduleToFile[dotted] = f.path;
+        }
+      }
+    }
+  }
+
   // Build connections from relationships
   const callerMaps: Record<string, Map<string, { file: string; name: string; count: number }>> =
     Object.create(null);
 
   for (const rel of rawRelationships) {
-    if (rel.relationType !== "calls" && rel.relationType !== "imports") continue;
-    if (!rel.fromFilePath || !rel.toFilePath) continue;
-
+    if (rel.relationType !== "calls" && rel.relationType !== "imports" && rel.relationType !== "accesses") continue;
     const targetFnName = rel.toName;
-    const sourceFile = rel.fromFilePath;
-    const defFile = rel.toFilePath;
+    const sourceFile = rel.fromFilePath.replace(/\\/g, "/");
+    let defFile = rel.toFilePath ? rel.toFilePath.replace(/\\/g, "/") : null;
+
+    // Resolve missing toFilePath if possible
+    if (!defFile) {
+      if (fnToFile[targetFnName]) {
+        defFile = fnToFile[targetFnName].replace(/\\/g, "/");
+      } else if (moduleToFile[targetFnName]) {
+        defFile = moduleToFile[targetFnName].replace(/\\/g, "/");
+      }
+    }
+
+    if (!sourceFile || !defFile) continue;
 
     if (sourceFile === defFile) {
       // Internal call

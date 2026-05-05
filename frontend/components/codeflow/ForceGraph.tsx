@@ -6,7 +6,7 @@ import { COLORS, LAYER_COLORS } from "../../lib/codeflow.constants";
 import * as d3 from "d3";
 
 export default function ForceGraph() {
-  const { analysisData, colorMode, graphConfig, setHoveredNode, folderFilter, blastRadius, setSelectedFile } = useCodeflow();
+  const { analysisData, colorMode, graphConfig, setHoveredNode, folderFilter, blastRadius, selectFile, deselectFile, selectedFile } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
   const simRef = useRef<any>(null);
 
@@ -49,31 +49,8 @@ export default function ForceGraph() {
     // --- Helpers (identical to index.html) ---
     function getR(d: any) { return Math.max(8, Math.min(24, 5 + d.fnCount * 0.8)); }
 
-    const colorMap: Record<string, string> = {};
-    if (colorMode === 'folder') {
-      analysisData.folders.forEach((f, i) => { colorMap[f] = COLORS[i % COLORS.length]; });
-      colorMap['root'] = COLORS[0];
-    } else if (colorMode === 'layer') {
-      analysisData.files.forEach(f => { colorMap[f.path] = LAYER_COLORS[f.layer] || COLORS[0]; });
-    } else if (colorMode === 'churn') {
-      const maxC = Math.max(...analysisData.files.map(f => f.churn || 0)) || 1;
-      analysisData.files.forEach(f => {
-        const r = (f.churn || 0) / maxC;
-        colorMap[f.path] = r > 0.7 ? '#ff5f5f' : r > 0.4 ? '#ff9f43' : '#22c55e';
-      });
-    }
-
-    function getC(d: any) {
-      if (blastRadius) {
-        if (d.id === blastRadius.targetId) return '#ffffff';
-        if (blastRadius.affectedNodeIds.has(d.id)) return '#ff5858';
-        return '#30363d';
-      }
-      if (colorMode === 'folder') return colorMap[d.folder] || COLORS[0];
-      if (colorMode === 'layer') return LAYER_COLORS[d.layer] || LAYER_COLORS['unknown'];
-      if (colorMode === 'churn') return colorMap[d.id] || '#22c55e';
-      return COLORS[0];
-    }
+    // Colors and highlights are handled in the secondary useEffect to prevent simulation restarts
+    function getC(d: any) { return '#30363d'; } // Placeholder
 
     // --- Folder centers (identical to index.html) ---
     const folders = [...new Set(nodes.map(n => n.folder))];
@@ -200,9 +177,10 @@ export default function ForceGraph() {
     simRef.current = sim;
 
     // --- Links ---
-    const link = linkLayer.selectAll('path')
+    const link = linkLayer.selectAll('.edge-path')
       .data(links)
       .join('path')
+      .attr('class', 'edge-path')
       .attr('fill', 'none')
       .attr('stroke', '#333')
       .attr('stroke-width', (d: any) => Math.max(1, Math.min(2, Math.sqrt(d.count) * 0.3)))
@@ -222,7 +200,7 @@ export default function ForceGraph() {
       .on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }) as any);
 
     // Click
-    node.on('click', (e, d) => { e.stopPropagation(); setSelectedFile(d.id); });
+    node.on('click', (e, d) => { e.stopPropagation(); selectFile(d.id); });
 
     // Hover
     node.on('mouseenter', (e, d) => {
@@ -234,7 +212,7 @@ export default function ForceGraph() {
     // Clear selection on background click
     svg.on('click', (e) => {
       if (e.target === svg.node()) {
-        setSelectedFile(null);
+        deselectFile();
       }
     });
 
@@ -285,7 +263,7 @@ export default function ForceGraph() {
         if (pts.length < 3) return;
         const hull = d3.polygonHull(pts);
         if (hull) {
-          const color = colorMap[f] || COLORS[folders.indexOf(f) % COLORS.length];
+          const color = COLORS[folders.indexOf(f) % COLORS.length];
           hullLayer.append('path')
             .attr('d', 'M' + hull.join('L') + 'Z')
             .attr('fill', color)
@@ -351,7 +329,55 @@ export default function ForceGraph() {
       window.removeEventListener("codeflow:resetZoom", handleResetZoom);
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
-  }, [analysisData, colorMode, graphConfig, folderFilter, blastRadius, setHoveredNode, setSelectedFile]);
+  }, [analysisData, graphConfig, folderFilter, setHoveredNode, selectFile, deselectFile]);
+
+  // Secondary effect to handle dynamic coloring and blast radius highlighting without restarting simulation
+  useEffect(() => {
+    if (!analysisData || !containerRef.current) return;
+    
+    const svg = d3.select(containerRef.current).select('svg');
+    if (svg.empty()) return;
+
+    const colorMap: Record<string, string> = {};
+    if (colorMode === 'folder') {
+      analysisData.folders.forEach((f, i) => { colorMap[f] = COLORS[i % COLORS.length]; });
+      colorMap['root'] = COLORS[0];
+    } else if (colorMode === 'layer') {
+      analysisData.files.forEach(f => { colorMap[f.path] = LAYER_COLORS[f.layer] || COLORS[0]; });
+    } else if (colorMode === 'churn') {
+      const maxC = Math.max(...analysisData.files.map(f => f.churn || 0)) || 1;
+      analysisData.files.forEach(f => {
+        const r = (f.churn || 0) / maxC;
+        colorMap[f.path] = r > 0.7 ? '#ff5f5f' : r > 0.4 ? '#ff9f43' : '#22c55e';
+      });
+    }
+
+    const affectedSet = blastRadius ? new Set(blastRadius.affected) : new Set();
+
+    function getC(d: any) {
+      if (blastRadius && affectedSet.size > 0) {
+        if (d.id === selectedFile) return '#ff5f5f'; // HTML uses red for selected
+        if (affectedSet.has(d.id)) return '#ff9f43'; // HTML uses orange for affected
+        return colorMode === 'folder' ? (colorMap[d.folder] || COLORS[0]) :
+               colorMode === 'layer' ? (LAYER_COLORS[d.layer] || LAYER_COLORS['unknown']) :
+               (colorMap[d.id] || '#22c55e');
+      }
+      if (colorMode === 'folder') return colorMap[d.folder] || COLORS[0];
+      if (colorMode === 'layer') return LAYER_COLORS[d.layer] || LAYER_COLORS['unknown'];
+      if (colorMode === 'churn') return colorMap[d.id] || '#22c55e';
+      return COLORS[0];
+    }
+
+    svg.selectAll('.nc').transition().duration(200)
+      .attr('opacity', (d: any) => { if (selectedFile && d.id === selectedFile) return 1; if (selectedFile && affectedSet.has(d.id)) return 1; return selectedFile ? 0.2 : 1; })
+      .attr('fill', getC)
+      .attr('stroke', (d: any) => { const c = d3.color(getC(d)); return c ? c.brighter(0.3).formatHex() : '#fff'; });
+
+    svg.selectAll('.edge-path').transition().duration(200)
+      .attr('stroke-opacity', (l: any) => { const s = l.source.id || l.source; const t = l.target.id || l.target; if (s === selectedFile || t === selectedFile) return 0.8; return selectedFile ? 0.05 : 0.4; })
+      .attr('stroke', (l: any) => { const s = l.source.id || l.source; const t = l.target.id || l.target; if (s === selectedFile || t === selectedFile) return '#58a6ff'; return '#333'; });
+
+  }, [analysisData, colorMode, selectedFile, blastRadius]);
 
   if (!analysisData) {
     return (
