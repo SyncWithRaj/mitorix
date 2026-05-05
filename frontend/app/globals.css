@@ -1,8 +1,9 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
 
-@source "../app";
-@source "../components";
-@source "../context";
+@source "../app/**/*.{ts,tsx,css}";
+@source "../components/**/*.{ts,tsx,css}";
+@source "../context/**/*.{ts,tsx,css}";
+@source "../lib/**/*.{ts,tsx}";
 
 @theme inline {
   --color-gh-bg: #0d1117;

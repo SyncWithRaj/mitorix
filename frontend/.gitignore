@@ -1,0 +1,19 @@
+# Build cache
+.next/
+
+# Tailwind v4 scanner exclusions — prevent scanning binary/non-code files
+# during HMR recompilation (Turbopack walks up to git root)
+*.ico
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.webp
+*.woff
+*.woff2
+*.ttf
+*.eot
+*.patch
+*.html
+*.md
