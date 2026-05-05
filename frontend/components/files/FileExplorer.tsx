@@ -96,7 +96,7 @@ export default function FileExplorer({ repoId }: any) {
 
   return (
     <div className="flex flex-col h-full bg-[#18181b]">
-      <div className="p-3 border-b border-[var(--color-gh-border)] bg-[#18181b] sticky top-0 z-10 flex items-center justify-between">
+      <div className="p-3 border-b border-[#30363d] bg-[#18181b] sticky top-0 z-10 flex items-center justify-between">
         <h3 className="text-[11px] font-bold tracking-wider uppercase text-[#8b949e]">
           Explorer
         </h3>

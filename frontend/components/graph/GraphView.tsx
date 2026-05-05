@@ -148,7 +148,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
         toast.error("Failed to calculate blast radius.", { id: "blast-radius" });
       }
     } catch (err: unknown) {
-      toast.error(err.response?.data?.message || "Failed to calculate blast radius.", { id: "blast-radius" });
+      toast.error((err as any).response?.data?.message || "Failed to calculate blast radius.", { id: "blast-radius" });
     } finally {
       setHoverNode(null);
     }
@@ -266,7 +266,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
       className="w-full h-full bg-[#0d1117] overflow-hidden relative group border-2 border-[#30363d] rounded-xl flex-grow"
       onPointerMove={handlePointerMove}
     >
-      <div className="absolute top-4 left-4 z-10 bg-[#161b22] border border-[var(--color-gh-border)] px-4 py-2 rounded-lg shadow-lg">
+      <div className="absolute top-4 left-4 z-10 bg-[#161b22] border border-[#30363d] px-4 py-2 rounded-lg shadow-lg">
         <h3 className="text-white text-sm font-semibold">Codebase Visualizer</h3>
         <p className="text-xs text-[#8b949e]">Click a folder to toggle collapse</p>
         <p className="text-xs text-[#8b949e]">Click a file to view code</p>
@@ -293,7 +293,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
 
       {hoverNode && (
         <div 
-          className="absolute z-50 bg-[#161b22] border border-[var(--color-gh-border)] px-4 py-3 rounded-xl shadow-2xl pointer-events-auto transition-opacity duration-150"
+          className="absolute z-50 bg-[#161b22] border border-[#30363d] px-4 py-3 rounded-xl shadow-2xl pointer-events-auto transition-opacity duration-150"
           style={{ left: mousePos.x + 15, top: mousePos.y + 15, minWidth: '220px' }}
           onMouseEnter={() => { isHoveringTooltipRef.current = true; }}
           onMouseLeave={() => { 
