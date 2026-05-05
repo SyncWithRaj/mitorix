@@ -51,6 +51,8 @@ export default function Navbar() {
 
   const inWorkspace = pathname.startsWith("/graph") || pathname.startsWith("/chat");
 
+  if (pathname.startsWith("/codeflow")) return null;
+
   return (
     <nav
       className={`sticky top-[15px] mx-[15px] z-50 transition-all duration-500 rounded-2xl ${scrolled
