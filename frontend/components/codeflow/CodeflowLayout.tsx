@@ -11,6 +11,14 @@ import HealthRing from "./sidebar/HealthRing";
 import ColorModeSelector from "./sidebar/ColorModeSelector";
 import StatsGrid from "./sidebar/StatsGrid";
 import TreeExplorer from "./sidebar/TreeExplorer";
+import VizSelector from "./canvas/VizSelector";
+import CanvasToolbar from "./canvas/CanvasToolbar";
+import TreemapView from "./visualizers/TreemapView";
+import MatrixView from "./visualizers/MatrixView";
+import DendrogramView from "./visualizers/DendrogramView";
+import SankeyView from "./visualizers/SankeyView";
+import DisjointView from "./visualizers/DisjointView";
+import BundleView from "./visualizers/BundleView";
 
 export default function CodeflowLayout({
   repoId,
@@ -19,7 +27,7 @@ export default function CodeflowLayout({
   repoId: string;
   children: React.ReactNode;
 }) {
-  const { analysisData, setAnalysisData, setIsLoading } = useCodeflow();
+  const { analysisData, setAnalysisData, setIsLoading, graphConfig } = useCodeflow();
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
 
@@ -148,8 +156,20 @@ export default function CodeflowLayout({
         </ResizablePanel>
 
         {/* Center Canvas */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#0d1117] relative">
-          {children}
+        <div className="flex-1 flex flex-col min-w-0 bg-[#0d1117] relative overflow-hidden">
+          {analysisData && <VizSelector />}
+          
+          <div className="absolute inset-0 z-0">
+            {graphConfig.vizType === "force" && children}
+            {graphConfig.vizType === "treemap" && <TreemapView />}
+            {graphConfig.vizType === "matrix" && <MatrixView />}
+            {graphConfig.vizType === "dendro" && <DendrogramView />}
+            {graphConfig.vizType === "sankey" && <SankeyView />}
+            {graphConfig.vizType === "disjoint" && <DisjointView />}
+            {graphConfig.vizType === "bundle" && <BundleView />}
+          </div>
+
+          {analysisData && <CanvasToolbar />}
         </div>
 
         {/* Right Panel */}
