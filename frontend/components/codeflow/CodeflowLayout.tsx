@@ -1,0 +1,167 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useCodeflow } from "../../context/CodeflowContext";
+import api from "../../lib/axios";
+import toast from "react-hot-toast";
+import ResizablePanel from "./ResizablePanel";
+import { ArrowLeft, Menu, Settings } from "lucide-react";
+import Link from "next/link";
+
+export default function CodeflowLayout({
+  repoId,
+  children,
+}: {
+  repoId: string;
+  children: React.ReactNode;
+}) {
+  const { setAnalysisData, setIsLoading } = useCodeflow();
+  const [leftOpen, setLeftOpen] = useState(false);
+  const [rightOpen, setRightOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchAnalysis = async () => {
+      try {
+        setIsLoading(true);
+        const res = await api.get(`/codeflow/analysis/${repoId}`);
+        if (res.data.success) {
+          setAnalysisData(res.data.data);
+        } else {
+          toast.error("Failed to load CodeFlow analysis");
+        }
+      } catch (err) {
+        console.error("Error loading analysis:", err);
+        toast.error("Failed to load CodeFlow analysis");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnalysis();
+  }, [repoId, setAnalysisData, setIsLoading]);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[#0d1117] text-[#c9d1d9] overflow-hidden font-mono">
+      {/* Topbar */}
+      <div className="h-14 border-b border-[#30363d] bg-[#161b22] flex items-center px-4 shrink-0 z-50 justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/dashboard`}
+            className="p-1.5 hover:bg-[#30363d] rounded-md transition text-[#8b949e] hover:text-[#c9d1d9]"
+          >
+            <ArrowLeft size={16} />
+          </Link>
+          <div className="flex items-center gap-2">
+            <button className="md:hidden p-1.5 text-[#8b949e] hover:text-[#c9d1d9]" onClick={() => setLeftOpen(!leftOpen)}>
+              <Menu size={18} />
+            </button>
+            <div className="w-6 h-6 rounded bg-[#21262d] flex items-center justify-center text-[#c9d1d9] border border-[#30363d]">
+              <span className="font-bold text-xs">CF</span>
+            </div>
+            <span className="font-bold text-[#c9d1d9] tracking-wide text-sm hidden sm:block">
+              CODEFLOW
+            </span>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2 flex-1 max-w-2xl px-2 sm:px-6">
+          <input 
+            type="text" 
+            className="flex-1 bg-[#010409] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#c9d1d9] focus:outline-none focus:border-[#58a6ff] hidden sm:block"
+            placeholder="owner/repo or GitHub URL"
+            value={repoId}
+            readOnly
+          />
+          <button className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs bg-[#21262d] border border-[#30363d] hover:bg-[#30363d] rounded-md transition text-[#c9d1d9]">
+             Excludes
+          </button>
+          <button className="hidden sm:flex items-center gap-2 px-4 py-1.5 text-xs bg-[#238636] hover:bg-[#2ea043] border border-[rgba(240,246,252,0.1)] rounded-md transition text-white font-medium" onClick={() => window.location.reload()}>
+             Analyze
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+           <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Open local folder">
+             📁
+           </button>
+           <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Open ZIP archive">
+             🗜️
+           </button>
+           <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Pull Request">
+             🔀
+           </button>
+           <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Export">
+             ⬇️
+           </button>
+           <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Share">
+             🔗
+           </button>
+           <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition hidden sm:block" title="Toggle theme">
+             🌙
+           </button>
+           <button className="lg:hidden p-1.5 text-[#8b949e] hover:text-[#c9d1d9]" onClick={() => setRightOpen(!rightOpen)}>
+              <Settings size={18} />
+           </button>
+        </div>
+      </div>
+
+      {/* Main 3-Panel Area */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Left Sidebar */}
+        <ResizablePanel
+          side="left"
+          initialWidth={260}
+          minWidth={180}
+          maxWidth={400}
+          className={`${leftOpen ? 'flex absolute inset-y-0 left-0 z-40' : 'hidden'} md:relative md:flex`}
+        >
+          <div className="p-3 border-b border-[#30363d] bg-[#161b22]">
+            <h2 className="text-[10px] font-bold text-[#8b949e] uppercase tracking-wider mb-2">
+              Codebase Explorer
+            </h2>
+            <div className="text-xs text-[#c9d1d9] italic opacity-50">Sidebar components pending Phase 4</div>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2">
+            {/* TreeExplorer and HealthRing will go here */}
+          </div>
+        </ResizablePanel>
+
+        {/* Center Canvas */}
+        <div className="flex-1 flex flex-col min-w-0 bg-[#0d1117] relative">
+          {children}
+        </div>
+
+        {/* Right Panel */}
+        <ResizablePanel
+          side="right"
+          initialWidth={360}
+          minWidth={280}
+          maxWidth={500}
+          className={`${rightOpen ? 'flex absolute inset-y-0 right-0 z-40' : 'hidden'} lg:relative lg:flex`}
+        >
+          <div className="flex border-b border-[#30363d] bg-[#161b22]">
+            <button className="flex-1 py-2 text-[10px] font-bold text-[#58a6ff] border-b-2 border-[#58a6ff]">
+              INSPECTOR
+            </button>
+            <button className="flex-1 py-2 text-[10px] font-bold text-[#8b949e] hover:text-[#c9d1d9] border-b-2 border-transparent hover:border-[#30363d]">
+              ISSUES
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3 bg-[#0d1117]">
+             <div className="text-xs text-[#c9d1d9] italic opacity-50 mb-4">Right Panel components pending Phase 6</div>
+             
+             {/* Temporary placeholder cards */}
+             <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 mb-2">
+               <h3 className="text-xs font-semibold mb-1">Impact Analysis</h3>
+               <div className="h-16 bg-[#0d1117] border border-[#30363d] rounded opacity-30 mt-2"></div>
+             </div>
+             <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 mb-2">
+               <h3 className="text-xs font-semibold mb-1">Patterns</h3>
+               <div className="h-24 bg-[#0d1117] border border-[#30363d] rounded opacity-30 mt-2"></div>
+             </div>
+          </div>
+        </ResizablePanel>
+      </div>
+    </div>
+  );
+}
