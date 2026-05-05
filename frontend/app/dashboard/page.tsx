@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { GitBranch, Box, Loader2, Play, Trash2, Github, MessageSquare, Plus, Info } from "lucide-react";
+import { GitBranch, Box, Loader2, Play, Trash2, Github, MessageSquare, Plus, Info, Activity } from "lucide-react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 
@@ -248,10 +248,21 @@ export default function Dashboard() {
                                   )}
                               </div>
 
-                              <div className="flex flex-wrap gap-3 items-center mt-4 md:mt-0 shrink-0">
+                                  <div className="flex flex-wrap gap-3 items-center mt-4 md:mt-0 shrink-0">
 
                                   {repo.status === "indexed" && (
                                       <>
+                                          <button
+                                              onClick={() => router.push(`/codeflow/${repo._id}`)}
+                                              className="group/codeflow cursor-pointer relative flex items-center gap-2 text-sm text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_0_15px_rgba(163,113,247,0.2)] hover:shadow-[0_0_20px_rgba(163,113,247,0.5)] border border-[rgba(255,255,255,0.1)] overflow-hidden"
+                                          >
+                                              <div className="absolute inset-0 bg-gradient-to-r from-[#a371f7] to-[#8957e5] transition-opacity duration-300 group-hover/codeflow:opacity-90"></div>
+                                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/codeflow:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
+                                              <span className="relative z-10 flex items-center gap-2">
+                                                <Activity size={16} />
+                                                CodeFlow Intelligence
+                                              </span>
+                                          </button>
                                           <button
                                               onClick={() => router.push(`/graph/${repo._id}`)}
                                               className="cursor-pointer flex items-center gap-2 text-sm bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] hover:text-white font-medium px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-sm"
