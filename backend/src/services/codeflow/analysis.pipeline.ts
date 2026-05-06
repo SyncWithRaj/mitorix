@@ -89,7 +89,7 @@ function isCodeFile(filename: string): boolean {
  * Stage 4: Calculate complexity, find duplicates, check layer violations
  * Stage 5: Aggregate stats, compute health score, generate suggestions
  */
-export async function runAnalysisPipeline(repoId: string): Promise<AnalysisData> {
+export async function runAnalysisPipeline(repoId: string, excludes: string[] = []): Promise<AnalysisData> {
   // =========================================================================
   // STAGE 1: Load Data from MongoDB
   // =========================================================================
@@ -99,39 +99,48 @@ export async function runAnalysisPipeline(repoId: string): Promise<AnalysisData>
 
   const basePath = (repo as any).localPath || "";
 
-  const [dbFiles, dbEntities, dbRelationships, dbContents] = await Promise.all([
+  const [dbFiles, dbEntities, dbRelationships, allContents] = await Promise.all([
     FileMetadata.find({ repoId }).lean(),
     CodeEntity.find({ repoId }).lean(),
     CodeRelationship.find({ repoId }).lean(),
-    FileContent.find({ repoId, isDirectory: false, content: { $ne: null } }).lean(),
+    FileContent.find({ repoId }).lean(), // Fetch all files, not just those with content
   ]);
 
-  // Build a content lookup
-  const contentByPath: Record<string, string> = {};
-  for (const fc of dbContents) {
-    const fullPath = (fc as any).relativePath
-      ? path.join(basePath, (fc as any).relativePath)
-      : (fc as any).relativePath;
-    if ((fc as any).content) {
-      contentByPath[fullPath] = (fc as any).content;
-      // Also index by relative path
-      if ((fc as any).relativePath) {
-        contentByPath[(fc as any).relativePath] = (fc as any).content;
-      }
-    }
+  // Build metadata lookup for fast access
+  const fileMetaByPath: Record<string, any> = {};
+  for (const fm of dbFiles) {
+    fileMetaByPath[(fm as any).filePath] = fm;
   }
 
   // Build analyzed files array
   const analyzedFiles: AnalyzedFile[] = [];
   const allFns: FunctionDef[] = [];
 
-  for (const fileMeta of dbFiles) {
-    const fp = (fileMeta as any).filePath as string;
-    const fileName = (fileMeta as any).fileName as string;
-    const relativePath = basePath ? path.relative(basePath, fp) : fp;
-    const folder = path.dirname(relativePath).replace(/\\/g, "/");
-    const content = contentByPath[fp] || contentByPath[relativePath] || null;
-    const totalLines = (fileMeta as any).totalLines || (content ? content.split("\n").length : 0);
+  for (const fc of allContents) {
+    if ((fc as any).isDirectory) continue;
+
+    const relativePath = (fc as any).relativePath;
+
+    // Apply custom excludes
+    if (excludes.length > 0) {
+      const isExcluded = excludes.some(pattern => {
+        if (!pattern.trim()) return false;
+        // Simple wildcard or partial match
+        const regex = new RegExp(pattern.trim().replace(/\*/g, ".*").replace(/\?/g, "."), "i");
+        return regex.test(relativePath);
+      });
+      if (isExcluded) continue;
+    }
+
+    const fileName = (fc as any).fileName;
+    const fp = basePath ? path.join(basePath, relativePath) : relativePath;
+    let folder = path.dirname(relativePath).replace(/\\/g, "/");
+    if (folder === ".") folder = "";
+    
+    const content = (fc as any).content || null;
+    
+    const fileMeta = fileMetaByPath[fp];
+    const totalLines = fileMeta?.totalLines || (content ? content.split("\n").length : 0);
     const isCode = isCodeFile(fileName);
     const layer = detectLayer(relativePath);
 
