@@ -1,16 +1,15 @@
-"use client";
-
 import React, { useEffect, useState } from "react";
 import { useCodeflow } from "../../context/CodeflowContext";
 import type { RightTab } from "../../context/CodeflowContext";
 import api from "../../lib/axios";
 import toast from "react-hot-toast";
 import ResizablePanel from "./ResizablePanel";
-import { ArrowLeft, Menu, Settings } from "lucide-react";
+import { ArrowLeft, Menu, Settings, Ban, Folder, Archive, GitPullRequest, Download, Share2, Moon, Info, Grid, ShieldAlert, Zap, Code } from "lucide-react";
 import Link from "next/link";
 import HealthRing from "./sidebar/HealthRing";
 import ColorModeSelector from "./sidebar/ColorModeSelector";
 import StatsGrid from "./sidebar/StatsGrid";
+import LanguageBar from "./sidebar/LanguageBar";
 import TreeExplorer from "./sidebar/TreeExplorer";
 import VizSelector from "./canvas/VizSelector";
 import CanvasToolbar from "./canvas/CanvasToolbar";
@@ -26,6 +25,15 @@ import PatternsPanel from "./panels/PatternsPanel";
 import SecurityPanel from "./panels/SecurityPanel";
 import SuggestionsPanel from "./panels/SuggestionsPanel";
 import DrillDownModal from "./panels/DrillDownModal";
+import CodePanel from "./panels/CodePanel";
+
+// Modals
+import FilePreviewModal from "./modals/FilePreviewModal";
+import PRAnalysisModal from "./modals/PRAnalysisModal";
+import ExportModal from "./modals/ExportModal";
+import UnusedFunctionsModal from "./modals/UnusedFunctionsModal";
+import ExcludePatternsModal from "./modals/ExcludePatternsModal";
+import ConfirmDialog from "./modals/ConfirmDialog";
 
 export default function CodeflowLayout({
   repoId,
@@ -34,7 +42,23 @@ export default function CodeflowLayout({
   repoId: string;
   children: React.ReactNode;
 }) {
-  const { analysisData, setAnalysisData, setIsLoading, graphConfig, selectedFile, rightTab, setRightTab, setDrillDown } = useCodeflow();
+  const { 
+    analysisData, 
+    setAnalysisData, 
+    setIsLoading, 
+    graphConfig, 
+    selectedFile, 
+    rightTab, 
+    setRightTab, 
+    setDrillDown,
+    setShowPRModal,
+    setShowExportModal,
+    setShowExcludeModal,
+    excludePatterns,
+    triggerAnalysis,
+    // @ts-ignore - we'll add refreshKey to context too to make it easy
+    refreshKey 
+  } = useCodeflow();
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
 
@@ -42,7 +66,8 @@ export default function CodeflowLayout({
     const fetchAnalysis = async () => {
       try {
         setIsLoading(true);
-        const res = await api.get(`/codeflow/analysis/${repoId}`);
+        const patternsParam = excludePatterns.split("\n").filter(p => p.trim()).join(",");
+        const res = await api.get(`/codeflow/analysis/${repoId}?excludes=${encodeURIComponent(patternsParam)}`);
         if (res.data.success) {
           setAnalysisData(res.data.data);
         } else {
@@ -57,28 +82,14 @@ export default function CodeflowLayout({
     };
 
     fetchAnalysis();
-  }, [repoId, setAnalysisData, setIsLoading]);
+  }, [repoId, setAnalysisData, setIsLoading, refreshKey]);
 
-  const tabs: { key: RightTab; label: string; badge?: number }[] = [
-    {
-      key: "details",
-      label: selectedFile ? "FILE" : "ISSUES",
-    },
-    {
-      key: "patterns",
-      label: "PATTERNS",
-      badge: analysisData?.patterns?.length,
-    },
-    {
-      key: "security",
-      label: "SECURITY",
-      badge: analysisData?.stats?.security,
-    },
-    {
-      key: "suggestions",
-      label: "ACTIONS",
-      badge: analysisData?.suggestions?.length,
-    },
+  const tabs = [
+    { key: "details", label: "Details", icon: <Info size={12} /> },
+    { key: "patterns", label: "Patterns", icon: <Grid size={12} /> },
+    { key: "security", label: "Security", icon: <ShieldAlert size={12} /> },
+    { key: "suggestions", label: "Action Items", icon: <Zap size={12} /> },
+    { key: "code", label: "Source Code", icon: <Code size={12} /> }
   ];
 
   return (
@@ -113,32 +124,46 @@ export default function CodeflowLayout({
             value={repoId}
             readOnly
           />
-          <button className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs bg-[#21262d] border border-[#30363d] hover:bg-[#30363d] rounded-md transition text-[#c9d1d9]">
-             Excludes
+          <button 
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs bg-[#21262d] border border-[#30363d] hover:bg-[#30363d] rounded-md transition text-[#c9d1d9]"
+            onClick={() => setShowExcludeModal(true)}
+          >
+             <Ban size={14} /> Excludes
           </button>
-          <button className="hidden sm:flex items-center gap-2 px-4 py-1.5 text-xs bg-[#238636] hover:bg-[#2ea043] border border-[rgba(240,246,252,0.1)] rounded-md transition text-white font-medium" onClick={() => window.location.reload()}>
+          <button 
+            className="hidden sm:flex items-center gap-2 px-4 py-1.5 text-xs bg-[#238636] hover:bg-[#2ea043] border border-[rgba(240,246,252,0.1)] rounded-md transition text-white font-medium" 
+            onClick={triggerAnalysis}
+          >
              Analyze
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
            <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Open local folder">
-             📁
+             <Folder size={16} />
            </button>
            <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Open ZIP archive">
-             🗜️
+             <Archive size={16} />
            </button>
-           <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Pull Request">
-             🔀
+           <button 
+             className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" 
+             title="Pull Request"
+             onClick={() => setShowPRModal(true)}
+           >
+             <GitPullRequest size={16} />
            </button>
-           <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Export">
-             ⬇️
+           <button 
+             className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" 
+             title="Export"
+             onClick={() => setShowExportModal(true)}
+           >
+             <Download size={16} />
            </button>
            <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Share">
-             🔗
+             <Share2 size={16} />
            </button>
            <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition hidden sm:block" title="Toggle theme">
-             🌙
+             <Moon size={16} />
            </button>
            <button className="lg:hidden p-1.5 text-[#8b949e] hover:text-[#c9d1d9]" onClick={() => setRightOpen(!rightOpen)}>
               <Settings size={18} />
@@ -166,6 +191,7 @@ export default function CodeflowLayout({
                 />
                 <ColorModeSelector />
                 <StatsGrid />
+                <LanguageBar />
               </div>
               
               {/* Lower Section: Tree Explorer */}
@@ -219,33 +245,26 @@ export default function CodeflowLayout({
                     ? "text-[#58a6ff] border-b-2 border-[#58a6ff]"
                     : "text-[#8b949e] hover:text-[#c9d1d9] border-b-2 border-transparent hover:border-[#30363d]"
                 }`}
-                onClick={() => { setRightTab(tab.key); setDrillDown(null); }}
+                onClick={() => { setRightTab(tab.key as RightTab); setDrillDown(null); }}
               >
+                {tab.icon}
                 {tab.label}
-                {tab.badge !== undefined && tab.badge > 0 && (
-                  <span className={`ml-1 px-1 py-0 rounded text-[8px] font-bold ${
-                    tab.key === "security" && tab.badge > 0
-                      ? "bg-red-500/20 text-red-400"
-                      : "bg-[#30363d] text-[#8b949e]"
-                  }`}>
-                    {tab.badge}
-                  </span>
-                )}
               </button>
             ))}
           </div>
 
           {/* Panel Content */}
-          <div className="flex-1 overflow-y-auto p-3 bg-[#0d1117] custom-scrollbar">
+          <div className={`flex-1 overflow-y-auto bg-[#0d1117] custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}>
             {analysisData ? (
-              <>
+              <div className="flex-1 flex flex-col relative bg-[#0d1117]">
                 {rightTab === "details" && (
                   selectedFile ? <FileInspector /> : <IssuesPanel />
                 )}
                 {rightTab === "patterns" && <PatternsPanel />}
                 {rightTab === "security" && <SecurityPanel />}
                 {rightTab === "suggestions" && <SuggestionsPanel />}
-              </>
+                {rightTab === "code" && <CodePanel repoId={repoId} />}
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-[#8b949e]">
                 <div className="text-3xl mb-3 opacity-30">📊</div>
@@ -257,8 +276,14 @@ export default function CodeflowLayout({
         </ResizablePanel>
       </div>
 
-      {/* Drill-Down Modal */}
+      {/* Global Modals */}
       <DrillDownModal />
+      <FilePreviewModal />
+      <PRAnalysisModal repoId={repoId} />
+      <ExportModal />
+      <UnusedFunctionsModal />
+      <ExcludePatternsModal />
+      <ConfirmDialog />
     </div>
   );
 }

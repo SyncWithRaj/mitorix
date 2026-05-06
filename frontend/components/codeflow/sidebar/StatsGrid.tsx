@@ -5,7 +5,7 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function StatsGrid() {
-  const { analysisData } = useCodeflow();
+  const { analysisData, setShowUnusedModal } = useCodeflow();
 
   if (!analysisData) return null;
 
@@ -31,11 +31,25 @@ export default function StatsGrid() {
             stats.dead > 10 ? "border-[#f85149] bg-[rgba(248,81,73,0.05)] hover:bg-[rgba(248,81,73,0.1)]" : "border-[#30363d] hover:bg-[#21262d]"
           }`}
           style={{ cursor: stats.dead > 0 ? "pointer" : "default" }}
+          onClick={() => {
+            console.log("[StatsGrid] Clicked Unused box. stats.dead =", stats.dead);
+            if (stats.dead > 0) {
+              console.log("[StatsGrid] Setting showUnusedModal to true");
+              setShowUnusedModal(true);
+            }
+          }}
         >
           <div className={`text-xl font-bold font-mono ${stats.dead > 10 ? "text-[#f85149]" : "text-[#c9d1d9]"}`}>
             {stats.dead}
           </div>
-          <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider mt-1">Unused</div>
+          <div className="flex flex-col items-center gap-0.5 mt-1">
+            <span className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider">Unused</span>
+            {stats.dead > 0 && (
+              <span className="text-[8px] bg-[#30363d] text-[#c9d1d9] px-1.5 py-0.5 rounded-full whitespace-nowrap scale-90">
+                Click to view
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -45,36 +59,6 @@ export default function StatsGrid() {
         </div>
         <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider mt-1">Lines of Code</div>
       </div>
-
-      {stats.languages && stats.languages.length > 0 && (
-        <div className="flex flex-col gap-2 mt-2">
-          {/* Language Stacked Bar */}
-          <div className="h-2 w-full rounded-full flex overflow-hidden bg-[#21262d]">
-            {stats.languages.slice(0, 6).map((lang, idx) => (
-              <div 
-                key={lang.ext} 
-                style={{ 
-                  width: `${lang.pct}%`, 
-                  backgroundColor: COLORS[idx % COLORS.length] 
-                }} 
-              />
-            ))}
-          </div>
-          
-          {/* Legend */}
-          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
-            {stats.languages.slice(0, 6).map((lang, idx) => (
-              <div key={lang.ext} className="flex items-center gap-1.5 text-xs text-[#8b949e]">
-                <div 
-                  className="w-2 h-2 rounded-full" 
-                  style={{ backgroundColor: COLORS[idx % COLORS.length] }} 
-                />
-                <span className="uppercase font-mono text-[10px]">{lang.ext} {lang.pct}%</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
