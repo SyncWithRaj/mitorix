@@ -84,7 +84,13 @@ export const getFileContent = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Repository not found" });
     }
 
-    const safePath = filePath.replace(/^\/+/, "");
+    let safePath = filePath.replace(/^\/+/, "");
+    if (repo.localPath && filePath.startsWith(repo.localPath)) {
+      safePath = filePath.substring(repo.localPath.length).replace(/^\/+/, "");
+    }
+
+    // Fallback: If safePath is still absolute (e.g. from a different machine), try taking the last parts
+    // But usually repo.localPath should match since it's local.
 
     // Read file content from MongoDB instead of disk
     const fileDoc = await FileContent.findOne({

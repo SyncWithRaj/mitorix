@@ -13,6 +13,7 @@ import {
   getPatterns,
   getBlastRadius,
   getSuggestions,
+  getPRAnalysis,
 } from "../controllers/codeflow.controller.js";
 
 const router = Router();
@@ -37,5 +38,8 @@ router.get("/blast/:repoId/*filePath", getBlastRadius);
 
 // Get suggestions
 router.get("/suggestions/:repoId", getSuggestions);
+
+// Get PR Analysis files
+router.get("/pr/:repoId/:prNumber", getPRAnalysis);
 
 export default router;

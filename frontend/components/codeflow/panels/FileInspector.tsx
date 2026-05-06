@@ -9,7 +9,7 @@ import OwnershipCard from "./OwnershipCard";
 import FunctionList from "./FunctionList";
 
 export default function FileInspector() {
-  const { analysisData, selectedFile, deselectFile } = useCodeflow();
+  const { analysisData, selectedFile, deselectFile, setRightTab } = useCodeflow();
 
   if (!analysisData || !selectedFile) return null;
 
@@ -43,6 +43,7 @@ export default function FileInspector() {
           <button
             className="flex items-center gap-1 px-2 py-1 text-[9px] bg-[#21262d] border border-[#30363d] hover:bg-[#30363d] rounded text-[#c9d1d9] transition shrink-0"
             title="View Source"
+            onClick={() => setRightTab("code")}
           >
             <Eye size={10} />
             View Source
