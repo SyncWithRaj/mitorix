@@ -5,7 +5,7 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { Search, Sparkles } from "lucide-react";
 
 export default function IssuesPanel() {
-  const { analysisData, setDrillDown } = useCodeflow();
+  const { analysisData, setDrillDown, setShowUnusedModal } = useCodeflow();
 
   if (!analysisData) return null;
 
@@ -24,16 +24,24 @@ export default function IssuesPanel() {
         </div>
       ) : (
         <div className="space-y-3">
-          {analysisData.issues.map((issue, i) => (
-            <div 
-              key={i} 
-              className={`p-3 rounded-lg border cursor-pointer transition hover:brightness-110 bg-[#161b22] ${
-                issue.type === 'critical' ? 'border-red-500/30' : 
-                issue.type === 'warning' ? 'border-orange-500/30' : 
-                'border-blue-500/30'
-              }`}
-              onClick={() => setDrillDown({ type: "issue", data: issue })}
-            >
+          {analysisData.issues.map((issue, i) => {
+            const isUnused = issue.title.toLowerCase().includes("unused functions");
+            return (
+              <div 
+                key={i} 
+                className={`p-3 rounded-lg border cursor-pointer transition hover:brightness-110 bg-[#161b22] ${
+                  issue.type === 'critical' ? 'border-red-500/30' : 
+                  issue.type === 'warning' ? 'border-orange-500/30' : 
+                  'border-blue-500/30'
+                }`}
+                onClick={() => {
+                  if (isUnused) {
+                    setShowUnusedModal(true);
+                  } else {
+                    setDrillDown({ type: "issue", data: issue });
+                  }
+                }}
+              >
               <div className="flex items-center gap-2 mb-2">
                 <div className={`w-2 h-2 rounded-full ${
                   issue.type === 'critical' ? 'bg-red-500' : 
@@ -48,8 +56,9 @@ export default function IssuesPanel() {
               <div className="text-[9px] text-[#58a6ff] mt-2.5 font-medium">
                 Click for details ({issue.items ? issue.items.length : 0} items) →
               </div>
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
