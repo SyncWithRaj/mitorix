@@ -10,7 +10,7 @@ import {
 import { DEFAULT_GRAPH_CONFIG } from "../lib/codeflow.constants";
 import { calcBlast } from "../lib/codeflow.utils";
 
-export type RightTab = "details" | "patterns" | "security" | "suggestions";
+export type RightTab = "details" | "patterns" | "security" | "suggestions" | "code";
 
 interface CodeflowState {
   // Data from backend
@@ -50,6 +50,24 @@ interface CodeflowState {
   // Convenience: select a file and auto-compute blast radius
   selectFile: (path: string) => void;
   deselectFile: () => void;
+
+  // Modal States
+  filePreview: { path: string; content?: string | null; line?: number; filename: string; loading?: boolean; error?: string } | null;
+  setFilePreview: (preview: any | null) => void;
+  showPRModal: boolean;
+  setShowPRModal: (show: boolean) => void;
+  showExportModal: boolean;
+  setShowExportModal: (show: boolean) => void;
+  showUnusedModal: boolean;
+  setShowUnusedModal: (show: boolean) => void;
+  showExcludeModal: boolean;
+  setShowExcludeModal: (show: boolean) => void;
+  excludePatterns: string;
+  setExcludePatterns: (patterns: string) => void;
+  refreshKey: number;
+  triggerAnalysis: () => void;
+  confirmDialog: { tone: string; title: string; desc: string; onConfirm: () => void } | null;
+  setConfirmDialog: (dialog: any | null) => void;
 }
 
 const CodeflowContext = createContext<CodeflowState | undefined>(undefined);
@@ -72,6 +90,20 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set(["blast"]));
   const [expandedFns, setExpandedFns] = useState<Set<string>>(new Set());
   const [drillDown, setDrillDown] = useState<{ type: string; data: any } | null>(null);
+
+  // Modal States
+  const [filePreview, setFilePreview] = useState<any | null>(null);
+  const [showPRModal, setShowPRModal] = useState<boolean>(false);
+  const [showExportModal, setShowExportModal] = useState<boolean>(false);
+  const [showUnusedModal, setShowUnusedModal] = useState<boolean>(false);
+  const [showExcludeModal, setShowExcludeModal] = useState<boolean>(false);
+  const [excludePatterns, setExcludePatterns] = useState<string>("node_modules\n.git\ndist\nbuild\n.next");
+  const [refreshKey, setRefreshKey] = useState<number>(0);
+  const [confirmDialog, setConfirmDialog] = useState<any | null>(null);
+
+  const triggerAnalysis = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
 
   const toggleCard = useCallback((cardId: string) => {
     setExpandedCards(prev => {
@@ -140,6 +172,22 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
         setDrillDown,
         selectFile,
         deselectFile,
+        filePreview,
+        setFilePreview,
+        showPRModal,
+        setShowPRModal,
+        showExportModal,
+        setShowExportModal,
+        showUnusedModal,
+        setShowUnusedModal,
+        showExcludeModal,
+        setShowExcludeModal,
+        excludePatterns,
+        setExcludePatterns,
+        refreshKey,
+        triggerAnalysis,
+        confirmDialog,
+        setConfirmDialog,
       }}
     >
       {children}

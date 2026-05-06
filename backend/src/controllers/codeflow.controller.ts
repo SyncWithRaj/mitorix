@@ -5,6 +5,7 @@
  */
 
 import type { Request, Response } from "express";
+import axios from "axios";
 import { runAnalysisPipeline } from "../services/codeflow/analysis.pipeline.js";
 import { calcBlast } from "../services/codeflow/dependency.service.js";
 import { Repository } from "../models/repo.model.js";
@@ -29,8 +30,9 @@ export const analyzeRepository = async (req: Request, res: Response): Promise<an
 
     console.log(`[CodeFlow] Starting analysis for repo ${repoId}...`);
     const startTime = Date.now();
+    const excludes = (req.query.excludes as string || "").split(",").filter(Boolean);
 
-    const analysisData = await runAnalysisPipeline(repoId);
+    const analysisData = await runAnalysisPipeline(repoId, excludes);
 
     const elapsed = Date.now() - startTime;
     console.log(
@@ -73,7 +75,8 @@ export const getAnalysis = async (req: Request, res: Response): Promise<any> => 
       return res.status(404).json({ success: false, message: "Repository not found" });
     }
 
-    const analysisData = await runAnalysisPipeline(repoId);
+    const excludes = (req.query.excludes as string || "").split(",").filter(Boolean);
+    const analysisData = await runAnalysisPipeline(repoId, excludes);
 
     return res.status(200).json({
       success: true,
@@ -213,6 +216,70 @@ export const getSuggestions = async (req: Request, res: Response): Promise<any> 
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to generate suggestions",
+    });
+  }
+};
+
+/**
+ * GET /api/v1/codeflow/pr/:repoId/:prNumber
+ * Fetch PR files from GitHub API for PR Risk Analysis.
+ */
+export const getPRAnalysis = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { repoId, prNumber } = req.params;
+
+    if (!repoId || !prNumber) {
+      return res.status(400).json({ success: false, message: "repoId and prNumber are required" });
+    }
+
+    const repo = await Repository.findById(repoId);
+    if (!repo) {
+      return res.status(404).json({ success: false, message: "Repository not found" });
+    }
+
+    // Extract owner and repo name from githubUrl
+    const urlParts = repo.githubUrl.replace("https://github.com/", "").split("/");
+    const owner = urlParts[0];
+    const repoName = urlParts[1].replace(".git", "");
+
+    console.log(`[CodeFlow] Fetching PR #${prNumber} files for ${owner}/${repoName}...`);
+
+    // Fetch PR files from GitHub API
+    const response = await axios.get(
+      `https://api.github.com/repos/${owner}/${repoName}/pulls/${prNumber}/files`,
+      {
+        headers: {
+          Accept: "application/vnd.github.v3+json",
+          // We can optionally use a token if available to avoid rate limits
+          ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
+        },
+      }
+    );
+
+    // Get basic PR info for additions/deletions totals
+    const prResponse = await axios.get(
+      `https://api.github.com/repos/${owner}/${repoName}/pulls/${prNumber}`,
+      {
+        headers: {
+          Accept: "application/vnd.github.v3+json",
+          ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
+        },
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        files: response.data,
+        additions: prResponse.data.additions,
+        deletions: prResponse.data.deletions,
+      },
+    });
+  } catch (error: any) {
+    console.error("[CodeFlow] PR fetch failed:", error.response?.data || error.message);
+    return res.status(500).json({
+      success: false,
+      message: error.response?.data?.message || error.message || "Failed to fetch PR",
     });
   }
 };
