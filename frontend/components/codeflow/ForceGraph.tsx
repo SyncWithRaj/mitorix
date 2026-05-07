@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { useCodeflow } from "../../context/CodeflowContext";
 import { COLORS, LAYER_COLORS } from "../../lib/codeflow.constants";
+import { measurePerformance } from "../../lib/performance.utils";
 import * as d3 from "d3";
 
 export default function ForceGraph() {
@@ -13,6 +14,7 @@ export default function ForceGraph() {
   useEffect(() => {
     if (!analysisData || !containerRef.current) return;
 
+    const startPerf = performance.now();
     const el = containerRef.current;
     // Clean up previous
     d3.select(el).selectAll('*').remove();
@@ -321,6 +323,9 @@ export default function ForceGraph() {
     window.addEventListener("codeflow:zoomOut", handleZoomOut);
     window.addEventListener("codeflow:resetZoom", handleResetZoom);
     window.addEventListener("codeflow:fitView", handleFitView);
+
+    const endPerf = performance.now();
+    console.log(`[Performance] ForceGraph rendering complete in ${(endPerf - startPerf).toFixed(2)}ms`);
 
     return () => {
       sim.stop();
