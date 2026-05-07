@@ -458,3 +458,27 @@ export const uploadLocalRepository = async (req: Request, res: Response): Promis
         });
     }
 };
+
+export const getRepoSecurityIssues = async (req: Request, res: Response) => {
+    try {
+        const user = (req as any).user;
+        const repoId = req.params.id;
+
+        const repo = await Repository.findOne({ _id: repoId, user: user._id });
+        if (!repo) {
+            return res.status(404).json({ success: false, message: "Repository not found or unauthorized" });
+        }
+
+        const { SecurityIssue } = await import("../models/securityIssue.model.js");
+        const issues = await SecurityIssue.find({ repoId }).sort({ severity: 1, path: 1 }).lean();
+
+        return res.json({
+            success: true,
+            totalIssues: issues.length,
+            issues
+        });
+    } catch (error: any) {
+        console.error("[SecurityController] Failed to fetch security issues:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch security issues" });
+    }
+};

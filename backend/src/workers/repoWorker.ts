@@ -142,6 +142,14 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
 
             await job.updateProgress(60);
 
+            // === STEP 2.5: Static Security Scan ===
+            console.log(`[Worker] Running Static Security Scan for ${repoId}`);
+            const { runSecurityScan } = await import("../services/securityScanner.service.js");
+            const issueCount = await runSecurityScan(repoId, repoPath);
+            console.log(`[Worker] Detected and saved ${issueCount} security issues.`);
+
+            await job.updateProgress(70);
+
             // === STEP 3: Vector Embedding ===
             console.log(`[Worker] Uploading semantics to Qdrant for ${repoId}`);
             await job.updateProgress(80);
