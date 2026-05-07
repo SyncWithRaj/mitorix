@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { GitBranch, Box, Loader2, Play, Trash2, Github, MessageSquare, Plus, Info, Activity } from "lucide-react";
+import { GitBranch, Box, Loader2, Play, Trash2, Github, MessageSquare, Plus, Info, Activity, Folder, Archive } from "lucide-react";
+import JSZip from "jszip";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 
@@ -64,6 +65,78 @@ export default function Dashboard() {
     const [githubUrl, setGithubUrl] = useState("");
     const [loading, setLoading] = useState(false);
     const [embeddingRepo, setEmbeddingRepo] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState("");
+
+    const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        try {
+            setUploading(true);
+            setUploadProgress("Zipping folder locally...");
+
+            const zip = new JSZip();
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                zip.file(file.webkitRelativePath || file.name, file);
+            }
+
+            setUploadProgress("Uploading and parsing folder...");
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+
+            const formData = new FormData();
+            formData.append("file", zipBlob, "folder.zip");
+            formData.append("name", files[0].webkitRelativePath?.split("/")[0] || "local_folder");
+
+            const res = await api.post("/repos/upload-local", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            if (res.data.success) {
+                toast.success("Folder uploaded! Analysis started in the background.");
+                fetchRepos();
+            } else {
+                toast.error("Failed to process uploaded folder.");
+            }
+        } catch (err: any) {
+            console.error("Folder upload failed:", err);
+            toast.error(err.response?.data?.message || err.message || "Failed to upload folder.");
+        } finally {
+            setUploading(false);
+            setUploadProgress("");
+        }
+    };
+
+    const handleZipUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        try {
+            setUploading(true);
+            setUploadProgress("Uploading and parsing ZIP archive...");
+
+            const formData = new FormData();
+            formData.append("file", files[0]);
+
+            const res = await api.post("/repos/upload-local", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            if (res.data.success) {
+                toast.success("ZIP archive uploaded! Analysis started in the background.");
+                fetchRepos();
+            } else {
+                toast.error("Failed to process uploaded ZIP.");
+            }
+        } catch (err: any) {
+            console.error("ZIP upload failed:", err);
+            toast.error(err.response?.data?.message || err.message || "Failed to upload ZIP.");
+        } finally {
+            setUploading(false);
+            setUploadProgress("");
+        }
+    };
 
     const fetchRepos = useCallback(async () => {
         try {
@@ -178,6 +251,54 @@ export default function Dashboard() {
                             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Analyze Codebase"}
                         </span>
                     </button>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-[#30363d]/50 flex flex-col sm:flex-row gap-4 relative z-10 items-center justify-between">
+                    <div className="text-xs text-[#8b949e] font-medium">
+                        {uploading ? (
+                            <span className="flex items-center gap-2 text-[#58a6ff]">
+                                <Loader2 className="w-4 h-4 animate-spin animate-infinite" />
+                                {uploadProgress}
+                            </span>
+                        ) : (
+                            "Or onboard a local codebase from your machine:"
+                        )}
+                    </div>
+                    <div className="flex gap-3 w-full sm:w-auto">
+                        <input 
+                            type="file" 
+                            id="folder-upload-input" 
+                            style={{ display: "none" }} 
+                            onChange={handleFolderUpload} 
+                            // @ts-ignore
+                            webkitdirectory="" 
+                            directory="" 
+                        />
+                        <button
+                            onClick={() => document.getElementById("folder-upload-input")?.click()}
+                            disabled={loading || uploading}
+                            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-white text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                        >
+                            <Folder size={16} className="text-[#58a6ff]" />
+                            Open Folder
+                        </button>
+
+                        <input 
+                            type="file" 
+                            id="zip-upload-input" 
+                            accept=".zip" 
+                            style={{ display: "none" }} 
+                            onChange={handleZipUpload} 
+                        />
+                        <button
+                            onClick={() => document.getElementById("zip-upload-input")?.click()}
+                            disabled={loading || uploading}
+                            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-white text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                        >
+                            <Archive size={16} className="text-[#a371f7]" />
+                            Open ZIP
+                        </button>
+                    </div>
                 </div>
             </div>
 

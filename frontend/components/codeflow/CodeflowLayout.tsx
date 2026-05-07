@@ -169,12 +169,6 @@ export default function CodeflowLayout({
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
-           <button className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" title="Open local folder">
-             <Folder size={16} />
-           </button>
-           <button className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" title="Open ZIP archive">
-             <Archive size={16} />
-           </button>
            <button 
              className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" 
              title="Pull Request"
