@@ -70,8 +70,8 @@ export class TypeScriptParser extends BaseParser {
             // ── Relationships ──
             if (node.type === 'call_expression') {
                 const func = node.childForFieldName('function');
-                if (func && parentName) {
-                    relationships.push(this.createRelationship(repoId, parentName, filePath, func.text, "calls", node.startPosition.row + 1));
+                if (func) {
+                    relationships.push(this.createRelationship(repoId, parentName || "top_level", filePath, func.text, "calls", node.startPosition.row + 1));
                 }
             }
 
