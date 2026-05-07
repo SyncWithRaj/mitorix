@@ -135,7 +135,7 @@ export interface PatternFile {
 }
 
 export interface SecurityIssue {
-  severity: "high" | "medium" | "low";
+  severity: "critical" | "high" | "medium" | "low";
   title: string;
   file: string;
   path: string;

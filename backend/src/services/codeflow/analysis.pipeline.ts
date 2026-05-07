@@ -11,6 +11,8 @@ import { FileMetadata } from "../../models/fileMetadata.model.js";
 import { CodeEntity } from "../../models/codeEntity.model.js";
 import { CodeRelationship } from "../../models/relationship.model.js";
 import { Repository } from "../../models/repo.model.js";
+import { SecurityIssue } from "../../models/securityIssue.model.js";
+import { ArchitectureViolation } from "../../models/architectureViolation.model.js";
 import path from "path";
 
 import type {
@@ -232,7 +234,7 @@ export async function runAnalysisPipeline(repoId: string, excludes: string[] = [
   // =========================================================================
 
   const patterns = detectPatterns(analyzedFiles);
-  const securityIssues = detectSecurity(analyzedFiles);
+  const securityIssues = await SecurityIssue.find({ repoId }).lean();
 
   // =========================================================================
   // STAGE 4: Code Quality — Complexity, Duplicates, Layer Violations
@@ -246,7 +248,7 @@ export async function runAnalysisPipeline(repoId: string, excludes: string[] = [
   }
 
   const duplicates = detectDuplicates(analyzedFiles, allFns);
-  const layerViolations = detectLayerViolations(analyzedFiles, connections);
+  const layerViolations = await ArchitectureViolation.find({ repoId }).lean();
 
   // Add complexity issues
   const highComplexity = analyzedFiles
@@ -304,12 +306,12 @@ export async function runAnalysisPipeline(repoId: string, excludes: string[] = [
       type: "critical",
       title: `${layerViolations.length} Architecture Violations`,
       desc: "Lower layers importing from higher layers",
-      items: layerViolations.map((v) => ({
-        name: `${v.fromLayer} → ${v.toLayer}`,
-        file: v.from,
-        toFile: v.to,
-        fn: v.fn,
-        suggestion: v.suggestion,
+      items: layerViolations.map((v: any) => ({
+        name: `${v.violatingLayer.toUpperCase()} → ${v.importedLayer.toUpperCase()}`,
+        file: v.path,
+        toFile: v.importedPath,
+        fn: v.importedFile,
+        suggestion: v.desc,
       })),
     });
   }

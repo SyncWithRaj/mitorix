@@ -112,16 +112,16 @@ export function generateSuggestions(data: {
 
   // Security
   const highSec = data.securityIssues
-    ? data.securityIssues.filter((s) => s.severity === "high")
+    ? data.securityIssues.filter((s) => s.severity === "critical" || s.severity === "high")
     : [];
   if (highSec.length) {
     suggestions.push({
       priority: "critical",
       icon: "shield",
       title: "Fix Security Issues",
-      desc: `${highSec.length} high-severity security issues found.`,
-      action: "Address hardcoded secrets, injection risks immediately",
-      impact: "Prevents potential security breaches",
+      desc: `${highSec.length} critical or high severity security vulnerabilities found.`,
+      action: "Address hardcoded secrets and command injection risks immediately",
+      impact: "Prevents potential security breaches and credentials leakage",
     });
   }
 
