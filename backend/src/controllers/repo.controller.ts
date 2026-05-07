@@ -482,3 +482,27 @@ export const getRepoSecurityIssues = async (req: Request, res: Response) => {
         return res.status(500).json({ success: false, message: "Failed to fetch security issues" });
     }
 };
+
+export const getRepoArchitectureViolations = async (req: Request, res: Response) => {
+    try {
+        const user = (req as any).user;
+        const repoId = req.params.id;
+
+        const repo = await Repository.findOne({ _id: repoId, user: user._id });
+        if (!repo) {
+            return res.status(404).json({ success: false, message: "Repository not found or unauthorized" });
+        }
+
+        const { ArchitectureViolation } = await import("../models/architectureViolation.model.js");
+        const violations = await ArchitectureViolation.find({ repoId }).sort({ severity: 1, path: 1 }).lean();
+
+        return res.json({
+            success: true,
+            totalViolations: violations.length,
+            violations
+        });
+    } catch (error: any) {
+        console.error("[ArchitectureController] Failed to fetch architecture violations:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch architecture violations" });
+    }
+};

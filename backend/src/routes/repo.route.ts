@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addRepository, deleteRepository, getRepositoryById, getUserRepositories, scanRepository, processRepoController, jobStatusController, upload, uploadLocalRepository, getRepoSecurityIssues } from "../controllers/repo.controller.js";
+import { addRepository, deleteRepository, getRepositoryById, getUserRepositories, scanRepository, processRepoController, jobStatusController, upload, uploadLocalRepository, getRepoSecurityIssues, getRepoArchitectureViolations } from "../controllers/repo.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 import { parseRepoController } from "../controllers/parser.controller.js";
 import { getRepositoryEntities } from "../controllers/codeEntity.controller.js";
@@ -27,5 +27,6 @@ router.get("/:id/graph", protect, getRepositoryGraph);
 router.get("/:id/design-doc", protect, generateSystemDesignDoc);
 router.get("/:id/onboarding", protect, generateOnboardingGuide);
 router.get("/:id/security", protect, getRepoSecurityIssues);
+router.get("/:id/violations", protect, getRepoArchitectureViolations);
 
 export default router;

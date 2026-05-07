@@ -150,6 +150,14 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
 
             await job.updateProgress(70);
 
+            // === STEP 2.7: Clean Architecture Boundary Scan ===
+            console.log(`[Worker] Running Clean Architecture Boundary Scan for ${repoId}`);
+            const { runArchitectureCheck } = await import("../services/architectureEngine.service.js");
+            const violationCount = await runArchitectureCheck(repoId);
+            console.log(`[Worker] Detected and saved ${violationCount} architecture violations.`);
+
+            await job.updateProgress(75);
+
             // === STEP 3: Vector Embedding ===
             console.log(`[Worker] Uploading semantics to Qdrant for ${repoId}`);
             await job.updateProgress(80);
