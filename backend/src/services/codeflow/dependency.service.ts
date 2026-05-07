@@ -189,11 +189,14 @@ export function buildDependencyGraph(
   const deadFns = Object.entries(fnStats).filter(([name, stats]) => {
     if (stats.internal > 0 || stats.external > 0) return false;
     if (stats.isClassMethod) return false;
+    if (stats.className && !stats.isClassMethod) return false;
     if (!stats.isTopLevel) return false;
     if (stats.decorators && stats.decorators.length > 0) return false;
+    if (stats.code && /^\s*@/.test(stats.code)) return false;
     if (["class", "dataclass", "abstract_class"].includes(stats.type)) return false;
 
     const baseName = name.includes(".") ? name.split(".").pop()! : name;
+    if (baseName.startsWith("anonymous") || baseName.includes("anonymous")) return false;
     if (baseName.startsWith("__") && baseName.endsWith("__")) return false;
     if (
       baseName.startsWith("test_") ||
@@ -233,7 +236,20 @@ export function buildDependencyGraph(
       ].includes(baseName)
     )
       return false;
-    if (stats.isExported && stats.file && /\.[jt]sx?$/.test(stats.file)) return false;
+    if (stats.isExported) return false;
+    
+    // Skip React Components (Capitalized arrow functions/declarations in TSX/JSX)
+    if (stats.file && /\.[jt]sx$/.test(stats.file) && /^[A-Z]/.test(baseName)) return false;
+
+    // Skip React Hooks (functions starting with 'use' in JS/TS)
+    if (stats.file && /\.[jt]sx?$/.test(stats.file) && /^use[A-Z]/.test(baseName)) return false;
+
+    // Skip Go init functions
+    if (baseName === "init" && stats.file && stats.file.endsWith(".go")) return false;
+
+    // Skip Java / C# / C++ Main Entry points
+    if (baseName.toLowerCase() === "main") return false;
+
     if (
       stats.file &&
       (/\.(?:spec|test)\.[jt]sx?$/.test(stats.file) || stats.file.includes("__tests__"))

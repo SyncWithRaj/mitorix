@@ -157,19 +157,43 @@ export async function runAnalysisPipeline(repoId: string, excludes: string[] = [
       (e: any) => e.filePath === fp && ["function", "method", "arrow", "class", "constructor", "staticMethod"].includes(e.type)
     );
 
-    const fileFns: FunctionDef[] = fileEntities.map((e: any) => ({
-      name: e.name,
-      file: fp,
-      folder,
-      line: e.startLine || 1,
-      code: (e.content || "").substring(0, 500),
-      isTopLevel: (e.scopeDepth || 0) <= 1,
-      isExported: content ? content.includes(`export`) && content.includes(e.name) : false,
-      isClassMethod: e.type === "method" || e.type === "staticMethod",
-      type: e.type,
-      decorators: null,
-      className: e.parentName || null,
-    }));
+    const fileFns: FunctionDef[] = fileEntities.map((e: any) => {
+      let isExported = false;
+      if (content) {
+        const ext = fileName.split(".").pop()?.toLowerCase();
+        if (ext === "go") {
+          isExported = /^[A-Z]/.test(e.name);
+        } else if (ext === "rs") {
+          isExported = new RegExp(`pub\\s+(?:async\\s+)?fn\\s+${e.name}\\b`).test(content);
+        } else if (ext === "py") {
+          isExported = !e.name.startsWith("_") || /^\s*@/.test(e.content || "");
+        } else if (ext === "java" || ext === "cs") {
+          isExported = new RegExp(`public\\s+.*${e.name}\\b`).test(content);
+        } else if (ext === "php") {
+          isExported = new RegExp(`public\\s+function\\s+${e.name}\\b`).test(content);
+        } else if (["js", "jsx", "ts", "tsx"].includes(ext || "")) {
+          isExported = new RegExp(`export\\s+(?:const|let|var|function|async\\s+function|class|default|type|interface|enum)\\s+${e.name}\\b`).test(content) ||
+                       new RegExp(`export\\s+\\{\\s*[^}]*\\b${e.name}\\b[^}]*\\}`).test(content) ||
+                       content.includes(`export default ${e.name}`);
+        } else {
+          isExported = content.includes(`export`) && content.includes(e.name);
+        }
+      }
+
+      return {
+        name: e.name,
+        file: fp,
+        folder,
+        line: e.startLine || 1,
+        code: (e.content || "").substring(0, 500),
+        isTopLevel: (e.scopeDepth || 0) <= 1,
+        isExported,
+        isClassMethod: e.type === "method" || e.type === "staticMethod",
+        type: e.type,
+        decorators: null,
+        className: e.parentName || null,
+      };
+    });
 
     const analyzedFile: AnalyzedFile = {
       path: fp,
