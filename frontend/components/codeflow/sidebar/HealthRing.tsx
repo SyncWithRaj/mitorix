@@ -26,7 +26,7 @@ export default function HealthRing({ score, grade }: HealthRingProps) {
         <circle 
           cx="32" cy="32" r={r} 
           fill="none" 
-          stroke="#30363d" 
+          stroke="var(--color-gh-border)" 
           strokeWidth="6" 
         />
         <circle 
@@ -52,9 +52,9 @@ export default function HealthRing({ score, grade }: HealthRingProps) {
       </svg>
       <div className="flex flex-col">
         <div className="text-xl font-bold" style={{ color }}>
-          {score}<span className="text-[#8b949e] text-sm font-normal">/100</span>
+          {score}<span className="text-gh-text-muted text-sm font-normal">/100</span>
         </div>
-        <div className="text-[10px] uppercase tracking-wider text-[#8b949e] font-bold">
+        <div className="text-[10px] uppercase tracking-wider text-gh-text-muted font-bold">
           Health Score
         </div>
       </div>

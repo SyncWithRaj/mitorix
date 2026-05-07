@@ -21,6 +21,63 @@
   --color-gh-danger-hover: #b62324;
 }
 
+/* CodeFlow Theme Variables - Dark (Default) */
+:root {
+  --bg0: #0a0a0f;
+  --bg1: #12121a;
+  --bg2: #1a1a24;
+  --bg3: #24242e;
+  --t0: #ffffff;
+  --t1: #e0e0e8;
+  --t2: #8888a0;
+  --t3: #55556a;
+  --acc: #00ff9d;
+  --accbg: rgba(0, 255, 157, 0.12);
+  --border: #2a2a38;
+  --red: #ff5f5f;
+  --orange: #ff9f43;
+  --green: #22c55e;
+  --blue: #4d9fff;
+  --purple: #a855f7;
+}
+
+/* CodeFlow Theme Variables - Light */
+body.light {
+  --bg0: #f8f9fc;
+  --bg1: #ffffff;
+  --bg2: #f0f1f5;
+  --bg3: #e4e5eb;
+  --t0: #1a1a2e;
+  --t1: #2d2d44;
+  --t2: #6b6b88;
+  --t3: #9999b0;
+  --acc: #00b36b;
+  --accbg: rgba(0, 179, 107, 0.12);
+  --border: #d8d9e0;
+  --red: #dc2626;
+  --orange: #ea580c;
+  --green: #16a34a;
+  --blue: #2563eb;
+  --purple: #9333ea;
+}
+
+/* Light theme overrides for GitHub colors */
+body.light {
+  --color-gh-bg: #ffffff;
+  --color-gh-panel: #f6f8fa;
+  --color-gh-border: #d0d7de;
+  --color-gh-text: #24292f;
+  --color-gh-text-muted: #57606a;
+  --color-gh-btn-primary: #1f883d;
+  --color-gh-btn-primary-hover: #1a7f37;
+  --color-gh-btn-secondary: #f6f8fa;
+  --color-gh-btn-secondary-hover: #f3f4f6;
+  --color-gh-input: #ffffff;
+  --color-gh-accent: #0969da;
+  --color-gh-danger: #cf222e;
+  --color-gh-danger-hover: #a40e26;
+}
+
 html {
   scroll-behavior: smooth;
 }
