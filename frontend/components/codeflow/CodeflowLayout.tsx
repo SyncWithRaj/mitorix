@@ -34,6 +34,9 @@ import ExportModal from "./modals/ExportModal";
 import UnusedFunctionsModal from "./modals/UnusedFunctionsModal";
 import ExcludePatternsModal from "./modals/ExcludePatternsModal";
 import ConfirmDialog from "./modals/ConfirmDialog";
+import ThemeToggle from "./ThemeToggle";
+import AnalysisProgress from "./AnalysisProgress";
+import { getWorkerManager } from "../../lib/worker.utils";
 
 export default function CodeflowLayout({
   repoId,
@@ -45,6 +48,7 @@ export default function CodeflowLayout({
   const { 
     analysisData, 
     setAnalysisData, 
+    isLoading,
     setIsLoading, 
     graphConfig, 
     selectedFile, 
@@ -57,7 +61,11 @@ export default function CodeflowLayout({
     excludePatterns,
     triggerAnalysis,
     // @ts-ignore - we'll add refreshKey to context too to make it easy
-    refreshKey 
+    refreshKey,
+    useWebWorker,
+    setUseWebWorker,
+    analysisProgress,
+    setAnalysisProgress
   } = useCodeflow();
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
@@ -66,8 +74,29 @@ export default function CodeflowLayout({
     const fetchAnalysis = async () => {
       try {
         setIsLoading(true);
+        setUseWebWorker(true);
+        setAnalysisProgress({ progress: 10, message: "Initializing analysis..." });
+
+        const workerManager = getWorkerManager();
+        let workerPromise;
+        if (workerManager.isWebWorkerSupported()) {
+          workerPromise = workerManager.runAnalysis(
+            { files: [], functions: [], relationships: [] },
+            (progress, message) => {
+              setAnalysisProgress({ progress, message });
+            }
+          ).catch(err => {
+            console.error("[Worker] Analysis worker failed:", err);
+          });
+        }
+
         const patternsParam = excludePatterns.split("\n").filter(p => p.trim()).join(",");
         const res = await api.get(`/codeflow/analysis/${repoId}?excludes=${encodeURIComponent(patternsParam)}`);
+        
+        if (workerPromise) {
+          await workerPromise;
+        }
+
         if (res.data.success) {
           setAnalysisData(res.data.data);
         } else {
@@ -78,11 +107,12 @@ export default function CodeflowLayout({
         toast.error("Failed to load CodeFlow analysis");
       } finally {
         setIsLoading(false);
+        setAnalysisProgress(null);
       }
     };
 
     fetchAnalysis();
-  }, [repoId, setAnalysisData, setIsLoading, refreshKey]);
+  }, [repoId, setAnalysisData, setIsLoading, refreshKey, setUseWebWorker, setAnalysisProgress, excludePatterns]);
 
   const tabs = [
     { key: "details", label: "Details", icon: <Info size={12} /> },
@@ -93,24 +123,24 @@ export default function CodeflowLayout({
   ];
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-[#0d1117] text-[#c9d1d9] overflow-hidden font-mono">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-gh-bg text-gh-text overflow-hidden font-mono">
       {/* Topbar */}
-      <div className="h-14 border-b border-[#30363d] bg-[#161b22] flex items-center px-4 shrink-0 z-50 justify-between">
+      <div className="h-14 border-b border-gh-border bg-gh-panel flex items-center px-4 shrink-0 z-50 justify-between">
         <div className="flex items-center gap-3">
           <Link
             href={`/dashboard`}
-            className="p-1.5 hover:bg-[#30363d] rounded-md transition text-[#8b949e] hover:text-[#c9d1d9]"
+            className="p-1.5 hover:bg-gh-btn-secondary-hover rounded-md transition text-gh-text-muted hover:text-gh-text"
           >
             <ArrowLeft size={16} />
           </Link>
           <div className="flex items-center gap-2">
-            <button className="md:hidden p-1.5 text-[#8b949e] hover:text-[#c9d1d9]" onClick={() => setLeftOpen(!leftOpen)}>
+            <button className="md:hidden p-1.5 text-gh-text-muted hover:text-gh-text" onClick={() => setLeftOpen(!leftOpen)}>
               <Menu size={18} />
             </button>
-            <div className="w-6 h-6 rounded bg-[#21262d] flex items-center justify-center text-[#c9d1d9] border border-[#30363d]">
+            <div className="w-6 h-6 rounded bg-gh-btn-secondary flex items-center justify-center text-gh-text border border-gh-border">
               <span className="font-bold text-xs">CF</span>
             </div>
-            <span className="font-bold text-[#c9d1d9] tracking-wide text-sm hidden sm:block">
+            <span className="font-bold text-gh-text tracking-wide text-sm hidden sm:block">
               CODEFLOW
             </span>
           </div>
@@ -119,19 +149,19 @@ export default function CodeflowLayout({
         <div className="flex items-center gap-2 flex-1 max-w-2xl px-2 sm:px-6">
           <input 
             type="text" 
-            className="flex-1 bg-[#010409] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#c9d1d9] focus:outline-none focus:border-[#58a6ff] hidden sm:block"
+            className="flex-1 bg-gh-input border border-gh-border rounded-md px-3 py-1.5 text-xs text-gh-text focus:outline-none focus:border-gh-accent hidden sm:block"
             placeholder="owner/repo or GitHub URL"
             value={repoId}
             readOnly
           />
           <button 
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs bg-[#21262d] border border-[#30363d] hover:bg-[#30363d] rounded-md transition text-[#c9d1d9]"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gh-btn-secondary border border-gh-border hover:bg-gh-btn-secondary-hover rounded-md transition text-gh-text"
             onClick={() => setShowExcludeModal(true)}
           >
              <Ban size={14} /> Excludes
           </button>
           <button 
-            className="hidden sm:flex items-center gap-2 px-4 py-1.5 text-xs bg-[#238636] hover:bg-[#2ea043] border border-[rgba(240,246,252,0.1)] rounded-md transition text-white font-medium" 
+            className="hidden sm:flex items-center gap-2 px-4 py-1.5 text-xs bg-gh-btn-primary hover:bg-gh-btn-primary-hover border border-gh-border rounded-md transition text-white font-medium" 
             onClick={triggerAnalysis}
           >
              Analyze
@@ -139,33 +169,33 @@ export default function CodeflowLayout({
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
-           <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Open local folder">
+           <button className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" title="Open local folder">
              <Folder size={16} />
            </button>
-           <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Open ZIP archive">
+           <button className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" title="Open ZIP archive">
              <Archive size={16} />
            </button>
            <button 
-             className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" 
+             className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" 
              title="Pull Request"
              onClick={() => setShowPRModal(true)}
            >
              <GitPullRequest size={16} />
            </button>
            <button 
-             className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" 
+             className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" 
              title="Export"
              onClick={() => setShowExportModal(true)}
            >
              <Download size={16} />
            </button>
-           <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition" title="Share">
+           <button className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" title="Share">
              <Share2 size={16} />
            </button>
-           <button className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition hidden sm:block" title="Toggle theme">
-             <Moon size={16} />
-           </button>
-           <button className="lg:hidden p-1.5 text-[#8b949e] hover:text-[#c9d1d9]" onClick={() => setRightOpen(!rightOpen)}>
+           <div className="hidden sm:block">
+             {/* <ThemeToggle /> */}
+           </div>
+           <button className="lg:hidden p-1.5 text-gh-text-muted hover:text-gh-text" onClick={() => setRightOpen(!rightOpen)}>
               <Settings size={18} />
            </button>
         </div>
@@ -182,9 +212,9 @@ export default function CodeflowLayout({
           className={`${leftOpen ? 'flex absolute inset-y-0 left-0 z-40' : 'hidden'} md:relative md:flex`}
         >
           {analysisData ? (
-            <div className="flex flex-col h-full bg-[#0d1117]">
+            <div className="flex flex-col h-full bg-gh-bg">
               {/* Upper Section */}
-              <div className="flex-none p-4 space-y-5 border-b border-[#30363d] overflow-y-auto max-h-[65%] custom-scrollbar">
+              <div className="flex-none p-4 space-y-5 border-b border-gh-border overflow-y-auto max-h-[65%] custom-scrollbar">
                 <HealthRing 
                   score={analysisData.health?.score || 0} 
                   grade={analysisData.health?.grade || "F"} 
@@ -200,18 +230,18 @@ export default function CodeflowLayout({
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-[#8b949e]">
-              <div className="w-12 h-12 mb-4 opacity-50 flex items-center justify-center rounded-full bg-[#21262d]">
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-gh-text-muted">
+              <div className="w-12 h-12 mb-4 opacity-50 flex items-center justify-center rounded-full bg-gh-btn-secondary">
                 <Menu size={24} />
               </div>
-              <h3 className="text-[#c9d1d9] font-bold text-sm mb-1">No Repository</h3>
+              <h3 className="text-gh-text font-bold text-sm mb-1">No Repository</h3>
               <p className="text-xs">Analyzing architecture and calculating metrics...</p>
             </div>
           )}
         </ResizablePanel>
 
         {/* Center Canvas */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#0d1117] relative overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 bg-gh-bg relative overflow-hidden">
           {analysisData && <VizSelector />}
           
           <div className="absolute inset-0 z-0">
@@ -236,14 +266,14 @@ export default function CodeflowLayout({
           className={`${rightOpen ? 'flex absolute inset-y-0 right-0 z-40' : 'hidden'} lg:relative lg:flex`}
         >
           {/* Tab Bar */}
-          <div className="flex border-b border-[#30363d] bg-[#161b22] shrink-0">
+          <div className="flex border-b border-gh-border bg-gh-panel shrink-0">
             {tabs.map(tab => (
               <button
                 key={tab.key}
                 className={`flex-1 py-2 text-[10px] font-bold transition flex items-center justify-center gap-1 ${
                   rightTab === tab.key
-                    ? "text-[#58a6ff] border-b-2 border-[#58a6ff]"
-                    : "text-[#8b949e] hover:text-[#c9d1d9] border-b-2 border-transparent hover:border-[#30363d]"
+                    ? "text-gh-accent border-b-2 border-gh-accent"
+                    : "text-gh-text-muted hover:text-gh-text border-b-2 border-transparent hover:border-gh-border"
                 }`}
                 onClick={() => { setRightTab(tab.key as RightTab); setDrillDown(null); }}
               >
@@ -254,9 +284,9 @@ export default function CodeflowLayout({
           </div>
 
           {/* Panel Content */}
-          <div className={`flex-1 overflow-y-auto bg-[#0d1117] custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}>
+          <div className={`flex-1 overflow-y-auto bg-gh-bg custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}>
             {analysisData ? (
-              <div className="flex-1 flex flex-col relative bg-[#0d1117]">
+              <div className="flex-1 flex flex-col relative bg-gh-bg">
                 {rightTab === "details" && (
                   selectedFile ? <FileInspector /> : <IssuesPanel />
                 )}
@@ -266,7 +296,7 @@ export default function CodeflowLayout({
                 {rightTab === "code" && <CodePanel repoId={repoId} />}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-[#8b949e]">
+              <div className="flex flex-col items-center justify-center h-full text-gh-text-muted">
                 <div className="text-3xl mb-3 opacity-30">📊</div>
                 <div className="text-xs font-semibold mb-1">Analysis</div>
                 <div className="text-[10px] text-center opacity-60">Analyze a repo to see insights</div>
@@ -284,6 +314,13 @@ export default function CodeflowLayout({
       <UnusedFunctionsModal />
       <ExcludePatternsModal />
       <ConfirmDialog />
+
+      {/* Analysis Progress Overlay */}
+      <AnalysisProgress 
+        progress={analysisProgress?.progress || 0} 
+        message={analysisProgress?.message || ""} 
+        isVisible={isLoading && useWebWorker && analysisProgress !== null} 
+      />
     </div>
   );
 }

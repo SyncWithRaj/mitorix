@@ -7,8 +7,6 @@ import { X, Trash2, FileCode } from "lucide-react";
 export default function UnusedFunctionsModal() {
   const { analysisData, showUnusedModal, setShowUnusedModal, setSelectedFile, setRightTab } = useCodeflow();
 
-  console.log("[UnusedFunctionsModal] Render. showUnusedModal =", showUnusedModal, "has analysisData =", !!analysisData);
-
   if (!showUnusedModal || !analysisData) return null;
 
   const deadFns = analysisData.deadFunctions || [];
