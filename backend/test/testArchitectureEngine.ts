@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import { runArchitectureCheck } from "../services/architectureEngine.service.js";
-import { CodeRelationship } from "../models/relationship.model.js";
-import { ArchitectureViolation } from "../models/architectureViolation.model.js";
-import { Repository } from "../models/repo.model.js";
+import { runArchitectureCheck } from "../src/services/architectureEngine.service.js";
+import { CodeRelationship } from "../src/models/relationship.model.js";
+import { ArchitectureViolation } from "../src/models/architectureViolation.model.js";
+import { Repository } from "../src/models/repo.model.js";
 
 dotenv.config();
 

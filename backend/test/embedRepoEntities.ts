@@ -4,7 +4,7 @@ dotenv.config();
 import mongoose from "mongoose";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
-import { CodeEntity } from "../models/codeEntity.model.js";
+import { CodeEntity } from "../src/models/codeEntity.model.js";
 
 const MONGO_URI = process.env.MONGO_URI!;
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY!;

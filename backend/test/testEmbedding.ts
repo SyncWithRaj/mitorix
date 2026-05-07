@@ -1,5 +1,5 @@
-import { embeddingModel } from "../services/embedding.service.js";
-import { vectorStore } from "../services/vector.service.js";
+import { embeddingModel } from "../src/services/embedding.service.js";
+import { vectorStore } from "../src/services/vector.service.js";
 
 async function testEmbedding() {
   try {

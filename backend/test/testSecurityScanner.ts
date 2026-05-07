@@ -2,9 +2,9 @@ import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import { runSecurityScan } from "../services/securityScanner.service.js";
-import { SecurityIssue } from "../models/securityIssue.model.js";
-import { Repository } from "../models/repo.model.js";
+import { runSecurityScan } from "../src/services/securityScanner.service.js";
+import { SecurityIssue } from "../src/models/securityIssue.model.js";
+import { Repository } from "../src/models/repo.model.js";
 
 dotenv.config();
 

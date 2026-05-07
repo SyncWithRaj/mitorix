@@ -1,4 +1,4 @@
-import { vectorStore } from "../services/vector.service.js";
+import { vectorStore } from "../src/services/vector.service.js";
 
 async function testSearch() {
 

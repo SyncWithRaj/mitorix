@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import { runAnalysisPipeline } from "../services/codeflow/analysis.pipeline.js";
-import { SecurityIssue } from "../models/securityIssue.model.js";
-import { ArchitectureViolation } from "../models/architectureViolation.model.js";
-import { Repository } from "../models/repo.model.js";
+import { runAnalysisPipeline } from "../src/services/codeflow/analysis.pipeline.js";
+import { SecurityIssue } from "../src/models/securityIssue.model.js";
+import { ArchitectureViolation } from "../src/models/architectureViolation.model.js";
+import { Repository } from "../src/models/repo.model.js";
 
 dotenv.config();
 
