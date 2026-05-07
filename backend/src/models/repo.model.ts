@@ -14,6 +14,7 @@ export interface IRepository extends Document {
     lastAccessedAt: Date;
     onboardingGuide?: any;
     systemDesignDoc?: string;
+    isSession?: boolean;
 }
 
 const repoSchema = new Schema<IRepository>({
@@ -63,6 +64,10 @@ const repoSchema = new Schema<IRepository>({
     },
     systemDesignDoc: {
         type: String,
+    },
+    isSession: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true,

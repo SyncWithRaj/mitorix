@@ -76,26 +76,38 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
                 }
             }
 
-            // Create temp directory explicitly
-            if (!fs.existsSync(repoPath)) {
-                fs.mkdirSync(repoPath, { recursive: true });
+            if (repoUrl.startsWith("local://")) {
+                console.log(`[Worker] Detected local uploaded repository ${repoId}. Skipping Git Clone.`);
+                if (!fs.existsSync(repoPath)) {
+                    throw new Error("Temporary local upload path does not exist or has expired.");
+                }
+                await Repository.findByIdAndUpdate(repoId, {
+                    commitHash: "local",
+                    fingerprint: `${repoUrl}_local`,
+                    status: "indexing"
+                });
+            } else {
+                // Create temp directory explicitly
+                if (!fs.existsSync(repoPath)) {
+                    fs.mkdirSync(repoPath, { recursive: true });
+                }
+
+                console.log(`[Worker] Cloning ${safeUrl} into ${repoPath}`);
+                const git = simpleGit();
+                await git.clone(cloneUrl, repoPath, [
+                    "--depth", "1",
+                    "-c", "credential.helper=",
+                ]);
+
+                const clonedRepo = simpleGit(repoPath);
+                const latestCommit = await clonedRepo.revparse(["HEAD"]);
+
+                await Repository.findByIdAndUpdate(repoId, {
+                    commitHash: latestCommit,
+                    fingerprint: `${safeUrl}_${latestCommit}`,
+                    status: "indexing"
+                });
             }
-
-            console.log(`[Worker] Cloning ${safeUrl} into ${repoPath}`);
-            const git = simpleGit();
-            await git.clone(cloneUrl, repoPath, [
-                "--depth", "1",
-                "-c", "credential.helper=",
-            ]);
-
-            const clonedRepo = simpleGit(repoPath);
-            const latestCommit = await clonedRepo.revparse(["HEAD"]);
-
-            await Repository.findByIdAndUpdate(repoId, {
-                commitHash: latestCommit,
-                fingerprint: `${safeUrl}_${latestCommit}`,
-                status: "indexing"
-            });
 
             await job.updateProgress(30);
 

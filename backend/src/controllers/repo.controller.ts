@@ -3,6 +3,7 @@ import simpleGit from "simple-git";
 import fs from "fs"
 import path from "path";
 import { scanCodeFiles } from "../modules/indexer/fileScanner.js";
+import { processRepositoryParsing } from "../services/parser.service.js";
 import { Repository } from "../models/repo.model.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { CodeRelationship } from "../models/relationship.model.js";
@@ -342,5 +343,118 @@ export const jobStatusController = async (req: Request, res: Response) => {
         queueEvents.off("completed", onCompleted);
         queueEvents.off("failed", onFailed);
         queueEvents.close();
+    }
+};
+
+// --- Local Zip / Folder Upload Support ---
+import multer from "multer";
+import AdmZip from "adm-zip";
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dest = path.join(process.cwd(), "uploads");
+        if (!fs.existsSync(dest)) {
+            fs.mkdirSync(dest, { recursive: true });
+        }
+        cb(null, dest);
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}_${file.originalname}`);
+    }
+});
+
+export const upload = multer({ storage });
+
+export const uploadLocalRepository = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const user = (req as any).user;
+        if (!user) {
+            return res.status(401).json({ success: false, message: "Not authorized" });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: "Zip file is required" });
+        }
+
+        const zipPath = req.file.path;
+        const repoName = req.body.name || req.file.originalname.replace(".zip", "");
+
+        const repo = new Repository({
+            user: user._id,
+            name: repoName,
+            githubUrl: `local://${repoName}`,
+            status: "cloning",
+            isSession: false
+        });
+
+        const repoPath = getTempRepoPath(user._id.toString(), repo._id.toString());
+        fs.mkdirSync(repoPath, { recursive: true });
+        repo.localPath = repoPath;
+        await repo.save();
+
+        let queuedSuccessfully = false;
+
+        try {
+            console.log(`[LocalUpload] Extracting zip file for repo ${repo._id}...`);
+            const zip = new AdmZip(zipPath);
+            zip.extractAllTo(repoPath, true);
+
+            const scannedFiles = scanCodeFiles(repoPath);
+            if (scannedFiles.length === 0) {
+                throw new Error("No valid code files found to parse inside the zip archive.");
+            }
+
+            console.log(`[LocalUpload] Queueing background job for ${repoName}...`);
+            const job = await repoQueue.add("process-repo", {
+                repoUrl: `local://${repoName}`,
+                userId: user._id.toString(),
+                repoId: repo._id.toString(),
+            });
+
+            repo.jobId = job.id;
+            await repo.save();
+
+            queuedSuccessfully = true;
+
+            if (fs.existsSync(zipPath)) {
+                fs.unlinkSync(zipPath);
+            }
+
+            console.log(`[LocalUpload] Background job ${job.id} queued successfully.`);
+
+            return res.status(202).json({
+                success: true,
+                repoId: repo._id.toString(),
+                jobId: job.id,
+                repo,
+                message: "Repository uploaded and queued for processing successfully."
+            });
+
+        } catch (innerError: any) {
+            console.error("[LocalUpload] Extraction/queueing failed:", innerError);
+            repo.status = "failed";
+            await repo.save();
+
+            if (fs.existsSync(zipPath)) {
+                fs.unlinkSync(zipPath);
+            }
+
+            return res.status(500).json({
+                success: false,
+                message: innerError.message || "Failed to process zip file."
+            });
+        } finally {
+            // Clean up the temp path only if we failed to queue the job
+            if (!queuedSuccessfully && fs.existsSync(repoPath)) {
+                fs.rmSync(repoPath, { recursive: true, force: true });
+            }
+        }
+
+    } catch (error: any) {
+        console.error("[LocalUpload] Upload handler failed:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Local upload failed."
+        });
     }
 };

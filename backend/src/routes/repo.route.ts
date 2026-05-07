@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addRepository, deleteRepository, getRepositoryById, getUserRepositories, scanRepository, processRepoController, jobStatusController } from "../controllers/repo.controller.js";
+import { addRepository, deleteRepository, getRepositoryById, getUserRepositories, scanRepository, processRepoController, jobStatusController, upload, uploadLocalRepository } from "../controllers/repo.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 import { parseRepoController } from "../controllers/parser.controller.js";
 import { getRepositoryEntities } from "../controllers/codeEntity.controller.js";
@@ -12,6 +12,7 @@ import { generateOnboardingGuide } from "../controllers/onboarding.controller.js
 const router = Router();
 
 router.post("/", protect, addRepository)
+router.post("/upload-local", protect, upload.single("file"), uploadLocalRepository);
 router.post("/process", protect, processRepoController);
 router.get("/jobs/:id/status", protect, jobStatusController);
 router.get("/", protect, getUserRepositories)
