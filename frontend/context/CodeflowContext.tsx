@@ -9,6 +9,9 @@ import {
 } from "../lib/codeflow.types";
 import { DEFAULT_GRAPH_CONFIG } from "../lib/codeflow.constants";
 import { calcBlast } from "../lib/codeflow.utils";
+import { getWorkerManager, cleanupWorkerManager } from "../lib/worker.utils";
+import { shouldUseWebWorker } from "../lib/performance.utils";
+import { useEffect } from "react";
 
 export type RightTab = "details" | "patterns" | "security" | "suggestions" | "code";
 
@@ -68,6 +71,12 @@ interface CodeflowState {
   triggerAnalysis: () => void;
   confirmDialog: { tone: string; title: string; desc: string; onConfirm: () => void } | null;
   setConfirmDialog: (dialog: any | null) => void;
+
+  // Web Worker State
+  useWebWorker: boolean;
+  setUseWebWorker: (use: boolean) => void;
+  analysisProgress: { progress: number; message: string } | null;
+  setAnalysisProgress: (progress: { progress: number; message: string } | null) => void;
 }
 
 const CodeflowContext = createContext<CodeflowState | undefined>(undefined);
@@ -100,6 +109,27 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
   const [excludePatterns, setExcludePatterns] = useState<string>("node_modules\n.git\ndist\nbuild\n.next");
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [confirmDialog, setConfirmDialog] = useState<any | null>(null);
+
+  // Web Worker State
+  const [useWebWorker, setUseWebWorker] = useState<boolean>(false);
+  const [analysisProgress, setAnalysisProgress] = useState<{ progress: number; message: string } | null>(null);
+
+  // Initialize Web Worker on mount
+  useEffect(() => {
+    const workerManager = getWorkerManager();
+    workerManager.initialize();
+
+    return () => {
+      cleanupWorkerManager();
+    };
+  }, []);
+
+  // Auto-enable Web Worker for large repos
+  useEffect(() => {
+    if (analysisData && analysisData.stats.files > 100) {
+      setUseWebWorker(true);
+    }
+  }, [analysisData]);
 
   const triggerAnalysis = useCallback(() => {
     setRefreshKey(prev => prev + 1);
@@ -188,6 +218,10 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
         triggerAnalysis,
         confirmDialog,
         setConfirmDialog,
+        useWebWorker,
+        setUseWebWorker,
+        analysisProgress,
+        setAnalysisProgress,
       }}
     >
       {children}
