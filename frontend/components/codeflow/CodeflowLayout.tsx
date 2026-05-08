@@ -4,7 +4,7 @@ import type { RightTab } from "../../context/CodeflowContext";
 import api from "../../lib/axios";
 import toast from "react-hot-toast";
 import ResizablePanel from "./ResizablePanel";
-import { ArrowLeft, Menu, Settings, Ban, Folder, Archive, GitPullRequest, Download, Share2, Moon, Info, Grid, ShieldAlert, Zap, Code } from "lucide-react";
+import { ArrowLeft, Menu, Settings, Ban, Folder, Archive, GitPullRequest, Download, Share2, Moon, Info, Grid, ShieldAlert, Zap, Code, FileText, BookOpen } from "lucide-react";
 import Link from "next/link";
 import HealthRing from "./sidebar/HealthRing";
 import ColorModeSelector from "./sidebar/ColorModeSelector";
@@ -28,6 +28,8 @@ import DrillDownModal from "./panels/DrillDownModal";
 import CodePanel from "./panels/CodePanel";
 
 // Modals
+import DesignDocModal from "../graph/DesignDocModal";
+import OnboardingModal from "../graph/OnboardingModal";
 import FilePreviewModal from "./modals/FilePreviewModal";
 import PRAnalysisModal from "./modals/PRAnalysisModal";
 import ExportModal from "./modals/ExportModal";
@@ -69,6 +71,8 @@ export default function CodeflowLayout({
   } = useCodeflow();
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
+  const [isDesignDocOpen, setIsDesignDocOpen] = useState(false);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
   useEffect(() => {
     const fetchAnalysis = async () => {
@@ -176,10 +180,26 @@ export default function CodeflowLayout({
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
-           <button 
-             className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" 
-             title="Pull Request"
-             onClick={() => setShowPRModal(true)}
+          <button 
+            className="p-1.5 text-gh-text-muted hover:text-[#58a6ff] hover:bg-gh-btn-secondary-hover rounded-md transition flex items-center gap-1.5" 
+            title="Generate System Design"
+            onClick={() => setIsDesignDocOpen(true)}
+          >
+            <FileText size={16} />
+            <span className="text-[10px] uppercase font-bold hidden xl:inline">Design Doc</span>
+          </button>
+          <button 
+            className="p-1.5 text-gh-text-muted hover:text-[#2ea043] hover:bg-gh-btn-secondary-hover rounded-md transition flex items-center gap-1.5" 
+            title="Onboarding Guide"
+            onClick={() => setIsOnboardingOpen(true)}
+          >
+            <BookOpen size={16} />
+            <span className="text-[10px] uppercase font-bold hidden xl:inline">Onboarding</span>
+          </button>
+          <button 
+            className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" 
+            title="Pull Request"
+            onClick={() => setShowPRModal(true)}
            >
              <GitPullRequest size={16} />
            </button>
@@ -332,6 +352,16 @@ export default function CodeflowLayout({
       <UnusedFunctionsModal />
       <ExcludePatternsModal />
       <ConfirmDialog />
+      <DesignDocModal 
+        repoId={repoId} 
+        isOpen={isDesignDocOpen} 
+        onClose={() => setIsDesignDocOpen(false)} 
+      />
+      <OnboardingModal 
+        repoId={repoId} 
+        isOpen={isOnboardingOpen} 
+        onClose={() => setIsOnboardingOpen(false)} 
+      />
 
       {/* Analysis Progress Overlay */}
       <AnalysisProgress 
