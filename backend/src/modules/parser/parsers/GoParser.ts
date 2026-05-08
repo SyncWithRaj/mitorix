@@ -1,6 +1,7 @@
 import Parser from "tree-sitter";
 import Go from "tree-sitter-go";
-import { BaseParser, type ParsedEntity, type ParsedRelationship, type ParsedFileMetadata } from "./BaseParser";
+import { BaseParser, type ParsedEntity, type ParsedRelationship, type ParsedFileMetadata } from "./BaseParser.js";
+import { PathResolver } from "../pathResolver.js";
 
 export class GoParser extends BaseParser {
     languageName = "go";
@@ -12,7 +13,12 @@ export class GoParser extends BaseParser {
         this.parser.setLanguage(Go);
     }
 
-    async parse(repoId: string, filePath: string, content: string): Promise<{ entities: ParsedEntity[]; relationships: ParsedRelationship[]; fileMetadata: ParsedFileMetadata; }> {
+    async parse(
+        repoId: string,
+        filePath: string,
+        content: string,
+        pathResolver?: PathResolver | null
+    ): Promise<{ entities: ParsedEntity[]; relationships: ParsedRelationship[]; fileMetadata: ParsedFileMetadata; }> {
         const fileMetadata = this.extractFileMetadata(repoId, filePath, content);
         const tree = this.parser.parse(content);
         
