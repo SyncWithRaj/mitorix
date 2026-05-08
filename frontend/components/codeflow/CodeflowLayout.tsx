@@ -28,6 +28,7 @@ import DrillDownModal from "./panels/DrillDownModal";
 import CodePanel from "./panels/CodePanel";
 
 // Modals
+import GraphView from "../graph/GraphView";
 import DesignDocModal from "../graph/DesignDocModal";
 import OnboardingModal from "../graph/OnboardingModal";
 import FilePreviewModal from "./modals/FilePreviewModal";
@@ -283,6 +284,7 @@ export default function CodeflowLayout({
           {analysisData && <VizSelector />}
           
           <div className="absolute inset-0 z-0">
+            {graphConfig.vizType === "visual" && <GraphView repoId={repoId} />}
             {graphConfig.vizType === "force" && children}
             {graphConfig.vizType === "treemap" && <TreemapView />}
             {graphConfig.vizType === "matrix" && <MatrixView />}
