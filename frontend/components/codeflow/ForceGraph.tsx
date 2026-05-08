@@ -233,16 +233,19 @@ export default function ForceGraph() {
     if (!isLargeGraph || graphConfig.showLabels) {
       node.append('text')
         .attr('text-anchor', 'middle')
-        .attr('dy', 0)
-        .attr('fill', '#eee')
-        .attr('font-size', (d: any) => Math.max(6, Math.min(10, getR(d) * 0.6)) + 'px')
-        .attr('font-family', '"JetBrains Mono", monospace')
+        .attr('dy', (d: any) => getR(d) + 12)
+        .attr('fill', '#e2e8f0')
+        .attr('font-size', '10px')
+        .attr('font-family', '"JetBrains Mono", system-ui, sans-serif')
         .attr('font-weight', '500')
+        .attr('paint-order', 'stroke')
+        .attr('stroke', '#0a0a0f')
+        .attr('stroke-width', '3px')
+        .attr('stroke-linejoin', 'round')
         .attr('pointer-events', 'none')
         .text((d: any) => {
-          const n = d.name.replace(/\.[^.]+$/, '');
-          const maxLen = Math.max(4, Math.floor(getR(d) / 2));
-          return n.length > maxLen + 1 ? n.slice(0, maxLen) + '…' : n;
+          const n = d.name;
+          return n.length > 18 ? n.slice(0, 16) + '…' : n;
         });
     }
 
@@ -311,7 +314,7 @@ export default function ForceGraph() {
     });
 
     // Labels visibility
-    node.selectAll('text').attr('opacity', graphConfig.showLabels ? 1 : 0);
+    node.selectAll('text').attr('opacity', (!isLargeGraph || graphConfig.showLabels) ? 1 : 0);
 
     // --- Toolbar events ---
     const handleZoomIn = () => svg.transition().duration(300).call(zoom.scaleBy, 1.3);
