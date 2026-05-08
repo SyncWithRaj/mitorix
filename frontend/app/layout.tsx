@@ -31,9 +31,7 @@ export default function RootLayout({
       >
         <Providers>
           <Navbar />
-          <main className="flex-grow flex flex-col -mt-[73px]">
-            {children}
-          </main>
+          <main className="flex-grow flex flex-col -mt-[73px]">{children}</main>
         </Providers>
       </body>
     </html>

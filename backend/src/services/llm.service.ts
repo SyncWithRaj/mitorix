@@ -4,7 +4,7 @@ import CircuitBreaker from "opossum";
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash"
+  model: "gemini-2.5-flash",
 });
 
 // ── Legacy single-shot call (used by design docs, diagrams, etc.) ──
@@ -30,9 +30,17 @@ geminiBreaker.fallback((prompt: string, error?: Error) => {
 });
 
 // Event listeners for observability
-geminiBreaker.on('open', () => console.warn(`[Circuit Breaker] OPEN: Gemini API is struggling! Halting requests for ${breakerOptions.resetTimeout / 1000}s.`));
-geminiBreaker.on('halfOpen', () => console.log('[Circuit Breaker] HALF-OPEN: Testing if Gemini API is back online...'));
-geminiBreaker.on('close', () => console.log('[Circuit Breaker] CLOSED: Gemini API is healthy again.'));
+geminiBreaker.on("open", () =>
+  console.warn(
+    `[Circuit Breaker] OPEN: Gemini API is struggling! Halting requests for ${breakerOptions.resetTimeout / 1000}s.`
+  )
+);
+geminiBreaker.on("halfOpen", () =>
+  console.log("[Circuit Breaker] HALF-OPEN: Testing if Gemini API is back online...")
+);
+geminiBreaker.on("close", () =>
+  console.log("[Circuit Breaker] CLOSED: Gemini API is healthy again.")
+);
 
 // Legacy single-shot (non-chat) export
 export const generateAnswer = async (prompt: string) => {
@@ -75,9 +83,15 @@ chatBreaker.fallback((_sys: string, _hist: ChatMessage[], _msg: string, error?: 
   return "RepoLens AI is currently experiencing high load or the LLM provider is down. Please try again later.";
 });
 
-chatBreaker.on('open', () => console.warn(`[Circuit Breaker] OPEN: Gemini Chat API is struggling!`));
-chatBreaker.on('halfOpen', () => console.log('[Circuit Breaker] HALF-OPEN: Testing if Gemini Chat API is back online...'));
-chatBreaker.on('close', () => console.log('[Circuit Breaker] CLOSED: Gemini Chat API is healthy again.'));
+chatBreaker.on("open", () =>
+  console.warn(`[Circuit Breaker] OPEN: Gemini Chat API is struggling!`)
+);
+chatBreaker.on("halfOpen", () =>
+  console.log("[Circuit Breaker] HALF-OPEN: Testing if Gemini Chat API is back online...")
+);
+chatBreaker.on("close", () =>
+  console.log("[Circuit Breaker] CLOSED: Gemini Chat API is healthy again.")
+);
 
 export const generateChatAnswer = async (
   systemInstruction: string,

@@ -26,7 +26,7 @@ export default function ResizablePanel({
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging || !panelRef.current) return;
-      
+
       const rect = panelRef.current.getBoundingClientRect();
       let newWidth = width;
 
@@ -70,7 +70,7 @@ export default function ResizablePanel({
       } ${className}`}
     >
       {children}
-      
+
       {/* Resize Handle */}
       <div
         className={`absolute top-0 bottom-0 w-2 cursor-col-resize z-50 hover:bg-[#58a6ff]/20 transition-colors ${

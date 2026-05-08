@@ -19,15 +19,14 @@ const embeddings = new GoogleGenerativeAIEmbeddings({
 });
 
 export async function embedRepository(repoId: string) {
-
   // Ensure the Qdrant collection and indexes exist before interacting
   const vectorInit = new VectorInitService();
   await vectorInit.initVectorCollection();
 
   const repo = await Repository.findById(repoId);
 
-  if(!repo || !repo.fingerprint){
-    throw new Error("Repo or fingerprint missing")
+  if (!repo || !repo.fingerprint) {
+    throw new Error("Repo or fingerprint missing");
   }
 
   console.log(`\nChecking embeddings for repo: ${repoId}`);
@@ -45,7 +44,6 @@ export async function embedRepository(repoId: string) {
   });
 
   if (existing.points.length > 0) {
-
     console.log("Embeddings already exist for this repository. Skipping...\n");
 
     return {
@@ -72,7 +70,6 @@ export async function embedRepository(repoId: string) {
   const points: any[] = [];
 
   for (let i = 0; i < total; i++) {
-
     const entity = entities[i];
 
     console.log(`Embedding ${i + 1}/${total}: ${entity.name}`);
@@ -88,7 +85,7 @@ ${entity?.content || ""}
 
     const vector = await embeddings.embedQuery(text);
 
-    const language = entity.language || 'unknown';
+    const language = entity.language || "unknown";
 
     points.push({
       id: uuidv4(), // UUID required by Qdrant
@@ -113,8 +110,10 @@ ${entity?.content || ""}
   const CHUNK_SIZE = 200;
   for (let i = 0; i < points.length; i += CHUNK_SIZE) {
     const chunk = points.slice(i, i + CHUNK_SIZE);
-    console.log(`Pushing chunk ${Math.floor(i / CHUNK_SIZE) + 1} of ${Math.ceil(points.length / CHUNK_SIZE)}`);
-    
+    console.log(
+      `Pushing chunk ${Math.floor(i / CHUNK_SIZE) + 1} of ${Math.ceil(points.length / CHUNK_SIZE)}`
+    );
+
     await qdrant.upsert(COLLECTION, {
       wait: true,
       points: chunk,

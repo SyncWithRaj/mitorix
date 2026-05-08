@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { X, BookOpen, Database, Layout, FileCode2, Map, ListOrdered, ChevronRight, Globe, Cog, Shapes, FlaskConical } from "lucide-react";
+import {
+  X,
+  BookOpen,
+  Database,
+  Layout,
+  FileCode2,
+  Map,
+  ListOrdered,
+  ChevronRight,
+  Globe,
+  Cog,
+  Shapes,
+  FlaskConical,
+} from "lucide-react";
 
 interface SectionItem {
   name: string;
@@ -37,13 +50,13 @@ interface OnboardingModalProps {
 
 // Icon component mapper
 const ICON_MAP: Record<string, React.ReactNode> = {
-  entry:        <FileCode2 size={18} className="text-[#d2a8ff]" />,
-  data:         <Database size={18} className="text-[#3fb950]" />,
-  ui:           <Layout size={18} className="text-[#ff7b72]" />,
-  api:          <Globe size={18} className="text-[#f0883e]" />,
-  services:     <Cog size={18} className="text-[#58a6ff]" />,
+  entry: <FileCode2 size={18} className="text-[#d2a8ff]" />,
+  data: <Database size={18} className="text-[#3fb950]" />,
+  ui: <Layout size={18} className="text-[#ff7b72]" />,
+  api: <Globe size={18} className="text-[#f0883e]" />,
+  services: <Cog size={18} className="text-[#58a6ff]" />,
   abstractions: <Shapes size={18} className="text-[#d2a8ff]" />,
-  test:         <FlaskConical size={18} className="text-[#79c0ff]" />,
+  test: <FlaskConical size={18} className="text-[#79c0ff]" />,
 };
 
 const formatPath = (fullPath: string) => {
@@ -143,7 +156,6 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-[#0d1117] border border-[#30363d] rounded-xl w-full max-w-6xl h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-fadeInUp">
-        
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[#30363d] bg-[#161b22]">
           <div className="flex items-center gap-3">
@@ -155,7 +167,7 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
               <p className="text-xs text-[#8b949e]">AI-generated repository walkthrough</p>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="text-[#8b949e] hover:text-[#ff7b72] transition rounded p-1 hover:bg-[#30363d]"
           >
@@ -167,11 +179,29 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
         <div className="flex-grow flex flex-col overflow-hidden bg-[#010409]">
           {loading ? (
             <div className="flex-grow flex flex-col items-center justify-center text-[#8b949e]">
-              <svg className="animate-spin h-10 w-10 text-[#58a6ff] mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="animate-spin h-10 w-10 text-[#58a6ff] mb-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
-              <p className="animate-pulse font-mono text-sm">Analyzing architecture & generating guide...</p>
+              <p className="animate-pulse font-mono text-sm">
+                Analyzing architecture & generating guide...
+              </p>
             </div>
           ) : error ? (
             <div className="flex-grow flex items-center justify-center p-6">
@@ -181,14 +211,13 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
             </div>
           ) : guide ? (
             <div className="flex flex-col h-full overflow-hidden">
-              
               {/* Top Tabs */}
               <div className="flex bg-[#0d1117] border-b border-[#30363d] px-6 pt-4 gap-6">
                 <button
                   onClick={() => setActiveTab("overview")}
                   className={`flex items-center gap-2 pb-3 px-1 border-b-2 text-sm font-medium transition-colors ${
-                    activeTab === "overview" 
-                      ? "border-[#58a6ff] text-[#58a6ff]" 
+                    activeTab === "overview"
+                      ? "border-[#58a6ff] text-[#58a6ff]"
                       : "border-transparent text-[#8b949e] hover:text-[#c9d1d9] hover:border-[#8b949e]"
                   }`}
                 >
@@ -198,8 +227,8 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
                 <button
                   onClick={() => setActiveTab("walkthrough")}
                   className={`flex items-center gap-2 pb-3 px-1 border-b-2 text-sm font-medium transition-colors ${
-                    activeTab === "walkthrough" 
-                      ? "border-[#3fb950] text-[#3fb950]" 
+                    activeTab === "walkthrough"
+                      ? "border-[#3fb950] text-[#3fb950]"
                       : "border-transparent text-[#8b949e] hover:text-[#c9d1d9] hover:border-[#8b949e]"
                   }`}
                 >
@@ -210,29 +239,42 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
 
               {/* Main Content Area */}
               <div className="flex-grow overflow-auto p-6 custom-scrollbar">
-                
                 {activeTab === "overview" && (
                   <div className="space-y-8 animate-fadeIn">
-                    
                     {guide.sections.length === 0 ? (
                       <div className="text-center text-[#8b949e] py-12">
                         <BookOpen className="mx-auto mb-4 opacity-40" size={48} />
-                        <p className="text-sm">No architectural sections detected for this repository.</p>
-                        <p className="text-xs mt-1">Try the Step-by-Step Tour tab for a reading guide.</p>
+                        <p className="text-sm">
+                          No architectural sections detected for this repository.
+                        </p>
+                        <p className="text-xs mt-1">
+                          Try the Step-by-Step Tour tab for a reading guide.
+                        </p>
                       </div>
                     ) : (
                       guide.sections.map((section, sIdx) => (
                         <section key={section.key || sIdx}>
                           <h3 className="flex items-center gap-2 text-[#c9d1d9] font-medium mb-4 pb-2 border-b border-[#30363d]">
-                            {ICON_MAP[section.icon] || <FileCode2 size={18} className="text-[#8b949e]" />}
+                            {ICON_MAP[section.icon] || (
+                              <FileCode2 size={18} className="text-[#8b949e]" />
+                            )}
                             {section.title}
-                            <span className="ml-auto text-xs text-[#484f58] font-normal">{section.items.length} items</span>
+                            <span className="ml-auto text-xs text-[#484f58] font-normal">
+                              {section.items.length} items
+                            </span>
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {section.items.map((item, idx) => (
-                              <div key={idx} className="bg-[#161b22] border border-[#30363d] p-4 rounded-xl hover:border-[#8b949e] transition group">
-                                <h4 className="font-semibold text-sm text-[#c9d1d9] mb-1 group-hover:text-[#58a6ff] transition">{item.name}</h4>
-                                <h5 className="font-mono text-xs text-[#58a6ff] mb-2 break-all">{formatPath(item.file)}</h5>
+                              <div
+                                key={idx}
+                                className="bg-[#161b22] border border-[#30363d] p-4 rounded-xl hover:border-[#8b949e] transition group"
+                              >
+                                <h4 className="font-semibold text-sm text-[#c9d1d9] mb-1 group-hover:text-[#58a6ff] transition">
+                                  {item.name}
+                                </h4>
+                                <h5 className="font-mono text-xs text-[#58a6ff] mb-2 break-all">
+                                  {formatPath(item.file)}
+                                </h5>
                                 <p className="text-sm text-[#8b949e]">{item.description}</p>
                               </div>
                             ))}
@@ -240,35 +282,41 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
                         </section>
                       ))
                     )}
-
                   </div>
                 )}
 
                 {activeTab === "walkthrough" && (
                   <div className="animate-fadeIn max-w-3xl">
                     <div className="mb-6">
-                      <h3 className="text-[#c9d1d9] text-lg font-medium">Recommended Reading Order</h3>
-                      <p className="text-[#8b949e] text-sm mt-1">Follow this sequence to understand the codebase efficiently.</p>
+                      <h3 className="text-[#c9d1d9] text-lg font-medium">
+                        Recommended Reading Order
+                      </h3>
+                      <p className="text-[#8b949e] text-sm mt-1">
+                        Follow this sequence to understand the codebase efficiently.
+                      </p>
                     </div>
-                    
+
                     <div className="space-y-4 relative">
                       <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-[#30363d] rounded-full z-0"></div>
-                      
-                      {guide.readingList.sort((a, b) => a.order - b.order).map((item, idx) => (
-                        <div key={idx} className="relative z-10 flex gap-4">
-                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#161b22] border-2 border-[#3fb950] text-[#3fb950] flex items-center justify-center font-bold shadow-md">
-                            {item.order}
+
+                      {guide.readingList
+                        .sort((a, b) => a.order - b.order)
+                        .map((item, idx) => (
+                          <div key={idx} className="relative z-10 flex gap-4">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#161b22] border-2 border-[#3fb950] text-[#3fb950] flex items-center justify-center font-bold shadow-md">
+                              {item.order}
+                            </div>
+                            <div className="flex-grow bg-[#161b22] border border-[#30363d] p-4 rounded-xl hover:border-[#8b949e] transition mt-1">
+                              <h4 className="font-mono text-sm text-[#58a6ff] mb-2 break-all">
+                                {formatPath(item.file)}
+                              </h4>
+                              <p className="text-sm text-[#c9d1d9]">{item.reason}</p>
+                            </div>
                           </div>
-                          <div className="flex-grow bg-[#161b22] border border-[#30363d] p-4 rounded-xl hover:border-[#8b949e] transition mt-1">
-                            <h4 className="font-mono text-sm text-[#58a6ff] mb-2 break-all">{formatPath(item.file)}</h4>
-                            <p className="text-sm text-[#c9d1d9]">{item.reason}</p>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </div>
                 )}
-
               </div>
             </div>
           ) : null}

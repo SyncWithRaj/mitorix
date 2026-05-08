@@ -14,31 +14,62 @@ import { FileMetadata } from "../models/fileMetadata.model.js";
 import { FileContent } from "../models/fileContent.model.js";
 import { cleanupTempRepo, getTempRepoPath } from "../utils/cleanup.util.js";
 
-
 // Directories/files to skip when saving to DB
 const IGNORED_DIRS = new Set([".git", "node_modules", "dist", "build", ".next", "coverage"]);
 
 // Extensions we save content for (source code + config + docs)
 const TEXT_EXTENSIONS = new Set([
-  ".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".txt",
-  ".css", ".scss", ".less", ".html", ".xml", ".yaml", ".yml",
-  ".env", ".toml", ".ini", ".cfg", ".conf",
-  ".sh", ".bash", ".py", ".rb", ".go", ".rs", ".java",
-  ".c", ".cpp", ".h", ".hpp", ".cs", ".swift", ".kt",
-  ".sql", ".graphql", ".prisma", ".proto",
-  ".gitignore", ".eslintrc", ".prettierrc", ".editorconfig",
-  ".dockerignore", "Dockerfile", "Makefile",
+  ".ts",
+  ".tsx",
+  ".js",
+  ".jsx",
+  ".json",
+  ".md",
+  ".txt",
+  ".css",
+  ".scss",
+  ".less",
+  ".html",
+  ".xml",
+  ".yaml",
+  ".yml",
+  ".env",
+  ".toml",
+  ".ini",
+  ".cfg",
+  ".conf",
+  ".sh",
+  ".bash",
+  ".py",
+  ".rb",
+  ".go",
+  ".rs",
+  ".java",
+  ".c",
+  ".cpp",
+  ".h",
+  ".hpp",
+  ".cs",
+  ".swift",
+  ".kt",
+  ".sql",
+  ".graphql",
+  ".prisma",
+  ".proto",
+  ".gitignore",
+  ".eslintrc",
+  ".prettierrc",
+  ".editorconfig",
+  ".dockerignore",
+  "Dockerfile",
+  "Makefile",
 ]);
-
 
 /**
  * Walk the repo directory and save file tree + contents to MongoDB.
  * This allows file reading from DB after the temp clone is deleted.
  */
-async function saveRepoFilesToDB(
-  repoId: string,
-  basePath: string
-): Promise<number> {
+async function saveRepoFilesToDB(repoId: string, basePath: string): Promise<number> {
   const fileContentDocs: any[] = [];
 
   function walk(currentPath: string) {
@@ -73,9 +104,7 @@ async function saveRepoFilesToDB(
         const baseName = entry.name;
 
         // Check if we should save content
-        const shouldSaveContent =
-          TEXT_EXTENSIONS.has(ext) ||
-          TEXT_EXTENSIONS.has(baseName); // For files like "Dockerfile"
+        const shouldSaveContent = TEXT_EXTENSIONS.has(ext) || TEXT_EXTENSIONS.has(baseName); // For files like "Dockerfile"
 
         let content: string | null = null;
         let fileSize = 0;
@@ -121,14 +150,8 @@ async function saveRepoFilesToDB(
   return fileContentDocs.length;
 }
 
-
-export async function parseRepoController(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export async function parseRepoController(req: Request, res: Response, next: NextFunction) {
   try {
-
     const { id } = req.params;
     console.log("📝 Parse request received for repo:", id);
 
@@ -136,7 +159,7 @@ export async function parseRepoController(
       console.log("❌ Invalid repo ID:", id);
       return res.status(400).json({
         success: false,
-        message: "Invalid repository id"
+        message: "Invalid repository id",
       });
     }
 
@@ -146,17 +169,24 @@ export async function parseRepoController(
       console.log("❌ Repo not found in DB:", id);
       return res.status(404).json({
         success: false,
-        message: "Repository not found"
+        message: "Repository not found",
       });
     }
 
-    console.log("📂 Repo found:", repo.name, "| localPath:", repo.localPath, "| status:", repo.status);
+    console.log(
+      "📂 Repo found:",
+      repo.name,
+      "| localPath:",
+      repo.localPath,
+      "| status:",
+      repo.status
+    );
 
     if (!repo.localPath) {
       console.log("❌ No localPath set for repo:", id);
       return res.status(400).json({
         success: false,
-        message: "Repository localPath not found"
+        message: "Repository localPath not found",
       });
     }
 
@@ -180,10 +210,7 @@ export async function parseRepoController(
 
       try {
         const git = simpleGit();
-        await git.clone(repo.githubUrl, repoPath, [
-          "--depth", "1",
-          "-c", "credential.helper=",
-        ]);
+        await git.clone(repo.githubUrl, repoPath, ["--depth", "1", "-c", "credential.helper="]);
         console.log("Re-clone successful");
 
         // Update localPath in DB
@@ -198,7 +225,8 @@ export async function parseRepoController(
 
         return res.status(500).json({
           success: false,
-          message: "Failed to re-clone repository for parsing: " + (cloneErr?.message || "Unknown error")
+          message:
+            "Failed to re-clone repository for parsing: " + (cloneErr?.message || "Unknown error"),
         });
       }
     }
@@ -215,7 +243,7 @@ export async function parseRepoController(
 
       return res.status(400).json({
         success: false,
-        message: "Repository directory is empty. Clone may have failed."
+        message: "Repository directory is empty. Clone may have failed.",
       });
     }
 
@@ -232,7 +260,6 @@ export async function parseRepoController(
     console.log("🔍 Scanned files:", scannedFiles.length);
 
     if (!scannedFiles.length) {
-
       repo.status = "failed";
       await repo.save();
 
@@ -241,42 +268,35 @@ export async function parseRepoController(
 
       return res.status(200).json({
         success: true,
-        message: "No scannable files found"
+        message: "No scannable files found",
       });
     }
 
-
-    const filePaths = scannedFiles.map(file => file.absolutePath);
+    const filePaths = scannedFiles.map((file) => file.absolutePath);
     console.log("🔧 Starting AST parsing for", filePaths.length, "files...");
 
     const result = await processRepositoryParsing(id, filePaths);
     console.log("AST parsing complete:", result);
-
 
     // 📁 Save all file tree + contents to MongoDB before cleanup
     console.log("📁 Saving file tree and contents to MongoDB...");
     const savedFilesCount = await saveRepoFilesToDB(id, repoPath);
     console.log(`Saved ${savedFilesCount} files and directories to MongoDB`);
 
-
     // 🧹 Cleanup temp clone from /tmp — MongoDB data is safe
     console.log("🧹 Cleaning up temp clone...");
     cleanupTempRepo(repoPath);
-
 
     repo.status = "indexed";
     await repo.save();
     console.log("Repository status updated to indexed");
 
-
     return res.status(200).json({
       success: true,
       ...result,
-      savedFiles: savedFilesCount
+      savedFiles: savedFilesCount,
     });
-
   } catch (error: any) {
-
     console.error("❌ Parse Controller Error:", error?.message || error);
     console.error("❌ Stack:", error?.stack);
 

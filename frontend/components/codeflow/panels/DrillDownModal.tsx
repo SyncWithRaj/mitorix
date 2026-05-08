@@ -16,7 +16,9 @@ export default function DrillDownModal() {
       return (
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className={`w-2.5 h-2.5 rounded-full ${data.type === 'critical' ? 'bg-red-500' : 'bg-orange-500'}`} />
+            <div
+              className={`w-2.5 h-2.5 rounded-full ${data.type === "critical" ? "bg-red-500" : "bg-orange-500"}`}
+            />
             <h3 className="text-sm font-bold text-[#c9d1d9]">{data.title}</h3>
           </div>
           <p className="text-[10px] text-[#8b949e] mb-4 leading-relaxed">{data.desc}</p>
@@ -27,10 +29,15 @@ export default function DrillDownModal() {
                   key={i}
                   className="bg-[#0d1117] border border-[#30363d] rounded-md p-3 text-[10px] cursor-pointer hover:border-[#58a6ff]/50 transition"
                   onClick={() => {
-                    if (item.file) { selectFile(item.file); setDrillDown(null); }
+                    if (item.file) {
+                      selectFile(item.file);
+                      setDrillDown(null);
+                    }
                   }}
                 >
-                  <div className="font-semibold text-[#c9d1d9] mb-1">{item.name || item.file || "—"}</div>
+                  <div className="font-semibold text-[#c9d1d9] mb-1">
+                    {item.name || item.file || "—"}
+                  </div>
                   {item.file && (
                     <div className="flex items-center gap-1 text-[#8b949e] mb-1">
                       <FileCode2 size={10} /> {item.file}
@@ -45,8 +52,12 @@ export default function DrillDownModal() {
                   {item.suggestion && (
                     <div className="mt-1.5 text-[9px] text-[#22c55e]">💡 {item.suggestion}</div>
                   )}
-                  {item.fns !== undefined && <span className="text-[#8b949e]">{item.fns} functions</span>}
-                  {item.lines !== undefined && <span className="text-[#8b949e] ml-2">{item.lines} lines</span>}
+                  {item.fns !== undefined && (
+                    <span className="text-[#8b949e]">{item.fns} functions</span>
+                  )}
+                  {item.lines !== undefined && (
+                    <span className="text-[#8b949e] ml-2">{item.lines} lines</span>
+                  )}
                 </div>
               ))}
             </div>
@@ -73,12 +84,19 @@ export default function DrillDownModal() {
                 <div
                   key={i}
                   className="flex items-center gap-2 bg-[#0d1117] border border-[#30363d] rounded-md p-2.5 text-[10px] cursor-pointer hover:border-[#58a6ff]/50 transition"
-                  onClick={() => { selectFile(f.path); setDrillDown(null); }}
+                  onClick={() => {
+                    selectFile(f.path);
+                    setDrillDown(null);
+                  }}
                 >
                   <FileCode2 size={12} className="text-[#8b949e] shrink-0" />
                   <span className="text-[#c9d1d9] truncate flex-1">{f.name || f.path}</span>
-                  {f.fns !== undefined && <span className="text-[#8b949e] text-[9px] shrink-0">{f.fns} fns</span>}
-                  {f.lines !== undefined && <span className="text-[#8b949e] text-[9px] shrink-0">{f.lines} lines</span>}
+                  {f.fns !== undefined && (
+                    <span className="text-[#8b949e] text-[9px] shrink-0">{f.fns} fns</span>
+                  )}
+                  {f.lines !== undefined && (
+                    <span className="text-[#8b949e] text-[9px] shrink-0">{f.lines} lines</span>
+                  )}
                 </div>
               ))}
             </div>
@@ -91,22 +109,37 @@ export default function DrillDownModal() {
       return (
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className={`w-2.5 h-2.5 rounded-full ${
-              data.severity === 'high' ? 'bg-red-500' : data.severity === 'medium' ? 'bg-orange-500' : 'bg-blue-500'
-            }`} />
+            <div
+              className={`w-2.5 h-2.5 rounded-full ${
+                data.severity === "high"
+                  ? "bg-red-500"
+                  : data.severity === "medium"
+                    ? "bg-orange-500"
+                    : "bg-blue-500"
+              }`}
+            />
             <h3 className="text-sm font-bold text-[#c9d1d9]">{data.title}</h3>
-            <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase border ${
-              data.severity === 'high' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-              data.severity === 'medium' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
-              'bg-blue-500/10 text-blue-500 border-blue-500/20'
-            }`}>
+            <span
+              className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase border ${
+                data.severity === "high"
+                  ? "bg-red-500/10 text-red-500 border-red-500/20"
+                  : data.severity === "medium"
+                    ? "bg-orange-500/10 text-orange-500 border-orange-500/20"
+                    : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+              }`}
+            >
               {data.severity}
             </span>
           </div>
           <p className="text-[10px] text-[#8b949e] mb-3 leading-relaxed">{data.desc}</p>
           <div
             className="bg-[#0d1117] border border-[#30363d] rounded-md p-3 text-[10px] cursor-pointer hover:border-[#58a6ff]/50 transition"
-            onClick={() => { if (data.path) { selectFile(data.path); setDrillDown(null); } }}
+            onClick={() => {
+              if (data.path) {
+                selectFile(data.path);
+                setDrillDown(null);
+              }
+            }}
           >
             <div className="flex items-center gap-1.5 text-[#c9d1d9] mb-1.5">
               <FileCode2 size={12} className="text-[#8b949e]" />
@@ -140,7 +173,10 @@ export default function DrillDownModal() {
                 <div
                   key={i}
                   className="flex items-center gap-2 bg-[#0d1117] border border-[#30363d] rounded-md p-2.5 text-[10px] cursor-pointer hover:border-[#58a6ff]/50 transition"
-                  onClick={() => { selectFile(f.file); setDrillDown(null); }}
+                  onClick={() => {
+                    selectFile(f.file);
+                    setDrillDown(null);
+                  }}
                 >
                   <FileCode2 size={12} className="text-[#8b949e] shrink-0" />
                   <span className="text-[#c9d1d9] truncate flex-1">{f.file}</span>
@@ -163,12 +199,18 @@ export default function DrillDownModal() {
     >
       <div
         className="bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[#30363d] bg-[#0d1117]">
           <span className="text-xs font-bold text-[#c9d1d9] uppercase tracking-wider">
-            {type === "issue" ? "Issue Details" : type === "pattern" ? "Pattern Details" : type === "security" ? "Security Finding" : "Duplicate Details"}
+            {type === "issue"
+              ? "Issue Details"
+              : type === "pattern"
+                ? "Pattern Details"
+                : type === "security"
+                  ? "Security Finding"
+                  : "Duplicate Details"}
           </span>
           <button
             className="p-1 hover:bg-[#30363d] rounded text-[#8b949e] hover:text-[#c9d1d9] transition"
@@ -179,9 +221,7 @@ export default function DrillDownModal() {
         </div>
 
         {/* Body */}
-        <div className="p-4">
-          {renderContent()}
-        </div>
+        <div className="p-4">{renderContent()}</div>
       </div>
     </div>
   );

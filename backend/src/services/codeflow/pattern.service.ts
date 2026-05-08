@@ -88,8 +88,7 @@ export function detectPatterns(files: AnalyzedFile[]): Pattern[] {
   const hocs = files.filter(
     (f) =>
       f.content &&
-      (/with[A-Z]\w*\s*=\s*\(/.test(f.content) ||
-        /export\s+default\s+connect/.test(f.content))
+      (/with[A-Z]\w*\s*=\s*\(/.test(f.content) || /export\s+default\s+connect/.test(f.content))
   );
   if (hocs.length) {
     patterns.push({
@@ -220,16 +219,12 @@ export function detectPatterns(files: AnalyzedFile[]): Pattern[] {
       files: godFiles.map((f) => ({ name: f.name, path: f.path, fns: f.functions.length })),
       metrics: {
         files: godFiles.length,
-        avgFns: Math.round(
-          godFiles.reduce((s, f) => s + f.functions.length, 0) / godFiles.length
-        ),
+        avgFns: Math.round(godFiles.reduce((s, f) => s + f.functions.length, 0) / godFiles.length),
       },
     });
   }
 
-  const longFiles = files.filter(
-    (f) => f.isCode !== false && f.lines && f.lines > 500
-  );
+  const longFiles = files.filter((f) => f.isCode !== false && f.lines && f.lines > 500);
   if (longFiles.length) {
     patterns.push({
       name: "Long File",
@@ -240,9 +235,7 @@ export function detectPatterns(files: AnalyzedFile[]): Pattern[] {
       files: longFiles.map((f) => ({ name: f.name, path: f.path, lines: f.lines })),
       metrics: {
         files: longFiles.length,
-        avgLines: Math.round(
-          longFiles.reduce((s, f) => s + f.lines, 0) / longFiles.length
-        ),
+        avgLines: Math.round(longFiles.reduce((s, f) => s + f.lines, 0) / longFiles.length),
       },
     });
   }

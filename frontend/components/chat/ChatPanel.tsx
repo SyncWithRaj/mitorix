@@ -4,7 +4,19 @@ import { useEditor } from "@/context/EditorContext";
 import api from "@/lib/axios";
 import { getLanguage } from "@/utils/getLanguage";
 import { useRef, useEffect, useState } from "react";
-import { Send, Bot, User, Code2, Mic, Loader2, Phone, MessageSquare, PhoneOff, Trash2, Flame } from "lucide-react";
+import {
+  Send,
+  Bot,
+  User,
+  Code2,
+  Mic,
+  Loader2,
+  Phone,
+  MessageSquare,
+  PhoneOff,
+  Trash2,
+  Flame,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
@@ -68,9 +80,10 @@ export default function ChatPanel({
 }: any) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"chat" | "call">("chat");
-  const [callState, setCallState] = useState<"idle" | "listening" | "processing" | "speaking">("idle");
+  const [callState, setCallState] = useState<"idle" | "listening" | "processing" | "speaking">(
+    "idle"
+  );
   const callStateRef = useRef<string>("idle");
-
 
   useEffect(() => {
     callStateRef.current = callState;
@@ -122,7 +135,7 @@ export default function ChatPanel({
         content: res.data.content,
         language: getLanguage(ref.file),
         startLine: ref.startLine,
-        endLine: ref.endLine
+        endLine: ref.endLine,
       });
     } catch (err) {
       console.error("Open reference error:", err);
@@ -140,7 +153,7 @@ export default function ChatPanel({
       animFrameRef.current = null;
     }
     if (audioContextRef.current) {
-      audioContextRef.current.close().catch(() => { });
+      audioContextRef.current.close().catch(() => {});
       audioContextRef.current = null;
     }
     analyserRef.current = null;
@@ -205,7 +218,7 @@ export default function ChatPanel({
     console.log("Call Status: CALL ENDED (Cleaned Up)");
     callStateRef.current = "idle"; // Sync update BEFORE stopping recorder
     stopSilenceDetection();
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
     }
@@ -223,7 +236,7 @@ export default function ChatPanel({
       callStateRef.current = "processing"; // Sync update BEFORE stopping recorder
       setCallState("processing");
       toast("Transcribing audio...");
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
         mediaRecorderRef.current.stop();
       }
     }
@@ -235,7 +248,7 @@ export default function ChatPanel({
       if (callStateRef.current !== "idle" && callStateRef.current !== "speaking") return;
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -258,7 +271,6 @@ export default function ChatPanel({
 
       // Start silence detection on the mic stream
       startSilenceDetection(stream);
-
     } catch (err) {
       console.error("Microphone error:", err);
       toast.error("Microphone access denied or unavailable.");
@@ -359,9 +371,10 @@ export default function ChatPanel({
 
   const handleDeleteChat = () => {
     const type = activeTab;
-    const confirmMsg = type === "chat"
-      ? "Are you sure you want to delete all chat history? This cannot be undone."
-      : "Are you sure you want to delete all call history? This cannot be undone.";
+    const confirmMsg =
+      type === "chat"
+        ? "Are you sure you want to delete all chat history? This cannot be undone."
+        : "Are you sure you want to delete all call history? This cannot be undone.";
 
     if (confirm(confirmMsg)) {
       onDeleteChat(type);
@@ -378,9 +391,21 @@ export default function ChatPanel({
             RepoLens AI
           </h3>
           <div className="flex items-center gap-2">
-            {callState === "listening" && <div className="text-xs text-[#ff5858] font-semibold animate-pulse mr-2 flex items-center gap-1"><Mic size={12} /> Recording</div>}
-            {callState === "processing" && <div className="text-xs text-[#58a6ff] font-semibold animate-pulse mr-2 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> Thinking</div>}
-            {callState === "speaking" && <div className="text-xs text-[#a371f7] font-semibold animate-pulse mr-2 flex items-center gap-1"><Bot size={12} /> Speaking</div>}
+            {callState === "listening" && (
+              <div className="text-xs text-[#ff5858] font-semibold animate-pulse mr-2 flex items-center gap-1">
+                <Mic size={12} /> Recording
+              </div>
+            )}
+            {callState === "processing" && (
+              <div className="text-xs text-[#58a6ff] font-semibold animate-pulse mr-2 flex items-center gap-1">
+                <Loader2 size={12} className="animate-spin" /> Thinking
+              </div>
+            )}
+            {callState === "speaking" && (
+              <div className="text-xs text-[#a371f7] font-semibold animate-pulse mr-2 flex items-center gap-1">
+                <Bot size={12} /> Speaking
+              </div>
+            )}
 
             {/* Delete Chat Button */}
             {activeMessages.length > 0 && (
@@ -393,10 +418,17 @@ export default function ChatPanel({
               </button>
             )}
 
-            <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] animate-pulse ${callState === "listening" ? "text-[#ff5858] bg-[#ff5858]" :
-                callState === "processing" ? "text-[#58a6ff] bg-[#58a6ff]" :
-                  callState === "speaking" ? "text-[#a371f7] bg-[#a371f7]" : "text-[#2ea043] bg-[#2ea043]"
-              }`}></div>
+            <div
+              className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] animate-pulse ${
+                callState === "listening"
+                  ? "text-[#ff5858] bg-[#ff5858]"
+                  : callState === "processing"
+                    ? "text-[#58a6ff] bg-[#58a6ff]"
+                    : callState === "speaking"
+                      ? "text-[#a371f7] bg-[#a371f7]"
+                      : "text-[#2ea043] bg-[#2ea043]"
+              }`}
+            ></div>
           </div>
         </div>
 
@@ -419,7 +451,9 @@ export default function ChatPanel({
         </div>
       </div>
 
-      <div className={`flex-1 overflow-y-auto p-4 space-y-6 bg-[#0d1117] custom-scrollbar scroll-smooth relative z-0`}>
+      <div
+        className={`flex-1 overflow-y-auto p-4 space-y-6 bg-[#0d1117] custom-scrollbar scroll-smooth relative z-0`}
+      >
         <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-l from-[#58a6ff]/5 to-transparent blur-3xl pointer-events-none -z-10"></div>
 
         {activeMessages.length === 0 ? (
@@ -427,64 +461,90 @@ export default function ChatPanel({
             <div className="w-16 h-16 rounded-full bg-[#161b22] border border-[#30363d] flex items-center justify-center mb-6 shadow-inner">
               <Bot className="h-8 w-8 text-[#58a6ff]" />
             </div>
-            <p className="text-base font-medium text-[#c9d1d9] mb-2">{activeTab === "chat" ? "How can I help with this codebase?" : "Speak your mind with RepoLens"}</p>
-            <p className="text-sm text-[#8b949e]">{activeTab === "chat" ? "Ask for architecture details, exact files, or component logic." : "I'm listening and ready to dive into the code with you."}</p>
+            <p className="text-base font-medium text-[#c9d1d9] mb-2">
+              {activeTab === "chat"
+                ? "How can I help with this codebase?"
+                : "Speak your mind with RepoLens"}
+            </p>
+            <p className="text-sm text-[#8b949e]">
+              {activeTab === "chat"
+                ? "Ask for architecture details, exact files, or component logic."
+                : "I'm listening and ready to dive into the code with you."}
+            </p>
           </div>
         ) : (
           activeMessages.map((msg: any, i: number) => {
-            const isStreamingThis = activeTab === "chat" && msg.role === "assistant" && i === streamingIndex;
+            const isStreamingThis =
+              activeTab === "chat" && msg.role === "assistant" && i === streamingIndex;
 
             return (
-              <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} animate-fadeInUp group`}>
+              <div
+                key={i}
+                className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} animate-fadeInUp group`}
+              >
                 <div
-                  className={`max-w-[90%] md:max-w-[85%] rounded-2xl overflow-hidden transition-all duration-300 ${msg.role === "user"
+                  className={`max-w-[90%] md:max-w-[85%] rounded-2xl overflow-hidden transition-all duration-300 ${
+                    msg.role === "user"
                       ? "bg-gradient-to-br from-[#21262d] to-[#161b22] border border-[#30363d]/50 rounded-tr-sm shadow-[0_4px_20px_rgba(0,0,0,0.15)] group-hover:shadow-[0_4px_25px_rgba(255,255,255,0.05)]"
                       : "glass-panel border border-[rgba(255,255,255,0.05)] border-l-2 border-l-[#58a6ff]/50 rounded-tl-sm shadow-[0_4px_25px_rgba(0,0,0,0.3)] group-hover:shadow-[0_8px_30px_rgba(88,166,255,0.1)]"
-                    }`}
+                  }`}
                 >
-                  <div className={`px-4 py-2 text-[11px] font-bold tracking-wide uppercase flex items-center gap-2 transition-all duration-300 ${msg.role === "user" ? "text-[#c9d1d9] justify-end" : "text-[#58a6ff] border-b border-[rgba(255,255,255,0.05)] bg-[rgba(0,0,0,0.2)]"
-                    }`}>
+                  <div
+                    className={`px-4 py-2 text-[11px] font-bold tracking-wide uppercase flex items-center gap-2 transition-all duration-300 ${
+                      msg.role === "user"
+                        ? "text-[#c9d1d9] justify-end"
+                        : "text-[#58a6ff] border-b border-[rgba(255,255,255,0.05)] bg-[rgba(0,0,0,0.2)]"
+                    }`}
+                  >
                     {msg.role === "assistant" && <Bot size={14} className="text-[#58a6ff]" />}
                     {msg.role === "user" ? "You" : "RepoLens"}
                     {msg.role === "user" && <User size={14} className="text-[#8b949e]" />}
                   </div>
                   <div className="p-4 text-[13px] sm:text-sm text-[#c9d1d9] whitespace-pre-wrap leading-relaxed font-sans">
-                    {msg.role === "assistant" ? (() => {
-                      let cleanContent = msg.content;
-                      let blastRadiusInfo = null;
-                      const blastRegex = /<blast_radius\s+file="([^"]+)"\s+name="([^"]*)"\s*\/>/;
-                      const match = cleanContent.match(blastRegex);
+                    {msg.role === "assistant"
+                      ? (() => {
+                          let cleanContent = msg.content;
+                          let blastRadiusInfo = null;
+                          const blastRegex =
+                            /<blast_radius\s+file="([^"]+)"\s+name="([^"]*)"\s*\/>/;
+                          const match = cleanContent.match(blastRegex);
 
-                      if (match) {
-                        cleanContent = cleanContent.replace(blastRegex, "").trim();
-                        blastRadiusInfo = { file: match[1], name: match[2] };
-                      }
+                          if (match) {
+                            cleanContent = cleanContent.replace(blastRegex, "").trim();
+                            blastRadiusInfo = { file: match[1], name: match[2] };
+                          }
 
-                      return (
-                        <div className="flex flex-col gap-3">
-                          <AssistantMessage
-                            content={cleanContent}
-                            shouldStream={isStreamingThis}
-                          />
-                          {blastRadiusInfo && (
-                            <button
-                              onClick={() => handleBlastRadiusClick(blastRadiusInfo.file, blastRadiusInfo.name)}
-                              className="cursor-pointer mt-2 self-start py-2 px-4 flex items-center justify-center gap-2 bg-[#ff5858]/10 hover:bg-[#ff5858]/20 text-[#ff5858] border border-[#ff5858]/30 hover:border-[#ff5858] rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
-                            >
-                              <Flame size={16} /> Visualize Blast Radius in Graph
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })() : (
-                      msg.content
-                    )}
+                          return (
+                            <div className="flex flex-col gap-3">
+                              <AssistantMessage
+                                content={cleanContent}
+                                shouldStream={isStreamingThis}
+                              />
+                              {blastRadiusInfo && (
+                                <button
+                                  onClick={() =>
+                                    handleBlastRadiusClick(
+                                      blastRadiusInfo.file,
+                                      blastRadiusInfo.name
+                                    )
+                                  }
+                                  className="cursor-pointer mt-2 self-start py-2 px-4 flex items-center justify-center gap-2 bg-[#ff5858]/10 hover:bg-[#ff5858]/20 text-[#ff5858] border border-[#ff5858]/30 hover:border-[#ff5858] rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+                                >
+                                  <Flame size={16} /> Visualize Blast Radius in Graph
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })()
+                      : msg.content}
                   </div>
                 </div>
 
                 {msg.references && msg.references.length > 0 && (
                   <div className="mt-2 space-y-1.5 w-full max-w-[85%] self-start ml-2">
-                    <span className="text-[10px] font-bold text-[#8b949e] uppercase tracking-wider block mb-1">References</span>
+                    <span className="text-[10px] font-bold text-[#8b949e] uppercase tracking-wider block mb-1">
+                      References
+                    </span>
                     <div className="flex flex-wrap gap-2">
                       {msg.references.map((ref: any, idx: number) => (
                         <div
@@ -494,7 +554,7 @@ export default function ChatPanel({
                           title="Click to view in editor"
                         >
                           <Code2 className="w-3.5 h-3.5 text-[#58a6ff] group-hover:scale-110 transition-transform" />
-                          <span className="font-mono">{ref.file.split('/').pop()}</span>
+                          <span className="font-mono">{ref.file.split("/").pop()}</span>
                           <span className="text-[#8b949e] font-mono">L{ref.startLine}</span>
                         </div>
                       ))}
@@ -549,7 +609,8 @@ export default function ChatPanel({
           </div>
           <div className="w-full mt-3 flex justify-center">
             <span className="text-[10px] text-[#8b949e] font-medium tracking-wide opacity-80 flex items-center gap-1.5">
-              RepoLens Assistant <span className="w-1 h-1 rounded-full bg-[#484f58]"></span> AI can make mistakes
+              RepoLens Assistant <span className="w-1 h-1 rounded-full bg-[#484f58]"></span> AI can
+              make mistakes
             </span>
           </div>
         </div>
@@ -592,7 +653,9 @@ export default function ChatPanel({
               <div className="flex items-center gap-6">
                 <div className="relative">
                   {callState === "listening" && (
-                    <div className={`w-16 h-16 rounded-full bg-[#161b22] border-2 border-[#ff5858] flex items-center justify-center shadow-[0_0_20px_rgba(255,88,88,0.3)] ${audioLevel > SILENCE_THRESHOLD ? 'scale-105' : 'scale-100'} transition-transform duration-150`}>
+                    <div
+                      className={`w-16 h-16 rounded-full bg-[#161b22] border-2 border-[#ff5858] flex items-center justify-center shadow-[0_0_20px_rgba(255,88,88,0.3)] ${audioLevel > SILENCE_THRESHOLD ? "scale-105" : "scale-100"} transition-transform duration-150`}
+                    >
                       <Mic className="w-8 h-8 text-[#ff5858]" />
                     </div>
                   )}
@@ -617,9 +680,15 @@ export default function ChatPanel({
                 </button>
               </div>
 
-              <span className={`text-sm tracking-wide font-medium ${callState === "listening" ? "text-[#ff5858]" :
-                  callState === "processing" ? "text-[#58a6ff]" : "text-[#a371f7]"
-                }`}>
+              <span
+                className={`text-sm tracking-wide font-medium ${
+                  callState === "listening"
+                    ? "text-[#ff5858]"
+                    : callState === "processing"
+                      ? "text-[#58a6ff]"
+                      : "text-[#a371f7]"
+                }`}
+              >
                 {callState === "listening" && "Listening... speak now"}
                 {callState === "processing" && "Processing..."}
                 {callState === "speaking" && "Agent Speaking..."}

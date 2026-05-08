@@ -1,9 +1,9 @@
 /**
  * CodeFlow Analysis Web Worker
- * 
+ *
  * Offloads heavy analysis computations to a background thread
  * to prevent UI freezing for large repositories (>100 files).
- * 
+ *
  * This worker receives analysis data and performs:
  * - Dependency graph building
  * - Pattern detection
@@ -14,7 +14,7 @@
 
 // Worker message types
 export interface AnalysisWorkerInput {
-  type: 'analyze';
+  type: "analyze";
   data: {
     files: any[];
     functions: any[];
@@ -23,7 +23,7 @@ export interface AnalysisWorkerInput {
 }
 
 export interface AnalysisWorkerOutput {
-  type: 'progress' | 'complete' | 'error';
+  type: "progress" | "complete" | "error";
   data?: any;
   progress?: number;
   message?: string;
@@ -31,16 +31,16 @@ export interface AnalysisWorkerOutput {
 }
 
 // Listen for messages from main thread
-self.addEventListener('message', async (event: MessageEvent<AnalysisWorkerInput>) => {
+self.addEventListener("message", async (event: MessageEvent<AnalysisWorkerInput>) => {
   const { type, data } = event.data;
 
-  if (type === 'analyze') {
+  if (type === "analyze") {
     try {
       await performAnalysis(data);
     } catch (error: any) {
       postMessage({
-        type: 'error',
-        error: error.message || 'Analysis failed',
+        type: "error",
+        error: error.message || "Analysis failed",
       } as AnalysisWorkerOutput);
     }
   }
@@ -58,9 +58,9 @@ async function performAnalysis(data: {
 
   // Stage 1: Build dependency graph
   postMessage({
-    type: 'progress',
+    type: "progress",
     progress: 20,
-    message: 'Building dependency graph...',
+    message: "Building dependency graph...",
   } as AnalysisWorkerOutput);
 
   // Simulate dependency graph building
@@ -69,44 +69,44 @@ async function performAnalysis(data: {
 
   // Stage 2: Analyze dependencies
   postMessage({
-    type: 'progress',
+    type: "progress",
     progress: 40,
-    message: 'Analyzing dependencies...',
+    message: "Analyzing dependencies...",
   } as AnalysisWorkerOutput);
 
   await simulateWork(500);
 
   // Stage 3: Pattern detection
   postMessage({
-    type: 'progress',
+    type: "progress",
     progress: 60,
-    message: 'Detecting patterns...',
+    message: "Detecting patterns...",
   } as AnalysisWorkerOutput);
 
   await simulateWork(500);
 
   // Stage 4: Code quality analysis
   postMessage({
-    type: 'progress',
+    type: "progress",
     progress: 80,
-    message: 'Analyzing code quality...',
+    message: "Analyzing code quality...",
   } as AnalysisWorkerOutput);
 
   await simulateWork(500);
 
   // Stage 5: Finalization
   postMessage({
-    type: 'progress',
+    type: "progress",
     progress: 100,
-    message: 'Finalizing analysis...',
+    message: "Finalizing analysis...",
   } as AnalysisWorkerOutput);
 
   // Send complete message
   postMessage({
-    type: 'complete',
+    type: "complete",
     data: {
       // Analysis results would go here
-      message: 'Analysis complete',
+      message: "Analysis complete",
     },
   } as AnalysisWorkerOutput);
 }

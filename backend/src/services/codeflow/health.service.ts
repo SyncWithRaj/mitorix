@@ -36,10 +36,7 @@ export function calcHealth(data: {
   let score = 100;
 
   // Dead code penalty
-  const deadPct =
-    data.stats.functions > 0
-      ? (data.stats.dead / data.stats.functions) * 100
-      : 0;
+  const deadPct = data.stats.functions > 0 ? (data.stats.dead / data.stats.functions) * 100 : 0;
   score -= Math.min(20, deadPct);
 
   // Circular dependency penalty
@@ -51,8 +48,7 @@ export function calcHealth(data: {
   score -= Math.min(15, god * 3);
 
   // Coupling penalty
-  const avgCoup =
-    data.stats.files > 0 ? data.stats.connections / data.stats.files : 0;
+  const avgCoup = data.stats.files > 0 ? data.stats.connections / data.stats.files : 0;
   score -= Math.min(15, Math.max(0, avgCoup - 3) * 2);
 
   // Security penalty

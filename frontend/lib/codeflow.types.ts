@@ -1,5 +1,13 @@
 export type ColorMode = "folder" | "layer" | "churn";
-export type VizType = "visual" | "force" | "treemap" | "matrix" | "dendro" | "sankey" | "disjoint" | "bundle";
+export type VizType =
+  | "visual"
+  | "force"
+  | "treemap"
+  | "matrix"
+  | "dendro"
+  | "sankey"
+  | "disjoint"
+  | "bundle";
 export type ViewMode = "force" | "radial" | "hierarchical" | "grid" | "metro";
 
 export interface GraphConfig {

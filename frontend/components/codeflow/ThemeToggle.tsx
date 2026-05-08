@@ -6,12 +6,12 @@ import { getCurrentTheme, toggleTheme, initializeTheme, type Theme } from "../..
 
 /**
  * Theme Toggle Button Component
- * 
+ *
  * Provides a button to switch between dark and light themes.
  * Persists theme preference to localStorage.
  */
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function ThemeToggle() {
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
     return (
-      <button 
+      <button
         className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition"
         disabled
       >
@@ -42,10 +42,10 @@ export default function ThemeToggle() {
     <button
       onClick={handleToggle}
       className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition"
-      title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+      title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+      aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
     >
-      {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
+      {theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}
     </button>
   );
 }

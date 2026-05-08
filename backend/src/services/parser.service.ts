@@ -10,22 +10,55 @@ const IGNORED_DIRS = new Set([".git", "node_modules", "dist", "build", ".next", 
 
 // Extensions we save content for (source code + config + docs)
 const TEXT_EXTENSIONS = new Set([
-  ".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".txt",
-  ".css", ".scss", ".less", ".html", ".xml", ".yaml", ".yml",
-  ".env", ".toml", ".ini", ".cfg", ".conf",
-  ".sh", ".bash", ".py", ".rb", ".go", ".rs", ".java",
-  ".c", ".cpp", ".h", ".hpp", ".cs", ".swift", ".kt",
-  ".sql", ".graphql", ".prisma", ".proto",
-  ".gitignore", ".eslintrc", ".prettierrc", ".editorconfig",
-  ".dockerignore", "Dockerfile", "Makefile",
+  ".ts",
+  ".tsx",
+  ".js",
+  ".jsx",
+  ".json",
+  ".md",
+  ".txt",
+  ".css",
+  ".scss",
+  ".less",
+  ".html",
+  ".xml",
+  ".yaml",
+  ".yml",
+  ".env",
+  ".toml",
+  ".ini",
+  ".cfg",
+  ".conf",
+  ".sh",
+  ".bash",
+  ".py",
+  ".rb",
+  ".go",
+  ".rs",
+  ".java",
+  ".c",
+  ".cpp",
+  ".h",
+  ".hpp",
+  ".cs",
+  ".swift",
+  ".kt",
+  ".sql",
+  ".graphql",
+  ".prisma",
+  ".proto",
+  ".gitignore",
+  ".eslintrc",
+  ".prettierrc",
+  ".editorconfig",
+  ".dockerignore",
+  "Dockerfile",
+  "Makefile",
 ]);
 
-export async function saveRepoFilesToDB(
-  repoId: string,
-  basePath: string
-): Promise<number> {
+export async function saveRepoFilesToDB(repoId: string, basePath: string): Promise<number> {
   const fileContentDocs: any[] = [];
-  
+
   // Explicitly cast to ObjectId so MongoDB queries don't fail later
   const { Types } = await import("mongoose");
   const repoObjectId = new Types.ObjectId(repoId);
@@ -60,9 +93,7 @@ export async function saveRepoFilesToDB(
         const ext = path.extname(entry.name).toLowerCase();
         const baseName = entry.name;
 
-        const shouldSaveContent =
-          TEXT_EXTENSIONS.has(ext) ||
-          TEXT_EXTENSIONS.has(baseName);
+        const shouldSaveContent = TEXT_EXTENSIONS.has(ext) || TEXT_EXTENSIONS.has(baseName);
 
         let content: string | null = null;
         let fileSize = 0;
@@ -107,10 +138,7 @@ export async function saveRepoFilesToDB(
 
 import { parseRepository } from "../modules/parser/astParser.js";
 
-export async function processRepositoryParsing(
-  repoId: string,
-  filePaths: string[]
-) {
+export async function processRepositoryParsing(repoId: string, filePaths: string[]) {
   // Find repository local path to use as the base path for resolving path aliases
   let basePath = "";
   try {
@@ -123,9 +151,11 @@ export async function processRepositoryParsing(
     // Fallback if DB query fails
   }
 
-  const { entities, relationships, fileMetadata } =
-    await parseRepository(repoId, filePaths, basePath);
-
+  const { entities, relationships, fileMetadata } = await parseRepository(
+    repoId,
+    filePaths,
+    basePath
+  );
 
   // nothing parsed
   if (!entities.length && !fileMetadata.length) {
@@ -133,47 +163,39 @@ export async function processRepositoryParsing(
       message: "Nothing parsed",
       totalEntities: 0,
       totalRelationships: 0,
-      totalFiles: 0
+      totalFiles: 0,
     };
   }
-
 
   // Insert entities
   if (entities.length) {
     await CodeEntity.insertMany(entities, { ordered: false });
   }
 
-
   // Insert relationships
   if (relationships.length) {
     await CodeRelationship.insertMany(relationships, { ordered: false });
   }
-
 
   // Insert file metadata
   if (fileMetadata.length) {
     await FileMetadata.insertMany(fileMetadata, { ordered: false });
   }
 
-
   // ---------- Route → Handler mapping ----------
 
-  const routes = entities.filter(e => e.type === "route");
+  const routes = entities.filter((e) => e.type === "route");
 
   const functions = entities.filter(
-    e =>
-      e.type === "function" ||
-      e.type === "method" ||
-      e.type === "arrow"
+    (e) => e.type === "function" || e.type === "method" || e.type === "arrow"
   );
 
   const routeRelationships = [];
 
   for (const route of routes) {
-
     const handler = route.name;
 
-    const target = functions.find(f => f.name === handler);
+    const target = functions.find((f) => f.name === handler);
 
     if (!target) continue;
 
@@ -184,20 +206,18 @@ export async function processRepositoryParsing(
       toName: target.name,
       toFilePath: target.filePath,
       relationType: "handles",
-      line: route.startLine
+      line: route.startLine,
     });
   }
-
 
   if (routeRelationships.length) {
     await CodeRelationship.insertMany(routeRelationships, { ordered: false });
   }
 
-
   return {
     message: "Parsing completed",
     totalEntities: entities.length,
     totalRelationships: relationships.length + routeRelationships.length,
-    totalFiles: fileMetadata.length
+    totalFiles: fileMetadata.length,
   };
 }

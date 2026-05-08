@@ -30,15 +30,15 @@ export const analyzeRepository = async (req: Request, res: Response): Promise<an
 
     console.log(`[CodeFlow] Starting analysis for repo ${repoId}...`);
     const startTime = Date.now();
-    const excludes = (req.query.excludes as string || "").split(",").filter(Boolean);
+    const excludes = ((req.query.excludes as string) || "").split(",").filter(Boolean);
 
     const analysisData = await runAnalysisPipeline(repoId, excludes);
 
     const elapsed = Date.now() - startTime;
     console.log(
       `[CodeFlow] Analysis complete: ${analysisData.stats.files} files, ` +
-      `${analysisData.stats.functions} functions, ` +
-      `${analysisData.stats.connections} connections in ${elapsed}ms`
+        `${analysisData.stats.functions} functions, ` +
+        `${analysisData.stats.connections} connections in ${elapsed}ms`
     );
 
     return res.status(200).json({
@@ -75,7 +75,7 @@ export const getAnalysis = async (req: Request, res: Response): Promise<any> => 
       return res.status(404).json({ success: false, message: "Repository not found" });
     }
 
-    const excludes = (req.query.excludes as string || "").split(",").filter(Boolean);
+    const excludes = ((req.query.excludes as string) || "").split(",").filter(Boolean);
     const analysisData = await runAnalysisPipeline(repoId, excludes);
 
     return res.status(200).json({
@@ -173,7 +173,9 @@ export const getPatterns = async (req: Request, res: Response): Promise<any> => 
 export const getBlastRadius = async (req: Request, res: Response): Promise<any> => {
   try {
     const repoId = req.params.repoId;
-    const filePath = decodeURIComponent(req.params.filePath || req.query.filePath as string || "");
+    const filePath = decodeURIComponent(
+      req.params.filePath || (req.query.filePath as string) || ""
+    );
 
     if (!filePath) {
       return res.status(400).json({ success: false, message: "filePath is required" });
@@ -251,7 +253,9 @@ export const getPRAnalysis = async (req: Request, res: Response): Promise<any> =
         headers: {
           Accept: "application/vnd.github.v3+json",
           // We can optionally use a token if available to avoid rate limits
-          ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
+          ...(process.env.GITHUB_TOKEN
+            ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
+            : {}),
         },
       }
     );
@@ -262,7 +266,9 @@ export const getPRAnalysis = async (req: Request, res: Response): Promise<any> =
       {
         headers: {
           Accept: "application/vnd.github.v3+json",
-          ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
+          ...(process.env.GITHUB_TOKEN
+            ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
+            : {}),
         },
       }
     );

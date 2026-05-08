@@ -62,14 +62,16 @@ export default function SuggestionsPanel() {
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Lightbulb size={14} className="text-[#c9d1d9] shrink-0" />
-                  <span className="font-semibold text-[11px] text-[#c9d1d9] flex-1 truncate">{s.title}</span>
-                  <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase border shrink-0 ${getPriorityBadge(s.priority)}`}>
+                  <span className="font-semibold text-[11px] text-[#c9d1d9] flex-1 truncate">
+                    {s.title}
+                  </span>
+                  <span
+                    className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase border shrink-0 ${getPriorityBadge(s.priority)}`}
+                  >
                     {s.priority}
                   </span>
                 </div>
-                <div className="text-[10px] text-[#8b949e] mb-2 leading-relaxed">
-                  {s.desc}
-                </div>
+                <div className="text-[10px] text-[#8b949e] mb-2 leading-relaxed">{s.desc}</div>
                 <div className="text-[9px] bg-[#161b22] p-1.5 rounded mb-1.5 border border-[#30363d]/30">
                   <span className="text-[#8b949e]">Action: </span>
                   <span className="text-[#c9d1d9]">{s.action}</span>
@@ -96,7 +98,9 @@ export default function SuggestionsPanel() {
                     className="bg-[#0d1117] border border-[#30363d]/50 rounded-md p-2.5 text-[10px] cursor-pointer hover:bg-[#161b22] transition"
                     onClick={() => setDrillDown({ type: "duplicate", data: d })}
                   >
-                    <div className={`font-semibold ${d.type === "code" ? "text-[#a855f7]" : "text-[#ff9f43]"}`}>
+                    <div
+                      className={`font-semibold ${d.type === "code" ? "text-[#a855f7]" : "text-[#ff9f43]"}`}
+                    >
                       {d.type === "code" ? "Similar Code" : "Same Name"}: {d.name}
                     </div>
                     <div className="text-[9px] text-[#58a6ff] mt-1 font-medium">

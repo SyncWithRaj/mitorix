@@ -138,9 +138,7 @@ async function seed() {
   if (process.env.GOOGLE_API_KEY) {
     info("GOOGLE_API_KEY detected — embedding into Qdrant...");
     try {
-      const { embedRepository } = await import(
-        "../../src/services/embedRepository.service.js"
-      );
+      const { embedRepository } = await import("../../src/services/embedRepository.service.js");
       await embedRepository(repoId);
       success("Vector embeddings stored in Qdrant — chat will work!");
     } catch (e: any) {

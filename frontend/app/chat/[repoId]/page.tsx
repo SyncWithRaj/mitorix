@@ -13,22 +13,31 @@ import { useEditor } from "@/context/EditorContext";
 import toast from "react-hot-toast";
 
 const getLanguage = (filename: string) => {
-  const ext = filename.split('.').pop()?.toLowerCase();
+  const ext = filename.split(".").pop()?.toLowerCase();
   const map: Record<string, string> = {
-    js: 'javascript', jsx: 'javascript',
-    ts: 'typescript', tsx: 'typescript',
-    py: 'python', rb: 'ruby', java: 'java',
-    go: 'go', rs: 'rust', c: 'c', cpp: 'cpp',
-    html: 'html', css: 'css', json: 'json', md: 'markdown'
+    js: "javascript",
+    jsx: "javascript",
+    ts: "typescript",
+    tsx: "typescript",
+    py: "python",
+    rb: "ruby",
+    java: "java",
+    go: "go",
+    rs: "rust",
+    c: "c",
+    cpp: "cpp",
+    html: "html",
+    css: "css",
+    json: "json",
+    md: "markdown",
   };
-  return map[ext || ''] || 'plaintext';
+  return map[ext || ""] || "plaintext";
 };
 
 export default function ChatPage() {
   const { repoId } = useParams();
   const router = useRouter();
   const { setEditorState } = useEditor();
-
 
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [callMessages, setCallMessages] = useState<any[]>([]);
@@ -56,18 +65,18 @@ export default function ChatPage() {
       try {
         const chatRes = await api.get(`/history/${repoId}?type=chat`);
         if (chatRes.data.success) {
-           setChatMessages(chatRes.data.messages || []);
+          setChatMessages(chatRes.data.messages || []);
         }
         const callRes = await api.get(`/history/${repoId}?type=call`);
         if (callRes.data.success) {
-           setCallMessages(callRes.data.messages || []);
+          setCallMessages(callRes.data.messages || []);
         }
       } catch (err) {
         console.error("Failed to load history", err);
       }
     };
     if (repoValid) {
-       fetchHistory();
+      fetchHistory();
     }
   }, [repoValid, repoId]);
 
@@ -104,7 +113,7 @@ export default function ChatPage() {
             content: fileRes.data.content,
             language: getLanguage(ref.file),
             startLine: ref.startLine,
-            endLine: ref.endLine
+            endLine: ref.endLine,
           });
         } catch (err) {
           console.warn(`Failed to auto-open reference file (${ref.file}) - it might not exist.`);
@@ -162,7 +171,7 @@ export default function ChatPage() {
     );
   }
 
-  const toggleSidebar = () => setActiveSidebar(prev => prev === "files" ? "none" : "files");
+  const toggleSidebar = () => setActiveSidebar((prev) => (prev === "files" ? "none" : "files"));
   const toggleChat = () => setShowChat(!showChat);
 
   return (
@@ -171,14 +180,14 @@ export default function ChatPage() {
 
       {/* Activity Bar */}
       <div className="w-[56px] min-w-[56px] flex flex-col items-center py-5 bg-[#161b22]/90 backdrop-blur-xl rounded-2xl border border-[#30363d] shadow-sm z-10 space-y-5">
-        <button 
+        <button
           onClick={toggleSidebar}
           className={`cursor-pointer p-2.5 rounded-xl transition-colors relative group ${activeSidebar === "files" ? "text-white bg-[#30363d] shadow-md border border-[#484f58]" : "text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#21262d] border border-transparent"}`}
           title="Explorer"
         >
           <Files size={22} strokeWidth={1.5} />
         </button>
-        <button 
+        <button
           onClick={toggleChat}
           className={`cursor-pointer p-2.5 rounded-xl transition-colors relative group ${showChat ? "text-white bg-[#30363d] shadow-md border border-[#484f58]" : "text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#21262d] border border-transparent"}`}
           title="Chat Panel"
@@ -186,7 +195,10 @@ export default function ChatPage() {
           <MessageSquare size={22} strokeWidth={1.5} />
         </button>
         <div className="flex-grow"></div>
-        <button className="cursor-pointer p-2.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#21262d] transition-all duration-300 rounded-xl mb-2 focus:outline-none" title="Settings">
+        <button
+          className="cursor-pointer p-2.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#21262d] transition-all duration-300 rounded-xl mb-2 focus:outline-none"
+          title="Settings"
+        >
           <Settings size={22} strokeWidth={1.5} />
         </button>
       </div>
@@ -222,7 +234,7 @@ export default function ChatPage() {
               <div className="h-10 w-1 bg-[#30363d] rounded-full group-hover:bg-[#58a6ff] transition-colors" />
             </Separator>
           )}
-          
+
           {showChat && (
             <Panel defaultSize={25} minSize={15} className="h-full pl-1">
               <div className="h-full bg-[#0d1117] rounded-xl border border-[#30363d] overflow-hidden shadow-sm flex flex-col">
@@ -233,7 +245,9 @@ export default function ChatPage() {
                   input={input}
                   setInput={setInput}
                   sendMessage={sendMessage}
-                  addCallMessages={(newMsgs: any[]) => setCallMessages(prev => [...prev, ...newMsgs])}
+                  addCallMessages={(newMsgs: any[]) =>
+                    setCallMessages((prev) => [...prev, ...newMsgs])
+                  }
                   loading={loading}
                   streamingIndex={streamingIndex}
                   onStreamComplete={() => setStreamingIndex(null)}

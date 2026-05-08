@@ -32,7 +32,6 @@ function createUser(req,res){
     ]);
 
     console.log("Insertion into Qdrant successful");
-
   } catch (err) {
     console.error("Error ❌", err);
   }

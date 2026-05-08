@@ -1,10 +1,10 @@
 /**
  * Web Worker Utilities for CodeFlow
- * 
+ *
  * Provides helpers for offloading heavy computations to Web Workers.
  */
 
-import type { AnalysisWorkerInput, AnalysisWorkerOutput } from '../workers/analysis.worker';
+import type { AnalysisWorkerInput, AnalysisWorkerOutput } from "../workers/analysis.worker";
 
 /**
  * Create and manage an analysis worker.
@@ -14,7 +14,7 @@ export class AnalysisWorkerManager {
   private isSupported: boolean;
 
   constructor() {
-    this.isSupported = typeof Worker !== 'undefined';
+    this.isSupported = typeof Worker !== "undefined";
   }
 
   /**
@@ -29,18 +29,17 @@ export class AnalysisWorkerManager {
    */
   async initialize(): Promise<void> {
     if (!this.isSupported) {
-      console.warn('[Worker] Web Workers not supported in this environment');
+      console.warn("[Worker] Web Workers not supported in this environment");
       return;
     }
 
     try {
       // Create worker from the analysis worker file
-      this.worker = new Worker(
-        new URL('../workers/analysis.worker.ts', import.meta.url),
-        { type: 'module' }
-      );
+      this.worker = new Worker(new URL("../workers/analysis.worker.ts", import.meta.url), {
+        type: "module",
+      });
     } catch (error) {
-      console.error('[Worker] Failed to initialize worker:', error);
+      console.error("[Worker] Failed to initialize worker:", error);
       this.isSupported = false;
     }
   }
@@ -60,32 +59,35 @@ export class AnalysisWorkerManager {
       try {
         await this.initialize();
       } catch (err) {
-        console.warn('[Worker] Failed to initialize worker, falling back to main-thread simulation:', err);
+        console.warn(
+          "[Worker] Failed to initialize worker, falling back to main-thread simulation:",
+          err
+        );
       }
     }
 
     if (!this.worker) {
       // Fallback: Run identical progress simulation directly on the main thread safely
-      console.log('[Worker] Running main-thread analysis simulation fallback...');
-      const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-      
-      if (onProgress) onProgress(20, 'Building dependency graph...');
+      console.log("[Worker] Running main-thread analysis simulation fallback...");
+      const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+      if (onProgress) onProgress(20, "Building dependency graph...");
       await delay(400);
-      if (onProgress) onProgress(40, 'Analyzing dependencies...');
+      if (onProgress) onProgress(40, "Analyzing dependencies...");
       await delay(400);
-      if (onProgress) onProgress(60, 'Detecting patterns...');
+      if (onProgress) onProgress(60, "Detecting patterns...");
       await delay(400);
-      if (onProgress) onProgress(80, 'Analyzing code quality...');
+      if (onProgress) onProgress(80, "Analyzing code quality...");
       await delay(400);
-      if (onProgress) onProgress(100, 'Finalizing analysis...');
+      if (onProgress) onProgress(100, "Finalizing analysis...");
       await delay(100);
 
-      return { message: 'Analysis complete' };
+      return { message: "Analysis complete" };
     }
 
     return new Promise((resolve, reject) => {
       if (!this.worker) {
-        reject(new Error('Worker not initialized'));
+        reject(new Error("Worker not initialized"));
         return;
       }
 
@@ -94,18 +96,18 @@ export class AnalysisWorkerManager {
         const { type, data: resultData, progress, message, error } = event.data;
 
         switch (type) {
-          case 'progress':
+          case "progress":
             if (onProgress && progress !== undefined && message) {
               onProgress(progress, message);
             }
             break;
 
-          case 'complete':
+          case "complete":
             resolve(resultData);
             break;
 
-          case 'error':
-            reject(new Error(error || 'Worker analysis failed'));
+          case "error":
+            reject(new Error(error || "Worker analysis failed"));
             break;
         }
       };
@@ -117,7 +119,7 @@ export class AnalysisWorkerManager {
 
       // Send analysis request
       this.worker.postMessage({
-        type: 'analyze',
+        type: "analyze",
         data,
       } as AnalysisWorkerInput);
     });

@@ -11,7 +11,7 @@ interface AnalysisProgressProps {
 
 /**
  * Analysis Progress Indicator
- * 
+ *
  * Shows progress when analysis is running in Web Worker.
  * Displays progress bar and current stage message.
  */
@@ -46,25 +46,25 @@ export default function AnalysisProgress({ progress, message, isVisible }: Analy
         {/* Stage Indicators */}
         <div className="mt-4 grid grid-cols-5 gap-2">
           {[
-            { label: 'Graph', threshold: 20 },
-            { label: 'Deps', threshold: 40 },
-            { label: 'Patterns', threshold: 60 },
-            { label: 'Quality', threshold: 80 },
-            { label: 'Final', threshold: 100 },
+            { label: "Graph", threshold: 20 },
+            { label: "Deps", threshold: 40 },
+            { label: "Patterns", threshold: 60 },
+            { label: "Quality", threshold: 80 },
+            { label: "Final", threshold: 100 },
           ].map((stage, idx) => (
             <div key={idx} className="text-center">
               <div
                 className={`h-1 rounded-full mb-1 transition-colors ${
                   progress >= stage.threshold
-                    ? 'bg-[#238636]'
+                    ? "bg-[#238636]"
                     : progress >= stage.threshold - 20
-                    ? 'bg-[#58a6ff]'
-                    : 'bg-[#21262d]'
+                      ? "bg-[#58a6ff]"
+                      : "bg-[#21262d]"
                 }`}
               />
               <span
                 className={`text-[10px] font-mono ${
-                  progress >= stage.threshold ? 'text-[#22c55e]' : 'text-[#8b949e]'
+                  progress >= stage.threshold ? "text-[#22c55e]" : "text-[#8b949e]"
                 }`}
               >
                 {stage.label}

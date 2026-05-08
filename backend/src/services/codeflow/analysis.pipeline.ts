@@ -65,12 +65,35 @@ function buildTree(files: AnalyzedFile[]): FolderTree {
 // ---------------------------------------------------------------------------
 
 const CODE_EXTS = new Set([
-  ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs",
-  ".py", ".pyw", ".pyi",
-  ".java", ".go", ".rb", ".php", ".rs",
-  ".c", ".cpp", ".cc", ".h", ".hpp", ".cs",
-  ".swift", ".kt", ".kts", ".scala",
-  ".ex", ".exs", ".lua", ".sh", ".bash",
+  ".js",
+  ".jsx",
+  ".ts",
+  ".tsx",
+  ".mjs",
+  ".cjs",
+  ".py",
+  ".pyw",
+  ".pyi",
+  ".java",
+  ".go",
+  ".rb",
+  ".php",
+  ".rs",
+  ".c",
+  ".cpp",
+  ".cc",
+  ".h",
+  ".hpp",
+  ".cs",
+  ".swift",
+  ".kt",
+  ".kts",
+  ".scala",
+  ".ex",
+  ".exs",
+  ".lua",
+  ".sh",
+  ".bash",
 ]);
 
 function isCodeFile(filename: string): boolean {
@@ -91,7 +114,10 @@ function isCodeFile(filename: string): boolean {
  * Stage 4: Calculate complexity, find duplicates, check layer violations
  * Stage 5: Aggregate stats, compute health score, generate suggestions
  */
-export async function runAnalysisPipeline(repoId: string, excludes: string[] = []): Promise<AnalysisData> {
+export async function runAnalysisPipeline(
+  repoId: string,
+  excludes: string[] = []
+): Promise<AnalysisData> {
   // =========================================================================
   // STAGE 1: Load Data from MongoDB
   // =========================================================================
@@ -129,7 +155,7 @@ export async function runAnalysisPipeline(repoId: string, excludes: string[] = [
 
     // Apply custom excludes
     if (excludes.length > 0) {
-      const isExcluded = excludes.some(pattern => {
+      const isExcluded = excludes.some((pattern) => {
         if (!pattern.trim()) return false;
         // Simple wildcard or partial match
         const regex = new RegExp(pattern.trim().replace(/\*/g, ".*").replace(/\?/g, "."), "i");
@@ -146,9 +172,9 @@ export async function runAnalysisPipeline(repoId: string, excludes: string[] = [
     const fp = basePath ? path.join(basePath, relativePath) : relativePath;
     let folder = path.dirname(relativePath).replace(/\\/g, "/");
     if (folder === ".") folder = "";
-    
+
     const content = (fc as any).content || null;
-    
+
     const fileMeta = fileMetaByPath[fp];
     const totalLines = fileMeta?.totalLines || (content ? content.split("\n").length : 0);
     const isCode = isCodeFile(fileName);
@@ -156,7 +182,9 @@ export async function runAnalysisPipeline(repoId: string, excludes: string[] = [
 
     // Collect functions from entities for this file
     const fileEntities = dbEntities.filter(
-      (e: any) => e.filePath === fp && ["function", "method", "arrow", "class", "constructor", "staticMethod"].includes(e.type)
+      (e: any) =>
+        e.filePath === fp &&
+        ["function", "method", "arrow", "class", "constructor", "staticMethod"].includes(e.type)
     );
 
     const fileFns: FunctionDef[] = fileEntities.map((e: any) => {
@@ -174,9 +202,12 @@ export async function runAnalysisPipeline(repoId: string, excludes: string[] = [
         } else if (ext === "php") {
           isExported = new RegExp(`public\\s+function\\s+${e.name}\\b`).test(content);
         } else if (["js", "jsx", "ts", "tsx"].includes(ext || "")) {
-          isExported = new RegExp(`export\\s+(?:const|let|var|function|async\\s+function|class|default|type|interface|enum)\\s+${e.name}\\b`).test(content) ||
-                       new RegExp(`export\\s+\\{\\s*[^}]*\\b${e.name}\\b[^}]*\\}`).test(content) ||
-                       content.includes(`export default ${e.name}`);
+          isExported =
+            new RegExp(
+              `export\\s+(?:const|let|var|function|async\\s+function|class|default|type|interface|enum)\\s+${e.name}\\b`
+            ).test(content) ||
+            new RegExp(`export\\s+\\{\\s*[^}]*\\b${e.name}\\b[^}]*\\}`).test(content) ||
+            content.includes(`export default ${e.name}`);
         } else {
           isExported = content.includes(`export`) && content.includes(e.name);
         }

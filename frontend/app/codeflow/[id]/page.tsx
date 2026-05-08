@@ -12,7 +12,7 @@ export default function CodeFlowIDE({ params }: { params: Promise<{ id: string }
     <CodeflowProvider>
       <CodeflowLayout repoId={repoId}>
         <div className="absolute inset-0">
-           <ForceGraph />
+          <ForceGraph />
         </div>
       </CodeflowLayout>
     </CodeflowProvider>

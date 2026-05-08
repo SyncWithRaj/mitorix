@@ -20,7 +20,7 @@ export default function CodePanel({ repoId }: { repoId: string }) {
       setError(null);
       try {
         const res = await api.get(`/files/content`, {
-          params: { repoId, path: selectedFile }
+          params: { repoId, path: selectedFile },
         });
         setCode(res.data.content);
       } catch (err: any) {
@@ -74,7 +74,7 @@ export default function CodePanel({ repoId }: { repoId: string }) {
     <div className="flex flex-col h-full bg-[#0d1117]">
       <div className="flex items-center justify-between px-3 py-2 bg-[#161b22] border-b border-[#30363d] shrink-0">
         <span className="text-xs font-mono text-[#58a6ff] truncate">
-          {selectedFile.split('/').pop()}
+          {selectedFile.split("/").pop()}
         </span>
       </div>
       <div className="flex-1 relative">
@@ -90,7 +90,7 @@ export default function CodePanel({ repoId }: { repoId: string }) {
             fontFamily: '"JetBrains Mono", "Fira Code", monospace',
             wordWrap: "on",
             scrollBeyondLastLine: false,
-            padding: { top: 16 }
+            padding: { top: 16 },
           }}
         />
       </div>

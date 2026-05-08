@@ -45,7 +45,9 @@ export default function ConfirmDialog() {
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className={`bg-[#161b22] border ${styles.border} rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200`}>
+      <div
+        className={`bg-[#161b22] border ${styles.border} rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200`}
+      >
         <div className={`p-6 flex flex-col items-center text-center ${styles.bg}`}>
           <div className="mb-4 bg-[#0d1117] p-3 rounded-full shadow-inner border border-[#30363d]">
             {styles.icon}
@@ -53,15 +55,15 @@ export default function ConfirmDialog() {
           <h2 className="text-xl font-bold text-[#c9d1d9] mb-2">{title}</h2>
           <p className="text-[#8b949e] text-sm leading-relaxed">{desc}</p>
         </div>
-        
+
         <div className="flex p-4 gap-3 bg-[#0d1117] border-t border-[#30363d]">
-          <button 
+          <button
             className="flex-1 px-4 py-2 bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] rounded-md transition text-[#c9d1d9] font-medium"
             onClick={() => setConfirmDialog(null)}
           >
             Cancel
           </button>
-          <button 
+          <button
             className={`flex-1 px-4 py-2 rounded-md transition font-medium border border-white/10 shadow-sm ${styles.btn}`}
             onClick={() => {
               onConfirm();

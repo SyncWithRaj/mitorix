@@ -3,7 +3,16 @@
 import React from "react";
 import { useCodeflow } from "../../../context/CodeflowContext";
 import { VizType } from "../../../lib/codeflow.types";
-import { Network, LayoutTemplate, Grid3X3, Share2, Workflow, Boxes, Target, Eye } from "lucide-react";
+import {
+  Network,
+  LayoutTemplate,
+  Grid3X3,
+  Share2,
+  Workflow,
+  Boxes,
+  Target,
+  Eye,
+} from "lucide-react";
 
 export default function VizSelector() {
   const { graphConfig, setGraphConfig } = useCodeflow();

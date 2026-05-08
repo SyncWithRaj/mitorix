@@ -16,13 +16,17 @@ export default function FilePreviewModal() {
       // Wait, we don't have repoId here directly. Let's get it from the URL or AnalysisData.
       const repoId = window.location.pathname.split("/").pop();
       if (repoId) {
-        api.get(`/files/content`, { params: { repoId, path: filePreview.path } })
-          .then(res => {
+        api
+          .get(`/files/content`, { params: { repoId, path: filePreview.path } })
+          .then((res) => {
             setFilePreview({ ...filePreview, content: res.data.content });
           })
-          .catch(err => {
+          .catch((err) => {
             console.error("Failed to load preview", err);
-            setFilePreview({ ...filePreview, content: "// Failed to load source code from server." });
+            setFilePreview({
+              ...filePreview,
+              content: "// Failed to load source code from server.",
+            });
           })
           .finally(() => setLoading(false));
       } else {
@@ -36,13 +40,14 @@ export default function FilePreviewModal() {
   return (
     <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
       <div className="bg-[#0d1117] border border-[#30363d] rounded-xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
         <div className="flex items-center justify-between p-4 border-b border-[#30363d] bg-[#161b22]">
           <div className="flex items-center gap-2 min-w-0">
             <Code className="w-5 h-5 text-[#58a6ff] shrink-0" />
-            <h2 className="text-sm font-bold text-[#c9d1d9] truncate font-mono">{filePreview.path}</h2>
+            <h2 className="text-sm font-bold text-[#c9d1d9] truncate font-mono">
+              {filePreview.path}
+            </h2>
           </div>
-          <button 
+          <button
             className="p-1.5 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition ml-4 shrink-0"
             onClick={() => setFilePreview(null)}
           >

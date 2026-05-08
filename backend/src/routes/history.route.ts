@@ -7,4 +7,3 @@ router.get("/:repoId", protect, getHistory);
 router.delete("/:repoId", protect, deleteHistory);
 
 export default router;
-

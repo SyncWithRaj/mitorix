@@ -1,12 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import { 
-  AnalysisData, 
-  GraphConfig, 
-  ColorMode, 
-  BlastRadius 
-} from "../lib/codeflow.types";
+import { AnalysisData, GraphConfig, ColorMode, BlastRadius } from "../lib/codeflow.types";
 import { DEFAULT_GRAPH_CONFIG } from "../lib/codeflow.constants";
 import { calcBlast } from "../lib/codeflow.utils";
 import { getWorkerManager, cleanupWorkerManager } from "../lib/worker.utils";
@@ -44,7 +39,7 @@ interface CodeflowState {
   setHoveredNode: (node: any | null) => void;
   folderFilter: string | null;
   setFolderFilter: (folder: string | null) => void;
-  
+
   // Blast Radius State
   blastRadius: BlastRadius | null;
   setBlastRadius: (blast: BlastRadius | null) => void;
@@ -64,7 +59,14 @@ interface CodeflowState {
   deselectFile: () => void;
 
   // Modal States
-  filePreview: { path: string; content?: string | null; line?: number; filename: string; loading?: boolean; error?: string } | null;
+  filePreview: {
+    path: string;
+    content?: string | null;
+    line?: number;
+    filename: string;
+    loading?: boolean;
+    error?: string;
+  } | null;
   setFilePreview: (preview: any | null) => void;
   showPRModal: boolean;
   setShowPRModal: (show: boolean) => void;
@@ -89,18 +91,41 @@ interface CodeflowState {
 }
 
 const REAL_CODE_EXTS = new Set([
-  "js", "jsx", "ts", "tsx", "mjs", "cjs",
-  "py", "pyw", "pyi",
-  "java", "go", "rb", "php", "rs",
-  "c", "cpp", "cc", "h", "hpp", "cs",
-  "swift", "kt", "kts", "scala",
-  "ex", "exs", "lua", "sh", "bash"
+  "js",
+  "jsx",
+  "ts",
+  "tsx",
+  "mjs",
+  "cjs",
+  "py",
+  "pyw",
+  "pyi",
+  "java",
+  "go",
+  "rb",
+  "php",
+  "rs",
+  "c",
+  "cpp",
+  "cc",
+  "h",
+  "hpp",
+  "cs",
+  "swift",
+  "kt",
+  "kts",
+  "scala",
+  "ex",
+  "exs",
+  "lua",
+  "sh",
+  "bash",
 ]);
 
 function buildTreeFromFiles(files: any[]) {
   const root: any = { name: "Root", path: "", files: [], children: {} };
 
-  files.forEach(file => {
+  files.forEach((file) => {
     const cleanPath = file.path.replace(/^\/tmp\/repolens-repos\/[^\/]+\/[^\/]+\//, "");
     const parts = cleanPath.split("/");
     let current = root;
@@ -118,7 +143,7 @@ function buildTreeFromFiles(files: any[]) {
           name: folderName,
           path: folderPath,
           files: [],
-          children: {}
+          children: {},
         };
       }
 
@@ -130,7 +155,7 @@ function buildTreeFromFiles(files: any[]) {
     }
     current.files.push({
       name: parts[parts.length - 1],
-      path: file.path
+      path: file.path,
     });
   });
 
@@ -148,15 +173,15 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
       return;
     }
     const cleanRepoPrefix = /^\/tmp\/repolens-repos\/[^\/]+\/[^\/]+\/?/;
-    const cleanedFiles = data.files.map(f => ({
+    const cleanedFiles = data.files.map((f) => ({
       ...f,
-      folder: f.folder ? f.folder.replace(cleanRepoPrefix, "") : ""
+      folder: f.folder ? f.folder.replace(cleanRepoPrefix, "") : "",
     }));
-    const cleanedFolders = data.folders.map(f => f.replace(cleanRepoPrefix, ""));
+    const cleanedFolders = data.folders.map((f) => f.replace(cleanRepoPrefix, ""));
     setRawAnalysisData({
       ...data,
       files: cleanedFiles,
-      folders: cleanedFolders
+      folders: cleanedFolders,
     });
   }, []);
 
@@ -168,8 +193,8 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
   const filteredFiles = React.useMemo(() => {
     if (!analysisData) return [];
     if (codeFilterMode === "all") return analysisData.files;
-    return analysisData.files.filter(f => {
-      const ext = f.path.split('.').pop()?.toLowerCase();
+    return analysisData.files.filter((f) => {
+      const ext = f.path.split(".").pop()?.toLowerCase();
       return ext && REAL_CODE_EXTS.has(ext);
     });
   }, [analysisData, codeFilterMode]);
@@ -177,24 +202,22 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
   const filteredConnections = React.useMemo(() => {
     if (!analysisData) return [];
     if (codeFilterMode === "all") return analysisData.connections;
-    const fileSet = new Set(filteredFiles.map(f => f.path));
-    return analysisData.connections.filter(c => 
-      fileSet.has(c.source) && fileSet.has(c.target)
-    );
+    const fileSet = new Set(filteredFiles.map((f) => f.path));
+    return analysisData.connections.filter((c) => fileSet.has(c.source) && fileSet.has(c.target));
   }, [analysisData, filteredFiles, codeFilterMode]);
 
   const filteredTree = React.useMemo(() => {
     if (!analysisData) return null;
     return buildTreeFromFiles(analysisData.files);
   }, [analysisData]);
-  
+
   const [colorMode, setColorMode] = useState<ColorMode>("folder");
   const [graphConfig, setGraphConfig] = useState<GraphConfig>(DEFAULT_GRAPH_CONFIG);
-  
+
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = useState<any | null>(null);
   const [folderFilter, setFolderFilter] = useState<string | null>(null);
-  
+
   const [blastRadius, setBlastRadius] = useState<BlastRadius | null>(null);
 
   // Right Panel
@@ -209,13 +232,18 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
   const [showExportModal, setShowExportModal] = useState<boolean>(false);
   const [showUnusedModal, setShowUnusedModal] = useState<boolean>(false);
   const [showExcludeModal, setShowExcludeModal] = useState<boolean>(false);
-  const [excludePatterns, setExcludePatterns] = useState<string>("node_modules\n.git\ndist\nbuild\n.next");
+  const [excludePatterns, setExcludePatterns] = useState<string>(
+    "node_modules\n.git\ndist\nbuild\n.next"
+  );
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [confirmDialog, setConfirmDialog] = useState<any | null>(null);
 
   // Web Worker State
   const [useWebWorker, setUseWebWorker] = useState<boolean>(false);
-  const [analysisProgress, setAnalysisProgress] = useState<{ progress: number; message: string } | null>(null);
+  const [analysisProgress, setAnalysisProgress] = useState<{
+    progress: number;
+    message: string;
+  } | null>(null);
 
   // Initialize Web Worker on mount
   useEffect(() => {
@@ -235,11 +263,11 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
   }, [analysisData]);
 
   const triggerAnalysis = useCallback(() => {
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   }, []);
 
   const toggleCard = useCallback((cardId: string) => {
-    setExpandedCards(prev => {
+    setExpandedCards((prev) => {
       const next = new Set(prev);
       if (next.has(cardId)) next.delete(cardId);
       else next.add(cardId);
@@ -248,7 +276,7 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggleFn = useCallback((fnName: string) => {
-    setExpandedFns(prev => {
+    setExpandedFns((prev) => {
       const next = new Set(prev);
       if (next.has(fnName)) next.delete(fnName);
       else next.add(fnName);
@@ -256,20 +284,23 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const selectFile = useCallback((path: string) => {
-    if (!analysisData) return;
-    const file = analysisData.files.find(f => f.path === path);
-    if (file) {
-      console.log("[CodeFlow] Selecting file:", path);
-      console.log("[CodeFlow] Connections sample:", analysisData.connections.slice(0, 2));
-      setSelectedFile(path);
-      setRightTab("details");
-      setExpandedFns(new Set());
-      const blast = calcBlast(path, analysisData.connections, analysisData.files);
-      console.log("[CodeFlow] Computed blast radius:", blast);
-      setBlastRadius(blast);
-    }
-  }, [analysisData]);
+  const selectFile = useCallback(
+    (path: string) => {
+      if (!analysisData) return;
+      const file = analysisData.files.find((f) => f.path === path);
+      if (file) {
+        console.log("[CodeFlow] Selecting file:", path);
+        console.log("[CodeFlow] Connections sample:", analysisData.connections.slice(0, 2));
+        setSelectedFile(path);
+        setRightTab("details");
+        setExpandedFns(new Set());
+        const blast = calcBlast(path, analysisData.connections, analysisData.files);
+        console.log("[CodeFlow] Computed blast radius:", blast);
+        setBlastRadius(blast);
+      }
+    },
+    [analysisData]
+  );
 
   const deselectFile = useCallback(() => {
     setSelectedFile(null);

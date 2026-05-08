@@ -45,11 +45,13 @@ const TreeNode = ({
           </span>
           <Folder size={14} className="shrink-0 text-[#d2a8ff]" />
           <span className="truncate flex-1">{node.name}</span>
-          
+
           {/* Filter Button */}
           <button
             className={`p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity ${
-              isFiltered ? "opacity-100 text-[#58a6ff] bg-[#58a6ff]/10" : "text-[#8b949e] hover:text-white hover:bg-[#30363d]"
+              isFiltered
+                ? "opacity-100 text-[#58a6ff] bg-[#58a6ff]/10"
+                : "text-[#8b949e] hover:text-white hover:bg-[#30363d]"
             }`}
             onClick={(e) => {
               e.stopPropagation();
@@ -64,39 +66,43 @@ const TreeNode = ({
 
       {/* Children Folders and Files */}
       {isExpanded && (
-        <div className={`${node.path !== "" ? "ml-3 pl-2 border-l border-[#30363d]" : ""} flex flex-col mt-0.5`}>
+        <div
+          className={`${node.path !== "" ? "ml-3 pl-2 border-l border-[#30363d]" : ""} flex flex-col mt-0.5`}
+        >
           {/* Render subfolders */}
-          {node.children && Object.values(node.children).map((childFolder) => (
-            <TreeNode
-              key={childFolder.path}
-              node={childFolder}
-              selectedFile={selectedFile}
-              onSelect={onSelect}
-              expandedPaths={expandedPaths}
-              togglePath={togglePath}
-              folderFilter={folderFilter}
-              setFolderFilter={setFolderFilter}
-            />
-          ))}
-          
+          {node.children &&
+            Object.values(node.children).map((childFolder) => (
+              <TreeNode
+                key={childFolder.path}
+                node={childFolder}
+                selectedFile={selectedFile}
+                onSelect={onSelect}
+                expandedPaths={expandedPaths}
+                togglePath={togglePath}
+                folderFilter={folderFilter}
+                setFolderFilter={setFolderFilter}
+              />
+            ))}
+
           {/* Render files */}
-          {node.files && node.files.map((file) => {
-            const isSelected = selectedFile === file.path;
-            return (
-              <div
-                key={file.path}
-                className={`flex items-center gap-1.5 py-1 px-2 rounded-md cursor-pointer transition-colors text-xs ${
-                  isSelected 
-                    ? "bg-[#58a6ff]/10 text-[#58a6ff]" 
-                    : "text-[#c9d1d9] hover:bg-[#30363d] hover:text-white"
-                }`}
-                onClick={() => onSelect(file.path)}
-              >
-                <File size={14} className="shrink-0 opacity-70" />
-                <span className="truncate">{file.name}</span>
-              </div>
-            );
-          })}
+          {node.files &&
+            node.files.map((file) => {
+              const isSelected = selectedFile === file.path;
+              return (
+                <div
+                  key={file.path}
+                  className={`flex items-center gap-1.5 py-1 px-2 rounded-md cursor-pointer transition-colors text-xs ${
+                    isSelected
+                      ? "bg-[#58a6ff]/10 text-[#58a6ff]"
+                      : "text-[#c9d1d9] hover:bg-[#30363d] hover:text-white"
+                  }`}
+                  onClick={() => onSelect(file.path)}
+                >
+                  <File size={14} className="shrink-0 opacity-70" />
+                  <span className="truncate">{file.name}</span>
+                </div>
+              );
+            })}
         </div>
       )}
     </div>
@@ -104,11 +110,12 @@ const TreeNode = ({
 };
 
 export default function TreeExplorer() {
-  const { analysisData, selectedFile, selectFile, folderFilter, setFolderFilter, filteredTree } = useCodeflow();
-  
+  const { analysisData, selectedFile, selectFile, folderFilter, setFolderFilter, filteredTree } =
+    useCodeflow();
+
   // Track expanded folder paths
   const [expandedPaths, setExpandedPaths] = useState<Record<string, boolean>>({
-    "": true // Auto-expand root (path is usually empty string or "root")
+    "": true, // Auto-expand root (path is usually empty string or "root")
   });
 
   const togglePath = (path: string) => {

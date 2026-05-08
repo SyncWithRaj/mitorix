@@ -1,6 +1,6 @@
 /**
  * Performance Utilities for CodeFlow
- * 
+ *
  * Provides non-blocking UI helpers for long-running operations.
  * Ported from index.html performance patterns.
  */
@@ -8,7 +8,7 @@
 /**
  * Yield to browser to prevent UI freezing during long operations.
  * Uses MessageChannel for immediate task scheduling (faster than setTimeout).
- * 
+ *
  * Usage:
  * ```ts
  * for (let i = 0; i < largeArray.length; i++) {
@@ -94,7 +94,7 @@ export function isLargeGraph(nodeCount: number): boolean {
 
 /**
  * Batch process array with yielding to prevent UI blocking.
- * 
+ *
  * @param items - Array to process
  * @param processor - Function to process each item
  * @param batchSize - Number of items to process before yielding (default: 50)
@@ -106,7 +106,7 @@ export async function batchProcess<T>(
 ): Promise<void> {
   for (let i = 0; i < items.length; i++) {
     await processor(items[i], i);
-    
+
     // Yield to browser every batchSize items
     if ((i + 1) % batchSize === 0) {
       await yieldToBrowser();
@@ -117,14 +117,11 @@ export async function batchProcess<T>(
 /**
  * Request idle callback with fallback for browsers that don't support it.
  */
-export function requestIdleCallback(
-  callback: () => void,
-  options?: { timeout?: number }
-): number {
-  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+export function requestIdleCallback(callback: () => void, options?: { timeout?: number }): number {
+  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
     return window.requestIdleCallback(callback, options);
   }
-  
+
   // Fallback to setTimeout
   return setTimeout(callback, 1) as any;
 }
@@ -133,7 +130,7 @@ export function requestIdleCallback(
  * Cancel idle callback with fallback.
  */
 export function cancelIdleCallback(id: number): void {
-  if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+  if (typeof window !== "undefined" && "cancelIdleCallback" in window) {
     window.cancelIdleCallback(id);
   } else {
     clearTimeout(id);
@@ -143,10 +140,7 @@ export function cancelIdleCallback(id: number): void {
 /**
  * Measure performance of a function.
  */
-export async function measurePerformance<T>(
-  name: string,
-  fn: () => T | Promise<T>
-): Promise<T> {
+export async function measurePerformance<T>(name: string, fn: () => T | Promise<T>): Promise<T> {
   const start = performance.now();
   const result = await fn();
   const end = performance.now();

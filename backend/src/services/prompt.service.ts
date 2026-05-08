@@ -1,11 +1,14 @@
 export const buildPrompt = (question: string, entities: any[]) => {
-
-  const context = entities.map((e, i) => `
+  const context = entities
+    .map(
+      (e, i) => `
 File: ${e.filePath}
 Lines: ${e.startLine}-${e.endLine}
 
 ${e.code}
-`).join("\n\n");
+`
+    )
+    .join("\n\n");
 
   return `
 You are an AI assistant that helps developers understand a codebase.

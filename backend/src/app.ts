@@ -22,7 +22,9 @@ const app = express();
 app.set("trust proxy", 1);
 
 // Configure dynamic CORS policy based on environment
-const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === "production" ? "http://localhost" : "http://localhost:3000");
+const frontendUrl =
+  process.env.FRONTEND_URL ||
+  (process.env.NODE_ENV === "production" ? "http://localhost" : "http://localhost:3000");
 
 app.use(
   cors({

@@ -13,7 +13,7 @@ export default function FileInspector() {
 
   if (!analysisData || !selectedFile) return null;
 
-  const file = analysisData.files.find(f => f.path === selectedFile);
+  const file = analysisData.files.find((f) => f.path === selectedFile);
   if (!file) return null;
 
   return (
@@ -37,7 +37,9 @@ export default function FileInspector() {
             </div>
             <div className="text-[9px] text-[#8b949e] mt-1 leading-relaxed">
               {file.folder || "root"} • {file.layer} • {file.lines} lines
-              {file.complexity && file.complexity.score > 0 && ` • Complexity: ${file.complexity.score}`}
+              {file.complexity &&
+                file.complexity.score > 0 &&
+                ` • Complexity: ${file.complexity.score}`}
             </div>
           </div>
           <button

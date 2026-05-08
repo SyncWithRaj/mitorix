@@ -4,7 +4,25 @@ import type { RightTab } from "../../context/CodeflowContext";
 import api from "../../lib/axios";
 import toast from "react-hot-toast";
 import ResizablePanel from "./ResizablePanel";
-import { ArrowLeft, Menu, Settings, Ban, Folder, Archive, GitPullRequest, Download, Share2, Moon, Info, Grid, ShieldAlert, Zap, Code, FileText, BookOpen } from "lucide-react";
+import {
+  ArrowLeft,
+  Menu,
+  Settings,
+  Ban,
+  Folder,
+  Archive,
+  GitPullRequest,
+  Download,
+  Share2,
+  Moon,
+  Info,
+  Grid,
+  ShieldAlert,
+  Zap,
+  Code,
+  FileText,
+  BookOpen,
+} from "lucide-react";
 import Link from "next/link";
 import HealthRing from "./sidebar/HealthRing";
 import ColorModeSelector from "./sidebar/ColorModeSelector";
@@ -48,15 +66,15 @@ export default function CodeflowLayout({
   repoId: string;
   children: React.ReactNode;
 }) {
-  const { 
-    analysisData, 
-    setAnalysisData, 
+  const {
+    analysisData,
+    setAnalysisData,
     isLoading,
-    setIsLoading, 
-    graphConfig, 
-    selectedFile, 
-    rightTab, 
-    setRightTab, 
+    setIsLoading,
+    graphConfig,
+    selectedFile,
+    rightTab,
+    setRightTab,
     setDrillDown,
     setShowPRModal,
     setShowExportModal,
@@ -68,7 +86,7 @@ export default function CodeflowLayout({
     useWebWorker,
     setUseWebWorker,
     analysisProgress,
-    setAnalysisProgress
+    setAnalysisProgress,
   } = useCodeflow();
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
@@ -85,19 +103,23 @@ export default function CodeflowLayout({
         const workerManager = getWorkerManager();
         let workerPromise;
         if (workerManager.isWebWorkerSupported()) {
-          workerPromise = workerManager.runAnalysis(
-            { files: [], functions: [], relationships: [] },
-            (progress, message) => {
+          workerPromise = workerManager
+            .runAnalysis({ files: [], functions: [], relationships: [] }, (progress, message) => {
               setAnalysisProgress({ progress, message });
-            }
-          ).catch(err => {
-            console.error("[Worker] Analysis worker failed:", err);
-          });
+            })
+            .catch((err) => {
+              console.error("[Worker] Analysis worker failed:", err);
+            });
         }
 
-        const patternsParam = excludePatterns.split("\n").filter(p => p.trim()).join(",");
-        const res = await api.get(`/codeflow/analysis/${repoId}?excludes=${encodeURIComponent(patternsParam)}`);
-        
+        const patternsParam = excludePatterns
+          .split("\n")
+          .filter((p) => p.trim())
+          .join(",");
+        const res = await api.get(
+          `/codeflow/analysis/${repoId}?excludes=${encodeURIComponent(patternsParam)}`
+        );
+
         if (workerPromise) {
           await workerPromise;
         }
@@ -117,14 +139,22 @@ export default function CodeflowLayout({
     };
 
     fetchAnalysis();
-  }, [repoId, setAnalysisData, setIsLoading, refreshKey, setUseWebWorker, setAnalysisProgress, excludePatterns]);
+  }, [
+    repoId,
+    setAnalysisData,
+    setIsLoading,
+    refreshKey,
+    setUseWebWorker,
+    setAnalysisProgress,
+    excludePatterns,
+  ]);
 
   const tabs = [
     { key: "details", label: "Details", icon: <Info size={12} /> },
     { key: "patterns", label: "Patterns", icon: <Grid size={12} /> },
     { key: "security", label: "Security", icon: <ShieldAlert size={12} /> },
     { key: "suggestions", label: "Action Items", icon: <Zap size={12} /> },
-    { key: "code", label: "Source Code", icon: <Code size={12} /> }
+    { key: "code", label: "Source Code", icon: <Code size={12} /> },
   ];
 
   return (
@@ -139,8 +169,8 @@ export default function CodeflowLayout({
             <ArrowLeft size={16} />
           </Link>
           <div className="flex items-center gap-2">
-            <button 
-              className="p-1.5 hover:bg-gh-btn-secondary-hover rounded-md transition text-[#8b949e] hover:text-[#c9d1d9] flex items-center gap-2 border border-[#30363d] px-2.5 bg-[#161b22] font-mono" 
+            <button
+              className="p-1.5 hover:bg-gh-btn-secondary-hover rounded-md transition text-[#8b949e] hover:text-[#c9d1d9] flex items-center gap-2 border border-[#30363d] px-2.5 bg-[#161b22] font-mono"
               onClick={() => setLeftOpen(!leftOpen)}
               title="Toggle File Explorer"
             >
@@ -157,69 +187,73 @@ export default function CodeflowLayout({
             </span>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2 flex-1 max-w-2xl px-2 sm:px-6">
-          <input 
-            type="text" 
+          <input
+            type="text"
             className="flex-1 bg-gh-input border border-gh-border rounded-md px-3 py-1.5 text-xs text-gh-text focus:outline-none focus:border-gh-accent hidden sm:block"
             placeholder="owner/repo or GitHub URL"
             value={repoId}
             readOnly
           />
-          <button 
+          <button
             className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gh-btn-secondary border border-gh-border hover:bg-gh-btn-secondary-hover rounded-md transition text-gh-text"
             onClick={() => setShowExcludeModal(true)}
           >
-             <Ban size={14} /> Excludes
+            <Ban size={14} /> Excludes
           </button>
-          <button 
-            className="hidden sm:flex items-center gap-2 px-4 py-1.5 text-xs bg-gh-btn-primary hover:bg-gh-btn-primary-hover border border-gh-border rounded-md transition text-white font-medium" 
+          <button
+            className="hidden sm:flex items-center gap-2 px-4 py-1.5 text-xs bg-gh-btn-primary hover:bg-gh-btn-primary-hover border border-gh-border rounded-md transition text-white font-medium"
             onClick={triggerAnalysis}
           >
-             Analyze
+            Analyze
           </button>
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
-          <button 
-            className="p-1.5 text-gh-text-muted hover:text-[#58a6ff] hover:bg-gh-btn-secondary-hover rounded-md transition flex items-center gap-1.5" 
+          <button
+            className="p-1.5 text-gh-text-muted hover:text-[#58a6ff] hover:bg-gh-btn-secondary-hover rounded-md transition flex items-center gap-1.5"
             title="Generate System Design"
             onClick={() => setIsDesignDocOpen(true)}
           >
             <FileText size={16} />
             <span className="text-[10px] uppercase font-bold hidden xl:inline">Design Doc</span>
           </button>
-          <button 
-            className="p-1.5 text-gh-text-muted hover:text-[#2ea043] hover:bg-gh-btn-secondary-hover rounded-md transition flex items-center gap-1.5" 
+          <button
+            className="p-1.5 text-gh-text-muted hover:text-[#2ea043] hover:bg-gh-btn-secondary-hover rounded-md transition flex items-center gap-1.5"
             title="Onboarding Guide"
             onClick={() => setIsOnboardingOpen(true)}
           >
             <BookOpen size={16} />
             <span className="text-[10px] uppercase font-bold hidden xl:inline">Onboarding</span>
           </button>
-          <button 
-            className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" 
+          <button
+            className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition"
             title="Pull Request"
             onClick={() => setShowPRModal(true)}
-           >
-             <GitPullRequest size={16} />
-           </button>
-           <button 
-             className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" 
-             title="Export"
-             onClick={() => setShowExportModal(true)}
-           >
-             <Download size={16} />
-           </button>
-           <button className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition" title="Share">
-             <Share2 size={16} />
-           </button>
-           <div className="hidden sm:block">
-             {/* <ThemeToggle /> */}
-           </div>
-           <button className="lg:hidden p-1.5 text-gh-text-muted hover:text-gh-text" onClick={() => setRightOpen(!rightOpen)}>
-              <Settings size={18} />
-           </button>
+          >
+            <GitPullRequest size={16} />
+          </button>
+          <button
+            className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition"
+            title="Export"
+            onClick={() => setShowExportModal(true)}
+          >
+            <Download size={16} />
+          </button>
+          <button
+            className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition"
+            title="Share"
+          >
+            <Share2 size={16} />
+          </button>
+          <div className="hidden sm:block">{/* <ThemeToggle /> */}</div>
+          <button
+            className="lg:hidden p-1.5 text-gh-text-muted hover:text-gh-text"
+            onClick={() => setRightOpen(!rightOpen)}
+          >
+            <Settings size={18} />
+          </button>
         </div>
       </div>
 
@@ -237,9 +271,9 @@ export default function CodeflowLayout({
             <div className="flex flex-col h-full bg-gh-bg w-full relative">
               {/* Upper Section */}
               <div className="flex-1 p-4 space-y-5 overflow-y-auto custom-scrollbar">
-                <HealthRing 
-                  score={analysisData.health?.score || 0} 
-                  grade={analysisData.health?.grade || "F"} 
+                <HealthRing
+                  score={analysisData.health?.score || 0}
+                  grade={analysisData.health?.grade || "F"}
                 />
                 <ColorModeSelector />
                 <StatsGrid />
@@ -254,7 +288,7 @@ export default function CodeflowLayout({
                       <Folder size={14} className="text-[#58a6ff]" />
                       <span>File Tree Explorer</span>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setLeftOpen(false)}
                       className="p-1 hover:bg-[#21262d] rounded text-[#8b949e] hover:text-[#c9d1d9]"
                       title="Close Explorer"
@@ -282,7 +316,7 @@ export default function CodeflowLayout({
         {/* Center Canvas */}
         <div className="flex-1 flex flex-col min-w-0 bg-gh-bg relative overflow-hidden">
           {analysisData && <VizSelector />}
-          
+
           <div className="absolute inset-0 z-0">
             {graphConfig.vizType === "visual" && <GraphView repoId={repoId} />}
             {graphConfig.vizType === "force" && children}
@@ -303,11 +337,11 @@ export default function CodeflowLayout({
           initialWidth={360}
           minWidth={280}
           maxWidth={500}
-          className={`${rightOpen ? 'flex absolute inset-y-0 right-0 z-40' : 'hidden'} lg:relative lg:flex`}
+          className={`${rightOpen ? "flex absolute inset-y-0 right-0 z-40" : "hidden"} lg:relative lg:flex`}
         >
           {/* Tab Bar */}
           <div className="flex border-b border-gh-border bg-gh-panel shrink-0">
-            {tabs.map(tab => (
+            {tabs.map((tab) => (
               <button
                 key={tab.key}
                 className={`flex-1 py-2 text-[10px] font-bold transition flex items-center justify-center gap-1 ${
@@ -315,7 +349,10 @@ export default function CodeflowLayout({
                     ? "text-gh-accent border-b-2 border-gh-accent"
                     : "text-gh-text-muted hover:text-gh-text border-b-2 border-transparent hover:border-gh-border"
                 }`}
-                onClick={() => { setRightTab(tab.key as RightTab); setDrillDown(null); }}
+                onClick={() => {
+                  setRightTab(tab.key as RightTab);
+                  setDrillDown(null);
+                }}
               >
                 {tab.icon}
                 {tab.label}
@@ -324,12 +361,12 @@ export default function CodeflowLayout({
           </div>
 
           {/* Panel Content */}
-          <div className={`flex-1 overflow-y-auto bg-gh-bg custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}>
+          <div
+            className={`flex-1 overflow-y-auto bg-gh-bg custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}
+          >
             {analysisData ? (
               <div className="flex-1 flex flex-col relative bg-gh-bg">
-                {rightTab === "details" && (
-                  selectedFile ? <FileInspector /> : <IssuesPanel />
-                )}
+                {rightTab === "details" && (selectedFile ? <FileInspector /> : <IssuesPanel />)}
                 {rightTab === "patterns" && <PatternsPanel />}
                 {rightTab === "security" && <SecurityPanel />}
                 {rightTab === "suggestions" && <SuggestionsPanel />}
@@ -339,7 +376,9 @@ export default function CodeflowLayout({
               <div className="flex flex-col items-center justify-center h-full text-gh-text-muted">
                 <div className="text-3xl mb-3 opacity-30">📊</div>
                 <div className="text-xs font-semibold mb-1">Analysis</div>
-                <div className="text-[10px] text-center opacity-60">Analyze a repo to see insights</div>
+                <div className="text-[10px] text-center opacity-60">
+                  Analyze a repo to see insights
+                </div>
               </div>
             )}
           </div>
@@ -354,22 +393,22 @@ export default function CodeflowLayout({
       <UnusedFunctionsModal />
       <ExcludePatternsModal />
       <ConfirmDialog />
-      <DesignDocModal 
-        repoId={repoId} 
-        isOpen={isDesignDocOpen} 
-        onClose={() => setIsDesignDocOpen(false)} 
+      <DesignDocModal
+        repoId={repoId}
+        isOpen={isDesignDocOpen}
+        onClose={() => setIsDesignDocOpen(false)}
       />
-      <OnboardingModal 
-        repoId={repoId} 
-        isOpen={isOnboardingOpen} 
-        onClose={() => setIsOnboardingOpen(false)} 
+      <OnboardingModal
+        repoId={repoId}
+        isOpen={isOnboardingOpen}
+        onClose={() => setIsOnboardingOpen(false)}
       />
 
       {/* Analysis Progress Overlay */}
-      <AnalysisProgress 
-        progress={analysisProgress?.progress || 0} 
-        message={analysisProgress?.message || ""} 
-        isVisible={isLoading && useWebWorker && analysisProgress !== null} 
+      <AnalysisProgress
+        progress={analysisProgress?.progress || 0}
+        message={analysisProgress?.message || ""}
+        isVisible={isLoading && useWebWorker && analysisProgress !== null}
       />
     </div>
   );

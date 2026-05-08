@@ -2,44 +2,47 @@ import type { Document } from "mongoose";
 import mongoose, { Schema } from "mongoose";
 
 export interface IFileContent extends Document {
-    repoId: mongoose.Types.ObjectId;
-    relativePath: string;
-    fileName: string;
-    isDirectory: boolean;
-    content: string | null;
-    fileSize: number;
+  repoId: mongoose.Types.ObjectId;
+  relativePath: string;
+  fileName: string;
+  isDirectory: boolean;
+  content: string | null;
+  fileSize: number;
 }
 
-const fileContentSchema = new Schema<IFileContent>({
+const fileContentSchema = new Schema<IFileContent>(
+  {
     repoId: {
-        type: Schema.Types.ObjectId,
-        ref: "Repository",
-        required: true,
-        index: true,
+      type: Schema.Types.ObjectId,
+      ref: "Repository",
+      required: true,
+      index: true,
     },
     relativePath: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     fileName: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     isDirectory: {
-        type: Boolean,
-        default: false,
+      type: Boolean,
+      default: false,
     },
     content: {
-        type: String,
-        default: null,
+      type: String,
+      default: null,
     },
     fileSize: {
-        type: Number,
-        default: 0,
+      type: Number,
+      default: 0,
     },
-}, {
+  },
+  {
     timestamps: true,
-});
+  }
+);
 
 // Compound index for efficient querying
 fileContentSchema.index({ repoId: 1, relativePath: 1 }, { unique: true });

@@ -27,12 +27,14 @@ export default function IssuesPanel() {
           {analysisData.issues.map((issue, i) => {
             const isUnused = issue.title.toLowerCase().includes("unused functions");
             return (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className={`p-3 rounded-lg border cursor-pointer transition hover:brightness-110 bg-[#161b22] ${
-                  issue.type === 'critical' ? 'border-red-500/30' : 
-                  issue.type === 'warning' ? 'border-orange-500/30' : 
-                  'border-blue-500/30'
+                  issue.type === "critical"
+                    ? "border-red-500/30"
+                    : issue.type === "warning"
+                      ? "border-orange-500/30"
+                      : "border-blue-500/30"
                 }`}
                 onClick={() => {
                   if (isUnused) {
@@ -42,20 +44,24 @@ export default function IssuesPanel() {
                   }
                 }}
               >
-              <div className="flex items-center gap-2 mb-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  issue.type === 'critical' ? 'bg-red-500' : 
-                  issue.type === 'warning' ? 'bg-orange-500' : 
-                  'bg-blue-500'
-                }`} />
-                <span className="font-semibold text-xs text-[#c9d1d9]">{issue.title}</span>
-              </div>
-              <div className="text-[10px] text-[#8b949e] leading-relaxed line-clamp-3">
-                {issue.desc}
-              </div>
-              <div className="text-[9px] text-[#58a6ff] mt-2.5 font-medium">
-                Click for details ({issue.items ? issue.items.length : 0} items) →
-              </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      issue.type === "critical"
+                        ? "bg-red-500"
+                        : issue.type === "warning"
+                          ? "bg-orange-500"
+                          : "bg-blue-500"
+                    }`}
+                  />
+                  <span className="font-semibold text-xs text-[#c9d1d9]">{issue.title}</span>
+                </div>
+                <div className="text-[10px] text-[#8b949e] leading-relaxed line-clamp-3">
+                  {issue.desc}
+                </div>
+                <div className="text-[9px] text-[#58a6ff] mt-2.5 font-medium">
+                  Click for details ({issue.items ? issue.items.length : 0} items) →
+                </div>
               </div>
             );
           })}

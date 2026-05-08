@@ -14,7 +14,6 @@ export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -55,13 +54,13 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`sticky top-[15px] mx-[15px] z-50 transition-all duration-500 rounded-2xl ${scrolled
-        ? "glass-panel shadow-[0_8px_40px_rgba(0,0,0,0.6)] border-b border-[#58a6ff]/20"
-        : "bg-[#0d1117]/30 backdrop-blur-xl border border-[rgba(255,255,255,0.05)] shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
-        } text-[#c9d1d9] px-6 py-3.5 flex items-center justify-between`}
+      className={`sticky top-[15px] mx-[15px] z-50 transition-all duration-500 rounded-2xl ${
+        scrolled
+          ? "glass-panel shadow-[0_8px_40px_rgba(0,0,0,0.6)] border-b border-[#58a6ff]/20"
+          : "bg-[#0d1117]/30 backdrop-blur-xl border border-[rgba(255,255,255,0.05)] shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
+      } text-[#c9d1d9] px-6 py-3.5 flex items-center justify-between`}
     >
       <div className="flex items-center space-x-6">
-
         {inWorkspace ? (
           <div className="flex items-center gap-4">
             <Link
@@ -80,18 +79,34 @@ export default function Navbar() {
           <Link href="/" className="flex items-center space-x-2 text-white group">
             <div className="relative rounded-lg bg-[#21262d] border border-[#30363d] group-hover:border-[#58a6ff]/50 transition-all duration-300 shadow-inner group-hover:shadow-[0_0_15px_rgba(88,166,255,0.4)] flex items-center justify-center overflow-hidden w-8 h-8">
               <div className="absolute inset-0 bg-[#58a6ff] opacity-0 group-hover:opacity-20 blur-md rounded-lg transition-opacity duration-300 z-0"></div>
-              <Image src="/logo.png" alt="RepoLens" width={32} height={32} className="relative z-10 object-cover w-full h-full" unoptimized priority />
+              <Image
+                src="/logo.png"
+                alt="RepoLens"
+                width={32}
+                height={32}
+                className="relative z-10 object-cover w-full h-full"
+                unoptimized
+                priority
+              />
             </div>
-            <span className="font-bold text-xl tracking-tight bg-clip-text group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#58a6ff] transition-all duration-300">RepoLens</span>
+            <span className="font-bold text-xl tracking-tight bg-clip-text group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#58a6ff] transition-all duration-300">
+              RepoLens
+            </span>
           </Link>
         )}
 
         <div className="hidden md:flex space-x-2">
-          <Link href="/about" className="text-sm font-medium text-[#8b949e] hover:text-[#c9d1d9] px-3 py-1.5 rounded-md transition-all duration-300 relative group overflow-hidden">
+          <Link
+            href="/about"
+            className="text-sm font-medium text-[#8b949e] hover:text-[#c9d1d9] px-3 py-1.5 rounded-md transition-all duration-300 relative group overflow-hidden"
+          >
             <span className="relative z-10">About</span>
             <div className="absolute bottom-1 left-3 right-3 h-[2px] bg-gradient-to-r from-[#58a6ff] to-[#a371f7] opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-x-50 group-hover:scale-x-100 rounded-full"></div>
           </Link>
-          <Link href="/contact" className="text-sm font-medium text-[#8b949e] hover:text-[#c9d1d9] px-3 py-1.5 rounded-md transition-all duration-300 relative group overflow-hidden">
+          <Link
+            href="/contact"
+            className="text-sm font-medium text-[#8b949e] hover:text-[#c9d1d9] px-3 py-1.5 rounded-md transition-all duration-300 relative group overflow-hidden"
+          >
             <span className="relative z-10">Contact Us</span>
             <div className="absolute bottom-1 left-3 right-3 h-[2px] bg-gradient-to-r from-[#2ea043] to-[#58a6ff] opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-x-50 group-hover:scale-x-100 rounded-full"></div>
           </Link>

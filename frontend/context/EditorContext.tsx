@@ -17,12 +17,12 @@ export const EditorProvider = ({ children }: any) => {
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
 
   const openTab = (tab: EditorTab) => {
-    setTabs(prev => {
-      const exists = prev.find(t => t.filePath === tab.filePath);
+    setTabs((prev) => {
+      const exists = prev.find((t) => t.filePath === tab.filePath);
       if (!exists) {
         return [...prev, tab];
       }
-      return prev.map(t => t.filePath === tab.filePath ? { ...t, ...tab } : t);
+      return prev.map((t) => (t.filePath === tab.filePath ? { ...t, ...tab } : t));
     });
     setActiveTabId(tab.filePath);
   };
@@ -30,11 +30,11 @@ export const EditorProvider = ({ children }: any) => {
   const closeTab = (e?: React.MouseEvent, filePath?: string) => {
     if (e) e.stopPropagation();
     if (!filePath) return;
-    
-    setTabs(prev => {
-      const filtered = prev.filter(t => t.filePath !== filePath);
+
+    setTabs((prev) => {
+      const filtered = prev.filter((t) => t.filePath !== filePath);
       if (activeTabId === filePath) {
-         setActiveTabId(filtered.length > 0 ? filtered[filtered.length - 1].filePath : null);
+        setActiveTabId(filtered.length > 0 ? filtered[filtered.length - 1].filePath : null);
       }
       return filtered;
     });
@@ -50,10 +50,12 @@ export const EditorProvider = ({ children }: any) => {
   };
 
   // Backwards compatible getter
-  const editorState = tabs.find(t => t.filePath === activeTabId) || null;
+  const editorState = tabs.find((t) => t.filePath === activeTabId) || null;
 
   return (
-    <EditorContext.Provider value={{ tabs, activeTabId, setActiveTabId, closeTab, setEditorState, editorState }}>
+    <EditorContext.Provider
+      value={{ tabs, activeTabId, setActiveTabId, closeTab, setEditorState, editorState }}
+    >
       {children}
     </EditorContext.Provider>
   );

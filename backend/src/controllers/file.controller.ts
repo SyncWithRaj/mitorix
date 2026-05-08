@@ -66,7 +66,6 @@ export const getFileTree = async (req: Request, res: Response) => {
     const tree = buildFileTree(fileDocs);
 
     res.json({ files: tree });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "File tree error" });
@@ -105,12 +104,11 @@ export const getFileContent = async (req: Request, res: Response) => {
 
     if (fileDoc.content === null) {
       return res.status(200).json({
-        content: "// [Binary file or content not stored]"
+        content: "// [Binary file or content not stored]",
       });
     }
 
     res.json({ content: fileDoc.content });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "File content error" });

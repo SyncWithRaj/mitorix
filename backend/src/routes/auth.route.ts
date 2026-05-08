@@ -7,38 +7,29 @@ import { User } from "../models/auth.model.js";
 const router = Router();
 
 // Redirect to GitHub for OAuth
-router.get(
-  "/github",
-  passport.authenticate("github", { scope: ["user:email"] })
-);
+router.get("/github", passport.authenticate("github", { scope: ["user:email"] }));
 
 // GitHub OAuth Callback
-router.get(
-  "/github/callback",
-  passport.authenticate("github", { session: false }),
-  (req, res) => {
-    const user = req.user;
+router.get("/github/callback", passport.authenticate("github", { session: false }), (req, res) => {
+  const user = req.user;
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-    // Set cookie on backend domain for direct API calls
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+  // Set cookie on backend domain for direct API calls
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
 
-    // Pass token via URL parameters for frontend consumption
-    // This is the reliable fix for cross-origin cookie issues
-    const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === "production" ? "http://localhost" : "http://localhost:3000");
-    res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
-  }
-);
+  // Pass token via URL parameters for frontend consumption
+  // This is the reliable fix for cross-origin cookie issues
+  const frontendUrl =
+    process.env.FRONTEND_URL ||
+    (process.env.NODE_ENV === "production" ? "http://localhost" : "http://localhost:3000");
+  res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+});
 
 // Retrieve current authenticated user
 router.get("/me", protect, (req, res) => {
@@ -76,11 +67,7 @@ if (process.env.NODE_ENV !== "production") {
         });
       }
 
-      const token = jwt.sign(
-        { id: user._id },
-        process.env.JWT_SECRET!,
-        { expiresIn: "7d" }
-      );
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, { expiresIn: "7d" });
 
       res.json({
         success: true,

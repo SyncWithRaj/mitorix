@@ -127,13 +127,9 @@ export function generateSuggestions(data: {
 
   // Test coverage
   const testFiles = data.files.filter(
-    (f) =>
-      f.name.includes(".test.") ||
-      f.name.includes(".spec.") ||
-      f.path.includes("__tests__")
+    (f) => f.name.includes(".test.") || f.name.includes(".spec.") || f.path.includes("__tests__")
   );
-  const testRatio =
-    data.files.length > 0 ? (testFiles.length / data.files.length) * 100 : 0;
+  const testRatio = data.files.length > 0 ? (testFiles.length / data.files.length) * 100 : 0;
   if (testRatio < 10 && data.files.length > 10) {
     suggestions.push({
       priority: "medium",
@@ -147,9 +143,7 @@ export function generateSuggestions(data: {
 
   // Sort by priority
   const priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
-  suggestions.sort(
-    (a, b) => (priorityOrder[a.priority] ?? 3) - (priorityOrder[b.priority] ?? 3)
-  );
+  suggestions.sort((a, b) => (priorityOrder[a.priority] ?? 3) - (priorityOrder[b.priority] ?? 3));
 
   return suggestions;
 }

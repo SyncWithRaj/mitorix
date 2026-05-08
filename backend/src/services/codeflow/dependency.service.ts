@@ -90,11 +90,11 @@ export function buildDependencyGraph(
     const parts = relPath.split("/");
     const fileName = parts[parts.length - 1];
     const fileNameNoExt = fileName.split(".")[0];
-    
+
     // Index by filename
     moduleToFile[fileName] = f.path;
     moduleToFile[fileNameNoExt] = f.path;
-    
+
     // Index by relative module path (e.g. services/rag or services.rag)
     const repoMarker = "/tmp/repolens-repos/";
     if (f.path.includes(repoMarker)) {
@@ -106,8 +106,10 @@ export function buildDependencyGraph(
         for (let j = 0; j < projectParts.length; j++) {
           const suffixParts = projectParts.slice(j);
           const suffix = suffixParts.join("/");
-          const suffixNoExt = suffix.includes(".") ? suffix.split(".").slice(0, -1).join(".") : suffix;
-          
+          const suffixNoExt = suffix.includes(".")
+            ? suffix.split(".").slice(0, -1).join(".")
+            : suffix;
+
           if (!moduleToFile[suffix]) moduleToFile[suffix] = f.path;
           if (!moduleToFile[suffixNoExt]) moduleToFile[suffixNoExt] = f.path;
           const dotted = suffixNoExt.replace(/\//g, ".");
@@ -133,14 +135,21 @@ export function buildDependencyGraph(
   }
 
   // Build connections from relationships
-  const callerMaps: Record<string, Map<string, { file: string; name: string; count: number }>> =
-    Object.create(null);
+  const callerMaps: Record<
+    string,
+    Map<string, { file: string; name: string; count: number }>
+  > = Object.create(null);
 
   // Connection deduplication map to prevent redundant connection objects in the graph
   const connectionKeys = new Map<string, Connection>();
 
   for (const rel of rawRelationships) {
-    if (rel.relationType !== "calls" && rel.relationType !== "imports" && rel.relationType !== "accesses") continue;
+    if (
+      rel.relationType !== "calls" &&
+      rel.relationType !== "imports" &&
+      rel.relationType !== "accesses"
+    )
+      continue;
     const targetFnName = rel.toName;
     const sourceFile = rel.fromFilePath.replace(/\\/g, "/");
     let defFile = rel.toFilePath ? rel.toFilePath.replace(/\\/g, "/") : null;
@@ -266,7 +275,7 @@ export function buildDependencyGraph(
     )
       return false;
     if (stats.isExported) return false;
-    
+
     // Skip React Components (Capitalized arrow functions/declarations in TSX/JSX)
     if (stats.file && /\.[jt]sx$/.test(stats.file) && /^[A-Z]/.test(baseName)) return false;
 
@@ -455,9 +464,7 @@ export function calcBlast(
 
   // Level
   let level: BlastRadius["level"] = "low";
-  const connectedFiles = files.filter(
-    (f) => exportedTo[f.path] || importedFrom[f.path]
-  ).length;
+  const connectedFiles = files.filter((f) => exportedTo[f.path] || importedFrom[f.path]).length;
   const relativePct =
     connectedFiles > 0 ? Math.round((directDeps.length / connectedFiles) * 100) : 0;
 

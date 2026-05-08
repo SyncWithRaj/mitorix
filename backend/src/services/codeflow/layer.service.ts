@@ -14,14 +14,28 @@ import type { AnalyzedFile, Connection, LayerViolation } from "./types.js";
  * presentation/ui/component (0) → feature (1) → service (2) → data/model (3) → util (4) → config (5) → test (6)
  */
 const LAYER_ORDER: Record<string, number> = {
-  presentation: 0, ui: 0, component: 0, components: 0, page: 0, view: 0,
+  presentation: 0,
+  ui: 0,
+  component: 0,
+  components: 0,
+  page: 0,
+  view: 0,
   feature: 1,
-  service: 2, services: 2, api: 2,
-  data: 3, model: 3,
-  util: 4, utils: 4, helper: 4, lib: 4, core: 4,
+  service: 2,
+  services: 2,
+  api: 2,
+  data: 3,
+  model: 3,
+  util: 4,
+  utils: 4,
+  helper: 4,
+  lib: 4,
+  core: 4,
   config: 5,
   test: 6,
-  modules: 5, forms: 0, classes: 3,
+  modules: 5,
+  forms: 0,
+  classes: 3,
 };
 
 /**
@@ -88,8 +102,7 @@ export function detectLayer(filePath: string): string {
     return "services";
 
   // Config layer
-  if (l.includes("/config") || l.includes("/settings") || l.match(/settings\.py$/))
-    return "config";
+  if (l.includes("/config") || l.includes("/settings") || l.match(/settings\.py$/)) return "config";
 
   // VBA-specific
   if (l.includes("/modules/") || l.includes("/bas/")) return "modules";

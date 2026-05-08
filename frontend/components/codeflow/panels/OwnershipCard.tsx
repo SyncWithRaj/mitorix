@@ -7,8 +7,8 @@ import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function OwnershipCard() {
   const { selectedFile, expandedCards, toggleCard } = useCodeflow();
-  
-  // Note: Since GitHub blame is not yet integrated in the backend, 
+
+  // Note: Since GitHub blame is not yet integrated in the backend,
   // this is a mocked state structure matching the original HTML architecture.
   const [ownerLoading, setOwnerLoading] = useState(false);
   const [ownership, setOwnership] = useState<any[] | null>(null);
@@ -26,11 +26,15 @@ export default function OwnershipCard() {
   return (
     <div className="bg-[#161b22] border border-[#30363d] rounded-lg mb-3 overflow-hidden">
       {/* Header */}
-      <div 
+      <div
         className="flex items-center gap-2 p-3 cursor-pointer hover:bg-[#1f242c] transition select-none text-xs font-semibold text-[#c9d1d9]"
         onClick={() => toggleCard("own")}
       >
-        {isOpen ? <ChevronDown size={14} className="text-[#8b949e]" /> : <ChevronRight size={14} className="text-[#8b949e]" />}
+        {isOpen ? (
+          <ChevronDown size={14} className="text-[#8b949e]" />
+        ) : (
+          <ChevronRight size={14} className="text-[#8b949e]" />
+        )}
         <Users size={14} className="text-[#a855f7]" />
         Ownership
       </div>
@@ -39,18 +43,23 @@ export default function OwnershipCard() {
       {isOpen && (
         <div className="p-3 pt-0 border-t border-[#30363d]/50 mt-1">
           {ownerLoading ? (
-            <div className="text-[10px] text-[#8b949e] py-2 text-center italic">Loading ownership data...</div>
+            <div className="text-[10px] text-[#8b949e] py-2 text-center italic">
+              Loading ownership data...
+            </div>
           ) : ownership && ownership.length > 0 ? (
             <div>
               <div className="flex h-1.5 rounded-full overflow-hidden mb-3 bg-[#0d1117] border border-[#30363d]/50">
                 {ownership.slice(0, 5).map((o, i) => (
-                  <div key={i} style={{ width: `${o.percent}%`, backgroundColor: COLORS[i % COLORS.length] }} />
+                  <div
+                    key={i}
+                    style={{ width: `${o.percent}%`, backgroundColor: COLORS[i % COLORS.length] }}
+                  />
                 ))}
               </div>
               <div className="space-y-1.5">
                 {ownership.slice(0, 5).map((o, i) => (
                   <div key={i} className="flex items-center gap-2 text-[10px]">
-                    <div 
+                    <div
                       className="w-4 h-4 rounded-full flex items-center justify-center text-[#0a0a0f] font-bold text-[8px]"
                       style={{ backgroundColor: COLORS[i % COLORS.length] }}
                     >
@@ -63,7 +72,9 @@ export default function OwnershipCard() {
               </div>
             </div>
           ) : (
-            <div className="text-[10px] text-[#8b949e] py-2 text-center italic">No ownership data available</div>
+            <div className="text-[10px] text-[#8b949e] py-2 text-center italic">
+              No ownership data available
+            </div>
           )}
         </div>
       )}

@@ -12,22 +12,22 @@ import { cleanupQueue } from "./queue/jobQueue.js";
 const port = process.env.PORT || 3000;
 
 const startServer = async () => {
-    await connectDB();
+  await connectDB();
 
-    // Schedule automated cleanup job (runs every hour)
-    await cleanupQueue.add(
-        "purge-inactive-repos",
-        {},
-        {
-            repeat: {
-                pattern: "0 * * * *", // Cron expression for top of every hour
-            },
-        }
-    );
+  // Schedule automated cleanup job (runs every hour)
+  await cleanupQueue.add(
+    "purge-inactive-repos",
+    {},
+    {
+      repeat: {
+        pattern: "0 * * * *", // Cron expression for top of every hour
+      },
+    }
+  );
 
-    app.listen(port, () => {
-        console.log(`Server is running on port ${port}`);
-    });
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
 };
 
 startServer();

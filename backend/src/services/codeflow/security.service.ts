@@ -24,7 +24,9 @@ export function detectSecurity(files: AnalyzedFile[]): SecurityIssue[] {
     for (let idx = 0; idx < lines.length; idx++) {
       const line = lines[idx];
       if (
-        /(?:password|passwd|pwd|secret|api_key|apikey|token|auth)\s*[=:]\s*['"][^'"]{4,}['"]/i.test(line) &&
+        /(?:password|passwd|pwd|secret|api_key|apikey|token|auth)\s*[=:]\s*['"][^'"]{4,}['"]/i.test(
+          line
+        ) &&
         !line.includes("process.env") &&
         !line.includes("config.")
       ) {

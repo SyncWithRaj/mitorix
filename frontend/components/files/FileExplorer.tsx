@@ -40,22 +40,44 @@ const FileTreeNode = ({ node, repoId, openFile, level = 0 }: any) => {
 
         {/* Render Icon */}
         {isFolder ? (
-           <svg className="w-4 h-4 text-[#e3b341] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-             <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
-           </svg>
+          <svg
+            className="w-4 h-4 text-[#e3b341] flex-shrink-0"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
+          </svg>
         ) : (
-           <svg className="w-4 h-4 text-[#519aba] group-hover:text-[#58a6ff] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-           </svg>
+          <svg
+            className="w-4 h-4 text-[#519aba] group-hover:text-[#58a6ff] flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
         )}
-        <span className="truncate text-[13px]" title={node.name}>{node.name}</span>
+        <span className="truncate text-[13px]" title={node.name}>
+          {node.name}
+        </span>
       </div>
-      
+
       {/* Recursive Children */}
       {isFolder && isOpen && node.children && (
         <div className="flex flex-col">
           {node.children.map((child: any, i: number) => (
-            <FileTreeNode key={i} node={child} repoId={repoId} openFile={openFile} level={level + 1} />
+            <FileTreeNode
+              key={i}
+              node={child}
+              repoId={repoId}
+              openFile={openFile}
+              level={level + 1}
+            />
           ))}
         </div>
       )}
@@ -82,7 +104,7 @@ export default function FileExplorer({ repoId }: any) {
   const openFile = async (path: string) => {
     try {
       const res = await api.get(`/files/content`, {
-        params: { repoId, path }
+        params: { repoId, path },
       });
       setEditorState({
         filePath: path,
@@ -97,9 +119,7 @@ export default function FileExplorer({ repoId }: any) {
   return (
     <div className="flex flex-col h-full bg-[#18181b]">
       <div className="p-3 border-b border-[#30363d] bg-[#18181b] sticky top-0 z-10 flex items-center justify-between">
-        <h3 className="text-[11px] font-bold tracking-wider uppercase text-[#8b949e]">
-          Explorer
-        </h3>
+        <h3 className="text-[11px] font-bold tracking-wider uppercase text-[#8b949e]">Explorer</h3>
       </div>
       <div className="py-2 overflow-y-auto flex-grow flex flex-col disable-text-selection">
         {files.length === 0 ? (
