@@ -6,7 +6,7 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function DendrogramView() {
-  const { analysisData, folderFilter, selectFile, setFolderFilter } = useCodeflow();
+  const { analysisData, folderFilter, selectFile, setFolderFilter, filteredFiles } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,15 +30,15 @@ export default function DendrogramView() {
 
     svg.call(zoom);
 
-    const filteredFiles = folderFilter 
-      ? analysisData.files.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
-      : analysisData.files;
+    const activeFiles = folderFilter 
+      ? filteredFiles.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
+      : filteredFiles;
 
     const hier: any = { name: 'root', children: [] };
     const folderMap: Record<string, any> = {};
 
     // Limit to 80 files for dendrogram to prevent massive vertical overflow
-    filteredFiles.slice(0, 80).forEach(f => {
+    activeFiles.slice(0, 80).forEach(f => {
       const folder = f.folder || 'root';
       if (!folderMap[folder]) {
         folderMap[folder] = { name: folder.split('/').pop() || 'root', fullPath: folder, children: [] };
@@ -173,7 +173,7 @@ export default function DendrogramView() {
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
 
-  }, [analysisData, folderFilter, selectFile, setFolderFilter]);
+  }, [analysisData, folderFilter, selectFile, setFolderFilter, filteredFiles]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }
