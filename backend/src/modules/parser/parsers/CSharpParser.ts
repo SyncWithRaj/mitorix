@@ -1,6 +1,7 @@
 import Parser from "tree-sitter";
 import CSharp from "tree-sitter-c-sharp";
-import { BaseParser, type ParsedEntity, type ParsedRelationship, type ParsedFileMetadata } from "./BaseParser";
+import { BaseParser, type ParsedEntity, type ParsedRelationship, type ParsedFileMetadata } from "./BaseParser.js";
+import { PathResolver } from "../pathResolver.js";
 
 export class CSharpParser extends BaseParser {
     languageName = "csharp";
@@ -12,7 +13,12 @@ export class CSharpParser extends BaseParser {
         this.parser.setLanguage(CSharp);
     }
 
-    async parse(repoId: string, filePath: string, content: string): Promise<{ entities: ParsedEntity[]; relationships: ParsedRelationship[]; fileMetadata: ParsedFileMetadata; }> {
+    async parse(
+        repoId: string,
+        filePath: string,
+        content: string,
+        pathResolver?: PathResolver | null
+    ): Promise<{ entities: ParsedEntity[]; relationships: ParsedRelationship[]; fileMetadata: ParsedFileMetadata; }> {
         const fileMetadata = this.extractFileMetadata(repoId, filePath, content);
         const tree = this.parser.parse(content);
         const entities: ParsedEntity[] = [];
