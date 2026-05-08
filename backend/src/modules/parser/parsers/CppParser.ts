@@ -1,6 +1,7 @@
 import Parser from "tree-sitter";
 import Cpp from "tree-sitter-cpp";
-import { BaseParser, type ParsedEntity, type ParsedRelationship, type ParsedFileMetadata } from "./BaseParser";
+import { BaseParser, type ParsedEntity, type ParsedRelationship, type ParsedFileMetadata } from "./BaseParser.js";
+import { PathResolver } from "../pathResolver.js";
 
 export class CppParser extends BaseParser {
     languageName = "cpp";
@@ -12,7 +13,12 @@ export class CppParser extends BaseParser {
         this.parser.setLanguage(Cpp);
     }
 
-    async parse(repoId: string, filePath: string, content: string): Promise<{ entities: ParsedEntity[]; relationships: ParsedRelationship[]; fileMetadata: ParsedFileMetadata; }> {
+    async parse(
+        repoId: string,
+        filePath: string,
+        content: string,
+        pathResolver?: PathResolver | null
+    ): Promise<{ entities: ParsedEntity[]; relationships: ParsedRelationship[]; fileMetadata: ParsedFileMetadata; }> {
         const fileMetadata = this.extractFileMetadata(repoId, filePath, content);
         const tree = this.parser.parse(content);
         
