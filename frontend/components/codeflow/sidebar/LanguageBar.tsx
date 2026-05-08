@@ -14,7 +14,7 @@ const REAL_CODE_EXTS = new Set([
 ]);
 
 export default function LanguageBar() {
-  const { analysisData } = useCodeflow();
+  const { analysisData, codeFilterMode, setCodeFilterMode } = useCodeflow();
 
   if (!analysisData?.stats?.languages || analysisData.stats.languages.length === 0) {
     return null;
@@ -38,9 +38,19 @@ export default function LanguageBar() {
   return (
     <div className="flex flex-col gap-4 mt-2">
       {/* Global Languages Section */}
-      <div className="flex flex-col gap-2">
-        <div className="text-[9px] text-[#8b949e] font-bold uppercase tracking-wider mb-1">
-          All Repo Files Ratio
+      <div 
+        onClick={() => setCodeFilterMode("all")}
+        className={`flex flex-col gap-2 p-3 rounded-lg border transition-all duration-200 cursor-pointer select-none ${
+          codeFilterMode === "all"
+            ? "bg-[#1f6feb]/5 border-[#1f6feb] shadow-[0_0_12px_rgba(31,111,235,0.12)] scale-[1.01]"
+            : "bg-[#161b22] border-[#30363d] hover:border-[#8b949e]/30 hover:bg-[#21262d]"
+        }`}
+      >
+        <div className="flex justify-between items-center text-[9px] text-[#8b949e] font-bold uppercase tracking-wider mb-1">
+          <span>All Repo Files Ratio</span>
+          {codeFilterMode === "all" && (
+            <span className="text-[#58a6ff] text-[8px] bg-[#58a6ff]/10 px-1.5 py-0.5 rounded font-mono font-normal">ACTIVE</span>
+          )}
         </div>
         
         {/* Language Stacked Bar */}
@@ -73,10 +83,22 @@ export default function LanguageBar() {
 
       {/* Actual Main Programming Code Section */}
       {realLanguages.length > 0 && (
-        <div className="border-t border-[#30363d]/50 pt-4 flex flex-col gap-2">
+        <div 
+          onClick={() => setCodeFilterMode("programming")}
+          className={`flex flex-col gap-2 p-3 rounded-lg border transition-all duration-200 cursor-pointer select-none ${
+            codeFilterMode === "programming"
+              ? "bg-[#238636]/5 border-[#238636] shadow-[0_0_12px_rgba(35,134,54,0.12)] scale-[1.01]"
+              : "bg-[#161b22] border-[#30363d] hover:border-[#8b949e]/30 hover:bg-[#21262d]"
+          }`}
+        >
           <div className="flex justify-between items-center text-[9px] text-[#8b949e] font-bold uppercase tracking-wider mb-1">
             <span>Programming Code</span>
-            <span className="text-[#58a6ff] font-mono text-[10px]">{realLoc.toLocaleString()} LOC</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[#22c55e] font-mono text-[10px]">{realLoc.toLocaleString()} LOC</span>
+              {codeFilterMode === "programming" && (
+                <span className="text-[#238636] text-[8px] bg-[#238636]/10 px-1.5 py-0.5 rounded font-mono font-normal">ACTIVE</span>
+              )}
+            </div>
           </div>
           
           {/* Real Code Language Stacked Bar */}
