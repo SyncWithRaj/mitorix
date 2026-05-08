@@ -3,7 +3,7 @@
 import React from "react";
 import { useCodeflow } from "../../../context/CodeflowContext";
 import { VizType } from "../../../lib/codeflow.types";
-import { Network, LayoutTemplate, Grid3X3, Share2, Workflow, Boxes, Target } from "lucide-react";
+import { Network, LayoutTemplate, Grid3X3, Share2, Workflow, Boxes, Target, Eye } from "lucide-react";
 
 export default function VizSelector() {
   const { graphConfig, setGraphConfig } = useCodeflow();
@@ -13,6 +13,7 @@ export default function VizSelector() {
   };
 
   const tabs: { id: VizType; label: string; icon: any }[] = [
+    { id: "visual", label: "Visual", icon: Eye },
     { id: "force", label: "Graph", icon: Network },
     { id: "treemap", label: "Treemap", icon: LayoutTemplate },
     { id: "matrix", label: "Matrix", icon: Grid3X3 },
