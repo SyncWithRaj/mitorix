@@ -13,7 +13,7 @@ const REAL_CODE_EXTS = new Set([
 ]);
 
 export default function StatsGrid() {
-  const { analysisData, setShowUnusedModal } = useCodeflow();
+  const { analysisData, setShowUnusedModal, codeFilterMode, filteredFiles, filteredConnections } = useCodeflow();
 
   if (!analysisData) return null;
 
@@ -24,19 +24,25 @@ export default function StatsGrid() {
   );
   const realLoc = filteredLangs.reduce((sum: number, lang: any) => sum + lang.lines, 0);
 
+  const filesCount = codeFilterMode === "all" ? stats.files : filteredFiles.length;
+  const functionsCount = codeFilterMode === "all" 
+    ? stats.functions 
+    : filteredFiles.reduce((sum, f) => sum + (f.functions?.length || 0), 0);
+  const linksCount = codeFilterMode === "all" ? stats.connections : filteredConnections.length;
+
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-2">
         <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col items-center justify-center hover:bg-[#21262d] transition-colors">
-          <div className="text-xl font-bold text-[#c9d1d9] font-mono">{stats.files}</div>
+          <div className="text-xl font-bold text-[#c9d1d9] font-mono">{filesCount}</div>
           <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider mt-1">Files</div>
         </div>
         <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col items-center justify-center hover:bg-[#21262d] transition-colors">
-          <div className="text-xl font-bold text-[#c9d1d9] font-mono">{stats.functions}</div>
+          <div className="text-xl font-bold text-[#c9d1d9] font-mono">{functionsCount}</div>
           <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider mt-1">Functions</div>
         </div>
         <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col items-center justify-center hover:bg-[#21262d] transition-colors">
-          <div className="text-xl font-bold text-[#c9d1d9] font-mono">{stats.connections}</div>
+          <div className="text-xl font-bold text-[#c9d1d9] font-mono">{linksCount}</div>
           <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider mt-1">Links</div>
         </div>
         <div 
