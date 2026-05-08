@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import { useCodeflow } from "../../../context/CodeflowContext";
 
 export default function MatrixView() {
-  const { analysisData, folderFilter, selectFile } = useCodeflow();
+  const { analysisData, folderFilter, selectFile, filteredFiles, filteredConnections } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,12 +32,12 @@ export default function MatrixView() {
 
     svg.call(zoom);
 
-    const filteredFiles = folderFilter 
-      ? analysisData.files.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
-      : analysisData.files;
+    const activeFiles = folderFilter 
+      ? filteredFiles.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
+      : filteredFiles;
 
     // Limit to top 40 files to avoid massive matrix
-    const files = filteredFiles.slice(0, 40);
+    const files = activeFiles.slice(0, 40);
     const n = files.length;
     
     if (n === 0) return;
@@ -49,7 +49,7 @@ export default function MatrixView() {
     
     files.forEach((f, i) => { fileIdx[f.path] = i; });
 
-    analysisData.connections.forEach(c => {
+    filteredConnections.forEach(c => {
       const srcIdx = fileIdx[c.source];
       const tgtIdx = fileIdx[c.target];
       if (srcIdx !== undefined && tgtIdx !== undefined) {
@@ -188,7 +188,7 @@ export default function MatrixView() {
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
 
-  }, [analysisData, folderFilter, selectFile]);
+  }, [analysisData, folderFilter, selectFile, filteredFiles, filteredConnections]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f] flex items-center justify-center" />;
 }
