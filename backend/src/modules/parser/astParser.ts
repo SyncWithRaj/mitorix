@@ -11,17 +11,21 @@ import { JavaParser } from "./parsers/JavaParser";
 import { RubyParser } from "./parsers/RubyParser";
 import { PhpParser } from "./parsers/PhpParser";
 
+import { PathResolver } from "./pathResolver.js";
+
 // Export the types so other files can still import them from astParser.ts
 export type { ParsedEntity, ParsedRelationship, ParsedFileMetadata };
 
 export async function parseRepository(
     repoId: string,
-    filePaths: string[]
+    filePaths: string[],
+    basePath: string = ""
 ): Promise<{
     entities: ParsedEntity[];
     relationships: ParsedRelationship[];
     fileMetadata: ParsedFileMetadata[];
 }> {
+    const pathResolver = basePath ? new PathResolver(basePath) : null;
     const entities: ParsedEntity[] = [];
     const relationships: ParsedRelationship[] = [];
     const fileMetadata: ParsedFileMetadata[] = [];
@@ -78,7 +82,7 @@ export async function parseRepository(
             }
 
             if (parser) {
-                const result = await parser.parse(repoId, filePath, content);
+                const result = await parser.parse(repoId, filePath, content, pathResolver);
                 entities.push(...result.entities);
                 relationships.push(...result.relationships);
                 fileMetadata.push(result.fileMetadata);
