@@ -7,7 +7,7 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function SankeyView() {
-  const { analysisData, folderFilter, setFolderFilter } = useCodeflow();
+  const { analysisData, folderFilter, setFolderFilter, filteredFiles, filteredConnections } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,24 +30,24 @@ export default function SankeyView() {
 
     svg.call(zoom);
 
-    const filteredFiles = folderFilter 
-      ? analysisData.files.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
-      : analysisData.files;
+    const activeFiles = folderFilter 
+      ? filteredFiles.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
+      : filteredFiles;
 
-    const folders = Array.from(new Set(filteredFiles.map(f => f.folder || 'root'))).slice(0, 15);
+    const folders = Array.from(new Set(activeFiles.map(f => f.folder || 'root'))).slice(0, 15);
     const folderIdx: Record<string, number> = {};
     folders.forEach((f, i) => { folderIdx[f] = i; });
 
-    const filteredPaths = new Set(filteredFiles.map(f => f.path));
+    const filteredPaths = new Set(activeFiles.map(f => f.path));
     const flowMap: Record<string, number> = {};
 
-    analysisData.connections.forEach(c => {
+    filteredConnections.forEach(c => {
       const src = c.source;
       const tgt = c.target;
       if (!filteredPaths.has(src) && !filteredPaths.has(tgt)) return;
 
-      const srcFile = analysisData.files.find(f => f.path === src);
-      const tgtFile = analysisData.files.find(f => f.path === tgt);
+      const srcFile = activeFiles.find(f => f.path === src);
+      const tgtFile = activeFiles.find(f => f.path === tgt);
 
       if (srcFile && tgtFile && srcFile.folder !== tgtFile.folder) {
         const key = `${srcFile.folder}|${tgtFile.folder}`;
@@ -59,7 +59,7 @@ export default function SankeyView() {
       id: i,
       name: f.split('/').pop() || 'root',
       fullPath: f,
-      fileCount: filteredFiles.filter(x => x.folder === f).length
+      fileCount: activeFiles.filter(x => x.folder === f).length
     }));
 
     const linkMap: Record<string, any> = {};
@@ -221,7 +221,7 @@ export default function SankeyView() {
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
 
-  }, [analysisData, folderFilter, setFolderFilter]);
+  }, [analysisData, folderFilter, setFolderFilter, filteredFiles, filteredConnections]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }
