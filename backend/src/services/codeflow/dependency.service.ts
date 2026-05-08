@@ -117,9 +117,27 @@ export function buildDependencyGraph(
     }
   }
 
+  // Pre-build file-level imports map: sourceFile -> importedName -> targetFile (Scope-Aware Import Lookup)
+  const importsMap: Record<string, Record<string, string>> = Object.create(null);
+  for (const rel of rawRelationships) {
+    if (rel.relationType === "imports" && rel.fromFilePath && rel.toFilePath) {
+      const src = rel.fromFilePath.replace(/\\/g, "/");
+      const tgt = rel.toFilePath.replace(/\\/g, "/");
+      if (!importsMap[src]) {
+        importsMap[src] = Object.create(null);
+      }
+      if (rel.toName) {
+        importsMap[src][rel.toName] = tgt;
+      }
+    }
+  }
+
   // Build connections from relationships
   const callerMaps: Record<string, Map<string, { file: string; name: string; count: number }>> =
     Object.create(null);
+
+  // Connection deduplication map to prevent redundant connection objects in the graph
+  const connectionKeys = new Map<string, Connection>();
 
   for (const rel of rawRelationships) {
     if (rel.relationType !== "calls" && rel.relationType !== "imports" && rel.relationType !== "accesses") continue;
@@ -127,9 +145,12 @@ export function buildDependencyGraph(
     const sourceFile = rel.fromFilePath.replace(/\\/g, "/");
     let defFile = rel.toFilePath ? rel.toFilePath.replace(/\\/g, "/") : null;
 
-    // Resolve missing toFilePath if possible
+    // Resolve missing toFilePath dynamically using Scope-Aware lookup first, then global fallbacks
     if (!defFile) {
-      if (fnToFile[targetFnName]) {
+      const srcImports = importsMap[sourceFile];
+      if (srcImports && srcImports[targetFnName]) {
+        defFile = srcImports[targetFnName];
+      } else if (fnToFile[targetFnName]) {
         defFile = fnToFile[targetFnName].replace(/\\/g, "/");
       } else if (moduleToFile[targetFnName]) {
         defFile = moduleToFile[targetFnName].replace(/\\/g, "/");
@@ -144,13 +165,21 @@ export function buildDependencyGraph(
         fnStats[targetFnName].internal += 1;
       }
     } else {
-      // External call → creates a connection
-      connections.push({
-        source: defFile,
-        target: sourceFile,
-        fn: targetFnName,
-        count: 1,
-      });
+      // External call → creates a connection or increments count of existing connection
+      const connKey = `${defFile}|${sourceFile}|${targetFnName}`;
+      const existingConn = connectionKeys.get(connKey);
+      if (existingConn) {
+        existingConn.count = (existingConn.count || 1) + 1;
+      } else {
+        const conn: Connection = {
+          source: defFile,
+          target: sourceFile,
+          fn: targetFnName,
+          count: 1,
+        };
+        connectionKeys.set(connKey, conn);
+        connections.push(conn);
+      }
 
       if (fnStats[targetFnName]) {
         fnStats[targetFnName].external += 1;
