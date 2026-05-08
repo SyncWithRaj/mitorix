@@ -72,13 +72,18 @@ export default function DesignDocModal({ repoId, isOpen, onClose }: DesignDocMod
 
   useEffect(() => {
     if (mermaidSyntax && mermaidRef.current) {
-      mermaidRef.current.removeAttribute('data-processed');
-      mermaidRef.current.innerHTML = mermaidSyntax;
+      const uniqueId = `mermaid-render-${Math.floor(Math.random() * 100000)}`;
       try {
-        mermaid.run({ nodes: [mermaidRef.current] }).catch(err => {
-          console.error("Mermaid rendering error:", err);
-          setError("Failed to render the diagram. The generated syntax might be invalid.");
-        });
+        mermaid.render(uniqueId, mermaidSyntax)
+          .then(({ svg }) => {
+            if (mermaidRef.current) {
+              mermaidRef.current.innerHTML = svg;
+            }
+          })
+          .catch(err => {
+            console.error("Mermaid rendering error:", err);
+            setError("Failed to render the diagram. The generated syntax might be invalid.");
+          });
       } catch (err) {
         console.error("Mermaid synchronous rendering error:", err);
         setError("Failed to render the diagram. The generated syntax might be invalid.");
