@@ -7,7 +7,7 @@ import { measurePerformance } from "../../lib/performance.utils";
 import * as d3 from "d3";
 
 export default function ForceGraph() {
-  const { analysisData, colorMode, graphConfig, setHoveredNode, folderFilter, blastRadius, selectFile, deselectFile, selectedFile, filteredFiles, filteredConnections } = useCodeflow();
+  const { analysisData, colorMode, graphConfig, setHoveredNode, folderFilter, blastRadius, selectFile, deselectFile, selectedFile, filteredFiles, filteredConnections, highlightLinks } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
   const simRef = useRef<any>(null);
 
@@ -382,10 +382,30 @@ export default function ForceGraph() {
       .attr('stroke', (d: any) => { const c = d3.color(getC(d)); return c ? c.brighter(0.3).formatHex() : '#fff'; });
 
     svg.selectAll('.edge-path').transition().duration(200)
-      .attr('stroke-opacity', (l: any) => { const s = l.source.id || l.source; const t = l.target.id || l.target; if (s === selectedFile || t === selectedFile) return 0.8; return selectedFile ? 0.05 : 0.4; })
-      .attr('stroke', (l: any) => { const s = l.source.id || l.source; const t = l.target.id || l.target; if (s === selectedFile || t === selectedFile) return '#58a6ff'; return '#333'; });
+      .attr('stroke-opacity', (l: any) => {
+        const s = l.source.id || l.source;
+        const t = l.target.id || l.target;
+        if (highlightLinks) {
+          if (selectedFile) {
+            return (s === selectedFile || t === selectedFile) ? 1.0 : 0.15;
+          }
+          return 0.85;
+        }
+        if (s === selectedFile || t === selectedFile) return 0.8;
+        return selectedFile ? 0.05 : 0.4;
+      })
+      .attr('stroke', (l: any) => {
+        const s = l.source.id || l.source;
+        const t = l.target.id || l.target;
+        if (s === selectedFile || t === selectedFile) return '#58a6ff';
+        return highlightLinks ? '#58a6ff' : '#333';
+      })
+      .attr('stroke-width', (d: any) => {
+        const base = Math.max(1, Math.min(2, Math.sqrt(d.count) * 0.3));
+        return highlightLinks ? base * 1.8 : base;
+      });
 
-  }, [analysisData, colorMode, selectedFile, blastRadius]);
+  }, [analysisData, colorMode, selectedFile, blastRadius, highlightLinks]);
 
   if (!analysisData) {
     return (
