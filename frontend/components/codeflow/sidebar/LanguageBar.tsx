@@ -37,50 +37,6 @@ export default function LanguageBar() {
 
   return (
     <div className="flex flex-col gap-4 mt-2">
-      {/* Global Languages Section */}
-      <div 
-        onClick={() => setCodeFilterMode("all")}
-        className={`flex flex-col gap-2 p-3 rounded-lg border transition-all duration-200 cursor-pointer select-none ${
-          codeFilterMode === "all"
-            ? "bg-[#1f6feb]/5 border-[#1f6feb] shadow-[0_0_12px_rgba(31,111,235,0.12)] scale-[1.01]"
-            : "bg-[#161b22] border-[#30363d] hover:border-[#8b949e]/30 hover:bg-[#21262d]"
-        }`}
-      >
-        <div className="flex justify-between items-center text-[9px] text-[#8b949e] font-bold uppercase tracking-wider mb-1">
-          <span>All Repo Files Ratio</span>
-          {codeFilterMode === "all" && (
-            <span className="text-[#58a6ff] text-[8px] bg-[#58a6ff]/10 px-1.5 py-0.5 rounded font-mono font-normal">ACTIVE</span>
-          )}
-        </div>
-        
-        {/* Language Stacked Bar */}
-        <div className="h-2 w-full rounded-full flex overflow-hidden bg-[#21262d]">
-          {languages.slice(0, 6).map((lang, idx) => (
-            <div 
-              key={lang.ext} 
-              style={{ 
-                width: `${lang.pct}%`, 
-                backgroundColor: COLORS[idx % COLORS.length] 
-              }} 
-              title={`${lang.ext}: ${lang.pct}%`}
-            />
-          ))}
-        </div>
-        
-        {/* Legend */}
-        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
-          {languages.slice(0, 6).map((lang, idx) => (
-            <div key={lang.ext} className="flex items-center gap-1.5 text-xs text-[#8b949e]">
-              <div 
-                className="w-2 h-2 rounded-full" 
-                style={{ backgroundColor: COLORS[idx % COLORS.length] }} 
-              />
-              <span className="uppercase font-mono text-[10px]">{lang.ext} {lang.pct}%</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Actual Main Programming Code Section */}
       {realLanguages.length > 0 && (
         <div 
@@ -129,6 +85,50 @@ export default function LanguageBar() {
           </div>
         </div>
       )}
+
+      {/* Global Languages Section */}
+      <div 
+        onClick={() => setCodeFilterMode("all")}
+        className={`flex flex-col gap-2 p-3 rounded-lg border transition-all duration-200 cursor-pointer select-none ${
+          codeFilterMode === "all"
+            ? "bg-[#1f6feb]/5 border-[#1f6feb] shadow-[0_0_12px_rgba(31,111,235,0.12)] scale-[1.01]"
+            : "bg-[#161b22] border-[#30363d] hover:border-[#8b949e]/30 hover:bg-[#21262d]"
+        }`}
+      >
+        <div className="flex justify-between items-center text-[9px] text-[#8b949e] font-bold uppercase tracking-wider mb-1">
+          <span>All Repo Files Ratio</span>
+          {codeFilterMode === "all" && (
+            <span className="text-[#58a6ff] text-[8px] bg-[#58a6ff]/10 px-1.5 py-0.5 rounded font-mono font-normal">ACTIVE</span>
+          )}
+        </div>
+        
+        {/* Language Stacked Bar */}
+        <div className="h-2 w-full rounded-full flex overflow-hidden bg-[#21262d]">
+          {languages.slice(0, 6).map((lang, idx) => (
+            <div 
+              key={lang.ext} 
+              style={{ 
+                width: `${lang.pct}%`, 
+                backgroundColor: COLORS[idx % COLORS.length] 
+              }} 
+              title={`${lang.ext}: ${lang.pct}%`}
+            />
+          ))}
+        </div>
+        
+        {/* Legend */}
+        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+          {languages.slice(0, 6).map((lang, idx) => (
+            <div key={lang.ext} className="flex items-center gap-1.5 text-xs text-[#8b949e]">
+              <div 
+                className="w-2 h-2 rounded-full" 
+                style={{ backgroundColor: COLORS[idx % COLORS.length] }} 
+              />
+              <span className="uppercase font-mono text-[10px]">{lang.ext} {lang.pct}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
