@@ -29,7 +29,7 @@ export const LAYER_COLORS: Record<string, string> = {
 };
 
 export const DEFAULT_GRAPH_CONFIG: GraphConfig = {
-  vizType: "force",
+  vizType: "visual",
   viewMode: "force",
   curvedLinks: false,
   showLabels: true,
