@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "seed": "tsx test/seeding/seed.ts",
-    "unseed": "tsx test/seeding/unseed.ts"
+    "unseed": "tsx test/seeding/unseed.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [],
   "author": "",
@@ -74,6 +76,7 @@
     "@types/passport": "^1.0.17",
     "@types/passport-github2": "^1.2.9",
     "@types/rate-limit-redis": "^1.7.4",
+    "prettier": "^3.2.5",
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
