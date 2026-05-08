@@ -240,14 +240,14 @@ export default function GraphView({ repoId }: { repoId: string }) {
       className="w-full h-full bg-[#0d1117] overflow-hidden relative group border-2 border-[#30363d] rounded-xl flex-grow"
       onPointerMove={handlePointerMove}
     >
-      <div className="absolute top-4 left-4 z-10 bg-[#161b22] border border-[#30363d] px-4 py-2 rounded-lg shadow-lg">
+      <div className="absolute top-16 left-4 z-10 bg-[#161b22] border border-[#30363d] px-4 py-2 rounded-lg shadow-lg">
         <h3 className="text-white text-sm font-semibold">Codebase Visualizer</h3>
         <p className="text-xs text-[#8b949e]">Click a folder to toggle collapse</p>
         <p className="text-xs text-[#8b949e]">Click a file to view code</p>
       </div>
 
       {blastRadius && (
-        <div className="absolute top-4 right-4 z-10 bg-[#ff5858]/10 border border-[#ff5858]/50 px-4 py-2 rounded-lg shadow-[0_0_15px_rgba(255,88,88,0.2)] flex items-center gap-3 backdrop-blur-md animate-fadeInUp">
+        <div className="absolute top-16 right-4 z-10 bg-[#ff5858]/10 border border-[#ff5858]/50 px-4 py-2 rounded-lg shadow-[0_0_15px_rgba(255,88,88,0.2)] flex items-center gap-3 backdrop-blur-md animate-fadeInUp">
           <div className="flex items-center gap-2">
             <Flame className="text-[#ff5858] animate-pulse" size={18} />
             <div>
