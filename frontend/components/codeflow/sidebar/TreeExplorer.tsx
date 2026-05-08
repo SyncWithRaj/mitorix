@@ -104,7 +104,7 @@ const TreeNode = ({
 };
 
 export default function TreeExplorer() {
-  const { analysisData, selectedFile, selectFile, folderFilter, setFolderFilter } = useCodeflow();
+  const { analysisData, selectedFile, selectFile, folderFilter, setFolderFilter, filteredTree } = useCodeflow();
   
   // Track expanded folder paths
   const [expandedPaths, setExpandedPaths] = useState<Record<string, boolean>>({
@@ -115,7 +115,7 @@ export default function TreeExplorer() {
     setExpandedPaths((prev) => ({ ...prev, [path]: !prev[path] }));
   };
 
-  if (!analysisData) return null;
+  if (!analysisData || !filteredTree) return null;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -135,7 +135,7 @@ export default function TreeExplorer() {
 
       <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
         <TreeNode
-          node={analysisData.tree as FolderTree}
+          node={filteredTree as FolderTree}
           selectedFile={selectedFile}
           onSelect={selectFile}
           expandedPaths={expandedPaths}
