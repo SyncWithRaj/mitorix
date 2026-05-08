@@ -6,7 +6,7 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function DisjointView() {
-  const { analysisData, folderFilter, selectFile } = useCodeflow();
+  const { analysisData, folderFilter, selectFile, filteredFiles, filteredConnections } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,11 +30,11 @@ export default function DisjointView() {
 
     svg.call(zoom);
 
-    const filteredFiles = folderFilter 
-      ? analysisData.files.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
-      : analysisData.files;
+    const activeFiles = folderFilter 
+      ? filteredFiles.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
+      : filteredFiles;
 
-    const files = filteredFiles.slice(0, 150); // limit to avoid simulation lag
+    const files = activeFiles.slice(0, 150); // limit to avoid simulation lag
     const fileIdx: Record<string, number> = {};
     files.forEach((f, i) => { fileIdx[f.path] = i; });
 
@@ -63,7 +63,7 @@ export default function DisjointView() {
     }));
 
     const links: any[] = [];
-    analysisData.connections.forEach(c => {
+    filteredConnections.forEach(c => {
       const src = c.source;
       const tgt = c.target;
       if (fileIdx[src] !== undefined && fileIdx[tgt] !== undefined && src !== tgt) {
@@ -213,7 +213,7 @@ export default function DisjointView() {
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
 
-  }, [analysisData, folderFilter, selectFile]);
+  }, [analysisData, folderFilter, selectFile, filteredFiles, filteredConnections]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }
