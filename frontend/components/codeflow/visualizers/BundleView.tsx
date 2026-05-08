@@ -6,7 +6,7 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function BundleView() {
-  const { analysisData, folderFilter, selectFile } = useCodeflow();
+  const { analysisData, folderFilter, selectFile, filteredFiles, filteredConnections } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,11 +31,11 @@ export default function BundleView() {
 
     svg.call(zoom);
 
-    const filteredFiles = folderFilter 
-      ? analysisData.files.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
-      : analysisData.files;
+    const activeFiles = folderFilter 
+      ? filteredFiles.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
+      : filteredFiles;
 
-    const files = filteredFiles.slice(0, 100);
+    const files = activeFiles.slice(0, 100);
     const filePaths = new Set(files.map(f => f.path));
 
     const hier: any = { name: 'root', children: [] };
@@ -59,7 +59,7 @@ export default function BundleView() {
     root.leaves().forEach((d: any) => { nodeByPath[d.data.path] = d; });
 
     const links: any[] = [];
-    analysisData.connections.forEach(c => {
+    filteredConnections.forEach(c => {
       const src = c.source;
       const tgt = c.target;
       if (filePaths.has(src) && filePaths.has(tgt) && src !== tgt) {
@@ -162,7 +162,7 @@ export default function BundleView() {
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
 
-  }, [analysisData, folderFilter, selectFile]);
+  }, [analysisData, folderFilter, selectFile, filteredFiles, filteredConnections]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }
