@@ -6,7 +6,7 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function TreemapView() {
-  const { analysisData, folderFilter, colorMode, selectFile, selectedFile, blastRadius } = useCodeflow();
+  const { analysisData, folderFilter, colorMode, selectFile, selectedFile, blastRadius, filteredFiles } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,11 +37,11 @@ export default function TreemapView() {
     const hier: any = { name: 'root', children: [] };
     const folderMap: Record<string, any> = {};
 
-    const filteredFiles = folderFilter 
-      ? analysisData.files.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
-      : analysisData.files;
+    const activeFiles = folderFilter 
+      ? filteredFiles.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/')) 
+      : filteredFiles;
 
-    filteredFiles.forEach(f => {
+    activeFiles.forEach(f => {
       const folder = f.folder || 'root';
       if (!folderMap[folder]) folderMap[folder] = { name: folder, children: [] };
       folderMap[folder].children.push({ 
@@ -155,7 +155,7 @@ export default function TreemapView() {
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
 
-  }, [analysisData, folderFilter, colorMode, selectedFile, blastRadius, selectFile]);
+  }, [analysisData, folderFilter, colorMode, selectedFile, blastRadius, selectFile, filteredFiles]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }
