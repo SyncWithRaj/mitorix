@@ -13,7 +13,7 @@ const REAL_CODE_EXTS = new Set([
 ]);
 
 export default function StatsGrid() {
-  const { analysisData, setShowUnusedModal, codeFilterMode, filteredFiles, filteredConnections } = useCodeflow();
+  const { analysisData, setShowUnusedModal, codeFilterMode, filteredFiles, filteredConnections, highlightLinks, setHighlightLinks } = useCodeflow();
 
   if (!analysisData) return null;
 
@@ -41,9 +41,24 @@ export default function StatsGrid() {
           <div className="text-xl font-bold text-[#c9d1d9] font-mono">{functionsCount}</div>
           <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider mt-1">Functions</div>
         </div>
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col items-center justify-center hover:bg-[#21262d] transition-colors">
-          <div className="text-xl font-bold text-[#c9d1d9] font-mono">{linksCount}</div>
-          <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider mt-1">Links</div>
+        <div 
+          className={`border rounded-lg p-3 flex flex-col items-center justify-center transition-all duration-200 cursor-pointer select-none ${
+            highlightLinks
+              ? "bg-[#58a6ff]/10 border-[#58a6ff] shadow-[0_0_12px_rgba(88,166,255,0.12)] scale-[1.03]"
+              : "bg-[#161b22] border-[#30363d] hover:bg-[#21262d] hover:border-[#8b949e]/30"
+          }`}
+          onClick={() => setHighlightLinks(!highlightLinks)}
+          title="Click to toggle link highlighting in the graph"
+        >
+          <div className={`text-xl font-bold font-mono transition-colors ${highlightLinks ? "text-[#58a6ff]" : "text-[#c9d1d9]"}`}>{linksCount}</div>
+          <div className="flex flex-col items-center gap-0.5 mt-1">
+            <span className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider">Links</span>
+            <span className={`text-[8px] px-1.5 py-0.5 rounded-full transition-all scale-90 whitespace-nowrap ${
+              highlightLinks ? "bg-[#58a6ff]/20 text-[#58a6ff]" : "bg-[#30363d] text-[#8b949e]"
+            }`}>
+              {highlightLinks ? "Highlighted" : "Click to highlight"}
+            </span>
+          </div>
         </div>
         <div 
           className={`bg-[#161b22] border rounded-lg p-3 flex flex-col items-center justify-center transition-colors ${
