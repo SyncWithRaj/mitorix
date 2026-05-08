@@ -134,13 +134,20 @@ export default function CodeflowLayout({
             <ArrowLeft size={16} />
           </Link>
           <div className="flex items-center gap-2">
-            <button className="md:hidden p-1.5 text-gh-text-muted hover:text-gh-text" onClick={() => setLeftOpen(!leftOpen)}>
-              <Menu size={18} />
+            <button 
+              className="p-1.5 hover:bg-gh-btn-secondary-hover rounded-md transition text-[#8b949e] hover:text-[#c9d1d9] flex items-center gap-2 border border-[#30363d] px-2.5 bg-[#161b22] font-mono" 
+              onClick={() => setLeftOpen(!leftOpen)}
+              title="Toggle File Explorer"
+            >
+              <Folder size={14} className="text-[#58a6ff]" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                {leftOpen ? "Hide Explorer" : "Show Explorer"}
+              </span>
             </button>
-            <div className="w-6 h-6 rounded bg-gh-btn-secondary flex items-center justify-center text-gh-text border border-gh-border">
+            <div className="w-6 h-6 rounded bg-gh-btn-secondary flex items-center justify-center text-gh-text border border-gh-border ml-1 hidden md:flex">
               <span className="font-bold text-xs">CF</span>
             </div>
-            <span className="font-bold text-gh-text tracking-wide text-sm hidden sm:block">
+            <span className="font-bold text-gh-text tracking-wide text-sm hidden lg:block">
               CODEFLOW
             </span>
           </div>
@@ -203,12 +210,12 @@ export default function CodeflowLayout({
           initialWidth={260}
           minWidth={180}
           maxWidth={400}
-          className={`${leftOpen ? 'flex absolute inset-y-0 left-0 z-40' : 'hidden'} md:relative md:flex`}
+          className="flex md:relative inset-y-0 left-0 z-40 h-full bg-gh-panel border-r border-gh-border relative overflow-hidden"
         >
           {analysisData ? (
-            <div className="flex flex-col h-full bg-gh-bg">
+            <div className="flex flex-col h-full bg-gh-bg w-full relative">
               {/* Upper Section */}
-              <div className="flex-none p-4 space-y-5 border-b border-gh-border overflow-y-auto max-h-[65%] custom-scrollbar">
+              <div className="flex-1 p-4 space-y-5 overflow-y-auto custom-scrollbar">
                 <HealthRing 
                   score={analysisData.health?.score || 0} 
                   grade={analysisData.health?.grade || "F"} 
@@ -217,11 +224,28 @@ export default function CodeflowLayout({
                 <StatsGrid />
                 <LanguageBar />
               </div>
-              
-              {/* Lower Section: Tree Explorer */}
-              <div className="flex-1 overflow-hidden p-3 pt-4">
-                <TreeExplorer />
-              </div>
+
+              {/* Sliding File Explorer Drawer Overlapping Wholly */}
+              {leftOpen && (
+                <div className="absolute inset-0 z-50 bg-[#0d1117] flex flex-col animate-in slide-in-from-left duration-200">
+                  <div className="flex items-center justify-between p-3 border-b border-[#30363d] bg-[#161b22]">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#c9d1d9] uppercase tracking-wider">
+                      <Folder size={14} className="text-[#58a6ff]" />
+                      <span>File Tree Explorer</span>
+                    </div>
+                    <button 
+                      onClick={() => setLeftOpen(false)}
+                      className="p-1 hover:bg-[#21262d] rounded text-[#8b949e] hover:text-[#c9d1d9]"
+                      title="Close Explorer"
+                    >
+                      <Ban size={14} />
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-auto p-3 custom-scrollbar">
+                    <TreeExplorer />
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-gh-text-muted">

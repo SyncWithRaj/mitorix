@@ -2,7 +2,15 @@
 
 import React from "react";
 import { useCodeflow } from "../../../context/CodeflowContext";
-import { COLORS } from "../../../lib/codeflow.constants";
+
+const REAL_CODE_EXTS = new Set([
+  "js", "jsx", "ts", "tsx", "mjs", "cjs",
+  "py", "pyw", "pyi",
+  "java", "go", "rb", "php", "rs",
+  "c", "cpp", "cc", "h", "hpp", "cs",
+  "swift", "kt", "kts", "scala",
+  "ex", "exs", "lua", "sh", "bash"
+]);
 
 export default function StatsGrid() {
   const { analysisData, setShowUnusedModal } = useCodeflow();
@@ -10,6 +18,11 @@ export default function StatsGrid() {
   if (!analysisData) return null;
 
   const { stats } = analysisData;
+
+  const filteredLangs = (stats.languages || []).filter((lang: any) => 
+    REAL_CODE_EXTS.has(lang.ext.toLowerCase())
+  );
+  const realLoc = filteredLangs.reduce((sum: number, lang: any) => sum + lang.lines, 0);
 
   return (
     <div className="flex flex-col gap-4">
@@ -53,11 +66,19 @@ export default function StatsGrid() {
         </div>
       </div>
 
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col items-center justify-center hover:bg-[#21262d] transition-colors">
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col items-center justify-center hover:bg-[#21262d] transition-colors gap-1">
         <div className="text-2xl font-bold text-[#58a6ff] font-mono">
           {stats.loc ? stats.loc.toLocaleString() : "0"}
         </div>
-        <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider mt-1">Lines of Code</div>
+        <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider">Total Lines of Code</div>
+        
+        {/* Actual Programming Code Lines */}
+        <div className="w-full border-t border-[#30363d]/50 mt-2 pt-2 flex flex-col items-center justify-center">
+          <div className="text-lg font-bold text-[#22c55e] font-mono">
+            {realLoc ? realLoc.toLocaleString() : "0"}
+          </div>
+          <div className="text-[9px] uppercase text-[#8b949e] font-bold tracking-wider mt-0.5">Actual Programming LOC</div>
+        </div>
       </div>
     </div>
   );
