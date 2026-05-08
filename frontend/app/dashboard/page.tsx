@@ -385,13 +385,6 @@ export default function Dashboard() {
                                               </span>
                                           </button>
                                           <button
-                                              onClick={() => router.push(`/graph/${repo._id}`)}
-                                              className="cursor-pointer flex items-center gap-2 text-sm bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] hover:text-white font-medium px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-sm"
-                                          >
-                                              <Box size={16} />
-                                              Visualize Network
-                                          </button>
-                                          <button
                                               onClick={() => embedRepo(repo._id)}
                                               disabled={embeddingRepo === repo._id}
                                               className="group/chat cursor-pointer relative flex items-center gap-2 text-sm text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_0_15px_rgba(88,166,255,0.2)] hover:shadow-[0_0_20px_rgba(88,166,255,0.5)] border border-[rgba(255,255,255,0.1)] overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
