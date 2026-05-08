@@ -17,7 +17,7 @@ export default function FunctionList() {
   return (
     <div className="bg-[#161b22] border border-[#30363d] rounded-lg mb-3 overflow-hidden">
       {/* Header */}
-      <div 
+      <div
         className="flex items-center gap-2 p-3 cursor-pointer hover:bg-[#1f242c] transition select-none text-xs font-semibold text-[#c9d1d9]"
         onClick={() => toggleCard("fns")}
       >
@@ -40,7 +40,7 @@ export default function FunctionList() {
 
               return (
                 <div key={fn.name} className="flex flex-col border border-[#30363d]/30 rounded bg-[#0d1117] overflow-hidden">
-                  <div 
+                  <div
                     className="flex items-center justify-between p-2 cursor-pointer hover:bg-[#161b22] select-none"
                     onClick={() => toggleFn(fn.name)}
                   >
@@ -48,8 +48,8 @@ export default function FunctionList() {
                       <span className="text-[#58a6ff] font-mono text-[10px] truncate">{fn.name}()</span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                      <button 
-                        className="p-1 text-[#8b949e] hover:text-[#c9d1d9] bg-[#21262d] rounded" 
+                      <button
+                        className="p-1 text-[#8b949e] hover:text-[#c9d1d9] bg-[#21262d] rounded"
                         title="View source"
                         onClick={(e) => { e.stopPropagation(); /* TODO: open file preview modal */ }}
                       >
@@ -80,7 +80,7 @@ export default function FunctionList() {
                           <div className="text-[9px] font-semibold text-[#8b949e] mb-1.5">External callers:</div>
                           <div className="space-y-1">
                             {st.callers.slice(0, 8).map((c, i) => (
-                              <div 
+                              <div
                                 key={i}
                                 className="flex items-center gap-1.5 text-[9px] text-[#c9d1d9] hover:text-[#58a6ff] cursor-pointer"
                                 onClick={() => selectFile(c.file)}

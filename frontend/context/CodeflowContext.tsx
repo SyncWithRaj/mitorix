@@ -101,7 +101,8 @@ function buildTreeFromFiles(files: any[]) {
   const root: any = { name: "Root", path: "", files: [], children: {} };
 
   files.forEach(file => {
-    const parts = file.path.split("/");
+    const cleanPath = file.path.replace(/^\/tmp\/repolens-repos\/[^\/]+\/[^\/]+\//, "");
+    const parts = cleanPath.split("/");
     let current = root;
 
     for (let i = 0; i < parts.length - 1; i++) {
@@ -139,7 +140,26 @@ function buildTreeFromFiles(files: any[]) {
 const CodeflowContext = createContext<CodeflowState | undefined>(undefined);
 
 export function CodeflowProvider({ children }: { children: ReactNode }) {
-  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+  const [analysisData, setRawAnalysisData] = useState<AnalysisData | null>(null);
+
+  const setAnalysisData = useCallback((data: AnalysisData | null) => {
+    if (!data) {
+      setRawAnalysisData(null);
+      return;
+    }
+    const cleanRepoPrefix = /^\/tmp\/repolens-repos\/[^\/]+\/[^\/]+\/?/;
+    const cleanedFiles = data.files.map(f => ({
+      ...f,
+      folder: f.folder ? f.folder.replace(cleanRepoPrefix, "") : ""
+    }));
+    const cleanedFolders = data.folders.map(f => f.replace(cleanRepoPrefix, ""));
+    setRawAnalysisData({
+      ...data,
+      files: cleanedFiles,
+      folders: cleanedFolders
+    });
+  }, []);
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [codeFilterMode, setCodeFilterMode] = useState<"all" | "programming">("programming");
@@ -165,9 +185,8 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
 
   const filteredTree = React.useMemo(() => {
     if (!analysisData) return null;
-    if (codeFilterMode === "all") return analysisData.tree;
-    return buildTreeFromFiles(filteredFiles);
-  }, [analysisData, filteredFiles, codeFilterMode]);
+    return buildTreeFromFiles(analysisData.files);
+  }, [analysisData]);
   
   const [colorMode, setColorMode] = useState<ColorMode>("folder");
   const [graphConfig, setGraphConfig] = useState<GraphConfig>(DEFAULT_GRAPH_CONFIG);
