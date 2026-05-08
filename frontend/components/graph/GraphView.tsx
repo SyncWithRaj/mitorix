@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { useEditor } from "@/context/EditorContext";
+import { useCodeflow } from "../../context/CodeflowContext";
 import api from "@/lib/axios";
 import { Flame, XCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -18,7 +18,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
   
   const [graphData, setGraphData] = useState<{nodes: any[], links: any[]}>({ nodes: [], links: [] });
   const [loading, setLoading] = useState(true);
-  const { setEditorState, editorState } = useEditor();
+  const { selectFile, selectedFile, setRightTab } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
   const fgRef = useRef<any>(null);
   const [hoverNode, setHoverNode] = useState<any | null>(null);
@@ -192,7 +192,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
     }
   }, [visibleGraphData]);
 
-  const handleNodeClick = useCallback(async (node: any) => {
+  const handleNodeClick = useCallback((node: any) => {
     if (node.type === "folder" || node.type === "file") {
       setCollapsedNodes(prev => {
         const next = new Set(prev);
@@ -205,39 +205,13 @@ export default function GraphView({ repoId }: { repoId: string }) {
     if (node.type === "folder") return;
 
     if (node.type === "file") {
-      try {
-        const res = await api.get("/files/content", { params: { repoId, path: node.path || node.id } });
-        const ext = node.name.split(".").pop()?.toLowerCase() || "";
-        const map: Record<string, string> = {
-          js: "javascript", jsx: "javascript",
-          ts: "typescript", tsx: "typescript",
-          html: "html", css: "css", json: "json", md: "markdown"
-        };
-
-        setEditorState({
-          filePath: node.id,
-          content: res.data.content,
-          language: map[ext] || "plaintext"
-        });
-      } catch (err) {
-        console.error("Failed to load file content:", err);
-      }
+      selectFile(node.id);
+      setRightTab("code");
     } else {
-        // Code entity
-        const ext = node.path?.split(".").pop()?.toLowerCase() || "";
-        const map: Record<string, string> = {
-          js: "javascript", jsx: "javascript",
-          ts: "typescript", tsx: "typescript",
-        };
-
-        setEditorState({
-          filePath: node.path || node.id,
-          content: node.metadata?.content || "",
-          language: map[ext] || "plaintext",
-          startLineNumber: node.metadata?.startLine
-        });
+      selectFile(node.path || node.id);
+      setRightTab("code");
     }
-  }, [repoId, setEditorState]);
+  }, [selectFile, setRightTab]);
 
   if (loading) {
     return (
@@ -383,7 +357,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
           const fontSize = 12 / globalScale;
           
           let color = "#c9d1d9";
-          if (node.id === editorState?.filePath) color = "#ff7b72";
+          if (node.id === selectedFile) color = "#ff7b72";
           else if (node.type === "folder") color = collapsedNodes.has(node.id) ? "#a371f7" : "#e3b341"; // gold for folders
           else if (node.type === "file") {
             if (node.metadata?.hasReactComponent) color = "#58a6ff";
