@@ -7,7 +7,7 @@ import { measurePerformance } from "../../lib/performance.utils";
 import * as d3 from "d3";
 
 export default function ForceGraph() {
-  const { analysisData, colorMode, graphConfig, setHoveredNode, folderFilter, blastRadius, selectFile, deselectFile, selectedFile } = useCodeflow();
+  const { analysisData, colorMode, graphConfig, setHoveredNode, folderFilter, blastRadius, selectFile, deselectFile, selectedFile, filteredFiles, filteredConnections } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
   const simRef = useRef<any>(null);
 
@@ -23,13 +23,13 @@ export default function ForceGraph() {
     const h = el.clientHeight || 600;
 
     // --- Data preparation (identical to index.html) ---
-    const filteredFiles = folderFilter
-      ? analysisData.files.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/'))
-      : analysisData.files;
+    const currentFiles = folderFilter
+      ? filteredFiles.filter(f => f.folder === folderFilter || f.folder.startsWith(folderFilter + '/'))
+      : filteredFiles;
 
-    const fileIds = new Set(filteredFiles.map(f => f.path));
+    const fileIds = new Set(currentFiles.map(f => f.path));
 
-    const nodes: any[] = filteredFiles.map(f => ({
+    const nodes: any[] = currentFiles.map(f => ({
       id: f.path,
       name: f.name,
       folder: f.folder,
@@ -39,7 +39,7 @@ export default function ForceGraph() {
     }));
 
     const linkMap = new Map<string, any>();
-    analysisData.connections.forEach(c => {
+    filteredConnections.forEach(c => {
       if (!fileIds.has(c.source) || !fileIds.has(c.target)) return;
       if (c.source === c.target) return;
       const k = `${c.source}|${c.target}`;
@@ -334,7 +334,7 @@ export default function ForceGraph() {
       window.removeEventListener("codeflow:resetZoom", handleResetZoom);
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
-  }, [analysisData, graphConfig, folderFilter, setHoveredNode, selectFile, deselectFile]);
+  }, [analysisData, graphConfig, folderFilter, setHoveredNode, selectFile, deselectFile, filteredFiles, filteredConnections]);
 
   // Secondary effect to handle dynamic coloring and blast radius highlighting without restarting simulation
   useEffect(() => {
