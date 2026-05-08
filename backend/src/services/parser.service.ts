@@ -111,9 +111,20 @@ export async function processRepositoryParsing(
   repoId: string,
   filePaths: string[]
 ) {
+  // Find repository local path to use as the base path for resolving path aliases
+  let basePath = "";
+  try {
+    const { Repository } = await import("../models/repo.model.js");
+    const repo = await Repository.findById(repoId);
+    if (repo && repo.localPath) {
+      basePath = repo.localPath;
+    }
+  } catch (err) {
+    // Fallback if DB query fails
+  }
 
   const { entities, relationships, fileMetadata } =
-    await parseRepository(repoId, filePaths);
+    await parseRepository(repoId, filePaths, basePath);
 
 
   // nothing parsed
