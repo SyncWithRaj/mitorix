@@ -16,6 +16,13 @@ import { useEffect } from "react";
 export type RightTab = "details" | "patterns" | "security" | "suggestions" | "code";
 
 interface CodeflowState {
+  // Dynamic Filtering States
+  codeFilterMode: "all" | "programming";
+  setCodeFilterMode: (mode: "all" | "programming") => void;
+  filteredFiles: any[];
+  filteredConnections: any[];
+  filteredTree: any | null;
+
   // Data from backend
   analysisData: AnalysisData | null;
   setAnalysisData: (data: AnalysisData | null) => void;
@@ -79,11 +86,85 @@ interface CodeflowState {
   setAnalysisProgress: (progress: { progress: number; message: string } | null) => void;
 }
 
+const REAL_CODE_EXTS = new Set([
+  "js", "jsx", "ts", "tsx", "mjs", "cjs",
+  "py", "pyw", "pyi",
+  "java", "go", "rb", "php", "rs",
+  "c", "cpp", "cc", "h", "hpp", "cs",
+  "swift", "kt", "kts", "scala",
+  "ex", "exs", "lua", "sh", "bash"
+]);
+
+function buildTreeFromFiles(files: any[]) {
+  const root: any = { name: "Root", path: "", files: [], children: {} };
+
+  files.forEach(file => {
+    const parts = file.path.split("/");
+    let current = root;
+
+    for (let i = 0; i < parts.length - 1; i++) {
+      const folderName = parts[i];
+      const folderPath = parts.slice(0, i + 1).join("/");
+
+      if (!current.children) {
+        current.children = {};
+      }
+
+      if (!current.children[folderName]) {
+        current.children[folderName] = {
+          name: folderName,
+          path: folderPath,
+          files: [],
+          children: {}
+        };
+      }
+
+      current = current.children[folderName];
+    }
+
+    if (!current.files) {
+      current.files = [];
+    }
+    current.files.push({
+      name: parts[parts.length - 1],
+      path: file.path
+    });
+  });
+
+  return root;
+}
+
 const CodeflowContext = createContext<CodeflowState | undefined>(undefined);
 
 export function CodeflowProvider({ children }: { children: ReactNode }) {
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const [codeFilterMode, setCodeFilterMode] = useState<"all" | "programming">("all");
+
+  const filteredFiles = React.useMemo(() => {
+    if (!analysisData) return [];
+    if (codeFilterMode === "all") return analysisData.files;
+    return analysisData.files.filter(f => {
+      const ext = f.path.split('.').pop()?.toLowerCase();
+      return ext && REAL_CODE_EXTS.has(ext);
+    });
+  }, [analysisData, codeFilterMode]);
+
+  const filteredConnections = React.useMemo(() => {
+    if (!analysisData) return [];
+    if (codeFilterMode === "all") return analysisData.connections;
+    const fileSet = new Set(filteredFiles.map(f => f.path));
+    return analysisData.connections.filter(c => 
+      fileSet.has(c.from) && fileSet.has(c.to)
+    );
+  }, [analysisData, filteredFiles, codeFilterMode]);
+
+  const filteredTree = React.useMemo(() => {
+    if (!analysisData) return null;
+    if (codeFilterMode === "all") return analysisData.tree;
+    return buildTreeFromFiles(filteredFiles);
+  }, [analysisData, filteredFiles, codeFilterMode]);
   
   const [colorMode, setColorMode] = useState<ColorMode>("folder");
   const [graphConfig, setGraphConfig] = useState<GraphConfig>(DEFAULT_GRAPH_CONFIG);
@@ -176,6 +257,11 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
   return (
     <CodeflowContext.Provider
       value={{
+        codeFilterMode,
+        setCodeFilterMode,
+        filteredFiles,
+        filteredConnections,
+        filteredTree,
         analysisData,
         setAnalysisData,
         isLoading,
