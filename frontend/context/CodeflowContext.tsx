@@ -142,7 +142,7 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const [codeFilterMode, setCodeFilterMode] = useState<"all" | "programming">("all");
+  const [codeFilterMode, setCodeFilterMode] = useState<"all" | "programming">("programming");
   const [highlightLinks, setHighlightLinks] = useState<boolean>(false);
 
   const filteredFiles = React.useMemo(() => {
@@ -159,7 +159,7 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
     if (codeFilterMode === "all") return analysisData.connections;
     const fileSet = new Set(filteredFiles.map(f => f.path));
     return analysisData.connections.filter(c => 
-      fileSet.has(c.from) && fileSet.has(c.to)
+      fileSet.has(c.source) && fileSet.has(c.target)
     );
   }, [analysisData, filteredFiles, codeFilterMode]);
 
