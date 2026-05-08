@@ -1,7 +1,8 @@
 import fs from "fs";
+import { PathResolver } from "../pathResolver.js";
 
 export type EntityType = "function" | "class" | "method" | "constructor" | "property" | "staticMethod" | "arrow" | "interface" | "typeAlias" | "enum" | "variable" | "import" | "export" | "route" | "css" | "html";
-export type RelationType = "calls" | "accesses" | "imports";
+export type RelationType = "calls" | "accesses" | "imports" | "extends" | "implements";
 
 export type ParsedEntity = {
     repoId: string;
@@ -43,7 +44,7 @@ export type ParsedFileMetadata = {
 
 export interface LanguageParser {
     languageName: string;
-    parse(repoId: string, filePath: string, content: string): Promise<{
+    parse(repoId: string, filePath: string, content: string, pathResolver?: PathResolver | null): Promise<{
         entities: ParsedEntity[];
         relationships: ParsedRelationship[];
         fileMetadata: ParsedFileMetadata;
@@ -112,7 +113,7 @@ export abstract class BaseParser implements LanguageParser {
         return { repoId, fromName, fromFilePath, toName, toFilePath: toFilePath || null, relationType, line };
     }
 
-    abstract parse(repoId: string, filePath: string, content: string): Promise<{
+    abstract parse(repoId: string, filePath: string, content: string, pathResolver?: PathResolver | null): Promise<{
         entities: ParsedEntity[];
         relationships: ParsedRelationship[];
         fileMetadata: ParsedFileMetadata;
