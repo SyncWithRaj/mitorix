@@ -1,23 +1,26 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { FileMetadata } from "../models/fileMetadata.model.js";
 import { CodeRelationship } from "../models/relationship.model.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
-import { Repository } from "../models/repo.model.js";
+import { Repository, touchRepository } from "../models/repo.model.js";
 import path from "path";
 import logger from "../lib/logger.js";
+import { AppError } from "../middlewares/error.middleware.js";
 
-export const getRepositoryGraph = async (req: Request, res: Response): Promise<any> => {
+export const getRepositoryGraph = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
   try {
     const repoId = req.params.id;
 
-    if (!repoId) {
-      return res.status(400).json({ success: false, message: "Repository ID is required" });
-    }
+    if (!repoId) throw new AppError("Repository ID is required", 400);
 
     const repo = await Repository.findById(repoId);
-    if (!repo) {
-      return res.status(404).json({ success: false, message: "Repository not found" });
-    }
+    if (!repo) throw new AppError("Repository not found", 404);
+
+    await touchRepository(repoId);
 
     // Fetch all files metadata for this repo
     const files = await FileMetadata.find({ repoId }).lean();
@@ -179,7 +182,6 @@ export const getRepositoryGraph = async (req: Request, res: Response): Promise<a
       },
     });
   } catch (error) {
-    logger.error({ err: error }, "Error fetching repository graph");
-    return res.status(500).json({ success: false, message: "Failed to fetch repository graph" });
+    next(error);
   }
 };

@@ -1,18 +1,17 @@
 import path from "path";
-import type { Request, Response } from "express";
-import { Repository } from "../models/repo.model.js";
+import type { Request, Response, NextFunction } from "express";
+import { Repository, touchRepository } from "../models/repo.model.js";
 import { FileContent } from "../models/fileContent.model.js";
 import logger from "../lib/logger.js";
+import { AppError } from "../middlewares/error.middleware.js";
 
 /**
  * Build a nested tree structure from flat FileContent documents.
  */
 function buildFileTree(docs: any[]): any[] {
-  // Build a map: relativePath -> node
   const nodeMap = new Map<string, any>();
   const roots: any[] = [];
 
-  // First pass: create all nodes
   for (const doc of docs) {
     const node: any = {
       name: doc.fileName,
@@ -27,20 +26,17 @@ function buildFileTree(docs: any[]): any[] {
     nodeMap.set(doc.relativePath, node);
   }
 
-  // Second pass: build parent-child relationships
   for (const doc of docs) {
     const node = nodeMap.get(doc.relativePath);
     const parentPath = path.dirname(doc.relativePath);
 
     if (parentPath === "." || parentPath === "") {
-      // Top-level item
       roots.push(node);
     } else {
       const parentNode = nodeMap.get(parentPath);
       if (parentNode && parentNode.children) {
         parentNode.children.push(node);
       } else {
-        // Parent not found (shouldn't happen), add as root
         roots.push(node);
       }
     }
@@ -49,69 +45,65 @@ function buildFileTree(docs: any[]): any[] {
   return roots;
 }
 
-export const getFileTree = async (req: Request, res: Response) => {
+export const getFileTree = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const repoId = req.params.repoId as string;
 
     const repo = await Repository.findById(repoId);
+    if (!repo) throw new AppError("Repository not found", 404);
 
-    if (!repo) {
-      return res.status(404).json({ message: "Repository not found" });
-    }
+    await touchRepository(repoId);
 
-    // Read file tree from MongoDB instead of disk
     const fileDocs = await FileContent.find({ repoId: repo._id })
       .select("relativePath fileName isDirectory")
       .lean();
 
     const tree = buildFileTree(fileDocs);
 
-    res.json({ files: tree });
+    res.json({
+      success: true,
+      files: tree,
+    });
   } catch (err) {
-    logger.error({ err }, "File tree retrieval failed");
-    res.status(500).json({ message: "File tree error" });
+    next(err);
   }
 };
 
-export const getFileContent = async (req: Request, res: Response) => {
+export const getFileContent = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const repoId = req.query.repoId as string;
     const filePath = req.query.path as string;
 
     const repo = await Repository.findById(repoId);
+    if (!repo) throw new AppError("Repository not found", 404);
 
-    if (!repo) {
-      return res.status(404).json({ message: "Repository not found" });
-    }
+    await touchRepository(repoId);
 
     let safePath = filePath.replace(/^\/+/, "");
     if (repo.localPath && filePath.startsWith(repo.localPath)) {
       safePath = filePath.substring(repo.localPath.length).replace(/^\/+/, "");
     }
 
-    // Fallback: If safePath is still absolute (e.g. from a different machine), try taking the last parts
-    // But usually repo.localPath should match since it's local.
-
-    // Read file content from MongoDB instead of disk
     const fileDoc = await FileContent.findOne({
       repoId: repo._id,
       relativePath: safePath,
       isDirectory: false,
     }).lean();
 
-    if (!fileDoc) {
-      return res.status(404).json({ message: "File not found" });
-    }
+    if (!fileDoc) throw new AppError("File not found", 404);
 
     if (fileDoc.content === null) {
       return res.status(200).json({
+        success: true,
         content: "// [Binary file or content not stored]",
       });
     }
 
-    res.json({ content: fileDoc.content });
+    res.json({
+      success: true,
+      content: fileDoc.content,
+    });
   } catch (err) {
-    logger.error({ err }, "File content retrieval failed");
-    res.status(500).json({ message: "File content error" });
+    next(err);
   }
 };

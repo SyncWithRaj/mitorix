@@ -8,7 +8,7 @@ import type { Request, Response } from "express";
 import axios from "axios";
 import { runAnalysisPipeline } from "../services/codeflow/analysis.pipeline.js";
 import { calcBlast } from "../services/codeflow/dependency.service.js";
-import { Repository } from "../models/repo.model.js";
+import { Repository, touchRepository } from "../models/repo.model.js";
 import logger from "../lib/logger.js";
 
 /**
@@ -34,6 +34,7 @@ export const analyzeRepository = async (req: Request, res: Response): Promise<an
     const excludes = ((req.query.excludes as string) || "").split(",").filter(Boolean);
 
     const analysisData = await runAnalysisPipeline(repoId, excludes);
+    await touchRepository(repoId);
 
     const elapsed = Date.now() - startTime;
     logger.info(
@@ -78,6 +79,7 @@ export const getAnalysis = async (req: Request, res: Response): Promise<any> => 
 
     const excludes = ((req.query.excludes as string) || "").split(",").filter(Boolean);
     const analysisData = await runAnalysisPipeline(repoId, excludes);
+    await touchRepository(repoId);
 
     return res.status(200).json({
       success: true,

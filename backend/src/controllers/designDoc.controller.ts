@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { FileMetadata } from "../models/fileMetadata.model.js";
 import { CodeRelationship } from "../models/relationship.model.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
-import { Repository } from "../models/repo.model.js";
+import { Repository, touchRepository } from "../models/repo.model.js";
 import { generateAnswer } from "../services/llm.service.js";
 import logger from "../lib/logger.js";
 import { AppError } from "../middlewares/error.middleware.js";
@@ -19,6 +19,8 @@ export const generateSystemDesignDoc = async (
 
     const repo = await Repository.findById(repoId);
     if (!repo) throw new AppError("Repository not found", 404);
+
+    await touchRepository(repoId);
 
     // Return cached doc only if it looks like valid mermaid (not a cached error)
     if (

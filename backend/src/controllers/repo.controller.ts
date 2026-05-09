@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import { scanCodeFiles } from "../modules/indexer/fileScanner.js";
 import { processRepositoryParsing } from "../services/parser.service.js";
-import { Repository } from "../models/repo.model.js";
+import { Repository, touchRepository } from "../models/repo.model.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { CodeRelationship } from "../models/relationship.model.js";
 import { FileMetadata } from "../models/fileMetadata.model.js";
@@ -135,6 +135,9 @@ export const getRepositoryById = async (req: Request, res: Response, next: NextF
   try {
     const repo = await Repository.findById(req.params.id);
     if (!repo) throw new AppError("Repository not found", 404);
+
+    await touchRepository(repo._id.toString());
+
     res.json({
       success: true,
       repo,

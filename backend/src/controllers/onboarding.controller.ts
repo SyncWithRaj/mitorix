@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { Repository } from "../models/repo.model.js";
+import { Repository, touchRepository } from "../models/repo.model.js";
 import { FileMetadata } from "../models/fileMetadata.model.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { generateAnswer } from "../services/llm.service.js";
@@ -29,6 +29,8 @@ export const generateOnboardingGuide = async (
 
     const repo = await Repository.findById(repoId);
     if (!repo) throw new AppError("Repository not found", 404);
+
+    await touchRepository(repoId);
 
     // Return the cached guide if it already exists AND is in the new format
     if (repo.onboardingGuide && repo.onboardingGuide.sections) {
