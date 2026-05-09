@@ -122,7 +122,10 @@ export const getUserRepositories = async (req: Request, res: Response, next: Nex
     if (!user) throw new AppError("Unauthorized", 401);
 
     const repos = await Repository.find({ user: user._id }).sort({ createdAt: -1 });
-    res.json(repos);
+    res.json({
+      success: true,
+      repos,
+    });
   } catch (error) {
     next(error);
   }
@@ -132,7 +135,10 @@ export const getRepositoryById = async (req: Request, res: Response, next: NextF
   try {
     const repo = await Repository.findById(req.params.id);
     if (!repo) throw new AppError("Repository not found", 404);
-    res.json(repo);
+    res.json({
+      success: true,
+      repo,
+    });
   } catch (error) {
     next(error);
   }
@@ -146,7 +152,10 @@ export const deleteRepository = async (req: Request, res: Response, next: NextFu
     await purgeRepository(repo._id.toString());
     await Repository.findByIdAndDelete(req.params.id);
 
-    res.json({ message: "Repository deleted successfully" });
+    res.json({
+      success: true,
+      message: "Repository deleted successfully",
+    });
   } catch (error) {
     next(error);
   }

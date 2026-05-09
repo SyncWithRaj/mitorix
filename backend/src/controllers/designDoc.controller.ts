@@ -1,23 +1,24 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { FileMetadata } from "../models/fileMetadata.model.js";
 import { CodeRelationship } from "../models/relationship.model.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { Repository } from "../models/repo.model.js";
 import { generateAnswer } from "../services/llm.service.js";
 import logger from "../lib/logger.js";
+import { AppError } from "../middlewares/error.middleware.js";
 
-export const generateSystemDesignDoc = async (req: Request, res: Response): Promise<any> => {
+export const generateSystemDesignDoc = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
   try {
     const repoId = req.params.id;
 
-    if (!repoId) {
-      return res.status(400).json({ success: false, message: "Repository ID is required" });
-    }
+    if (!repoId) throw new AppError("Repository ID is required", 400);
 
     const repo = await Repository.findById(repoId);
-    if (!repo) {
-      return res.status(404).json({ success: false, message: "Repository not found" });
-    }
+    if (!repo) throw new AppError("Repository not found", 404);
 
     // Return cached doc only if it looks like valid mermaid (not a cached error)
     if (
@@ -53,11 +54,14 @@ export const generateSystemDesignDoc = async (req: Request, res: Response): Prom
     });
 
     prompt += `\nBased on this structural data, create a high-level system architecture Mermaid.js flowchart. Output ONLY the raw Mermaid code block (starting with \`\`\`mermaid and ending with \`\`\`). Do not include any explanations. Make it beautiful and logically grouped.
-IMPORTANT MERMAID SYNTAX RULES:
+
+IMPORTANT MERMAID FLOWCHART RULES:
 1. Node IDs and Subgraph IDs MUST NOT contain spaces or special characters (e.g., use \`subgraph FrontendApp\` instead of \`subgraph Frontend (React Application)\`).
-2. You can use labels for nodes with spaces like this: \`NodeID["My Node Label"]\`.
-3. You can use labels for subgraphs like this: \`subgraph SubgraphID ["My Subgraph Label"]\`.
-4. Ensure all parentheses, brackets, and quotes are properly balanced.`;
+2. Use labels for nodes with spaces like this: \`NodeID["My Node Label"]\`.
+3. Use labels for subgraphs like this: \`subgraph SubgraphID ["My Subgraph Label"]\`.
+4. FOR LINK LABELS: Use the syntax: \`A -- "Label" --> B\`. 
+5. CRITICAL: DO NOT use the colon syntax for flowchart labels (e.g., NEVER do \`A --> B: Label\`).
+6. Ensure all parentheses, brackets, and quotes are properly balanced.`;
 
     const mermaidMarkdown = await generateAnswer(prompt);
 
@@ -71,9 +75,6 @@ IMPORTANT MERMAID SYNTAX RULES:
       mermaid: mermaidMarkdown,
     });
   } catch (error) {
-    logger.error({ err: error }, "Error generating system design doc");
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to generate system design doc" });
+    next(error);
   }
 };
