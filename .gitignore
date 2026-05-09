@@ -1,13 +1,16 @@
-# ==============================
-# Monorepo Global Ignore
-# ==============================
+# ============================================================
+# RepoLens Monorepo — Root .gitignore
+# Single source of truth for the entire monorepo.
+# The frontend/.gitignore has been consolidated here.
+# ============================================================
 
-# Dependencies
+# ── Dependencies ─────────────────────────────────────────────
 node_modules/
 .pnp
 .pnp.js
 
-# Environment Variables
+# ── Environment Variables ─────────────────────────────────────
+# NEVER commit real .env files — use .env.*.example as templates
 .env
 .env.local
 .env.development.local
@@ -15,40 +18,73 @@ node_modules/
 .env.production.local
 *.env
 
-# Build outputs
+# ── Build Outputs ─────────────────────────────────────────────
 dist/
 build/
-.next/
 out/
+.next/
+backend/dist/
 
-# Logs
+# ── Logs ──────────────────────────────────────────────────────
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# OS and Editor
+# ── OS and Editor Artifacts ───────────────────────────────────
 .DS_Store
 Thumbs.db
-.vscode/
 .idea/
 *.swp
 *.swo
 
-# Docker / Storage / Databases
-qdrant_storage/
-storage/
+# Note: .vscode/ is intentionally NOT ignored so shared workspace
+# settings (extensions.json, settings.json) can be committed.
+
+# ── Docker / Runtime Storage / Databases ──────────────────────
+# These are runtime data dirs — never source-controlled
+backend/qdrant_storage/
+backend/storage/
+backend/uploads/
 mongo_data/
 
-# Misc
-*.pem
-*.key
-.cache/
+# ── TypeScript Build Info ──────────────────────────────────────
 *.tsbuildinfo
 
+# ── Keys and Certificates ─────────────────────────────────────
+*.pem
+*.key
+*.p12
+*.pfx
 
-DEPLOYMENT_GUIDE.md
-repolens.txt
+# ── Misc ──────────────────────────────────────────────────────
+.cache/
+
+# ── Large Generated / Exported Files in Root ──────────────────
+# These are developer-local exports and not project source files
 index.html
-architecture.md
+repolens.txt
+
+# ── Tailwind v4 / Turbopack Scanner Exclusions ────────────────
+# Prevents Turbopack from scanning binary/non-code files during
+# HMR recompilation when it walks up to the git root.
+frontend/**/*.ico
+frontend/**/*.png
+frontend/**/*.jpg
+frontend/**/*.jpeg
+frontend/**/*.gif
+frontend/**/*.svg
+frontend/**/*.webp
+frontend/**/*.woff
+frontend/**/*.woff2
+frontend/**/*.ttf
+frontend/**/*.eot
+frontend/**/*.patch
+frontend/**/*.html
+frontend/**/*.md
+
+# ── Test Coverage Output ──────────────────────────────────────
+coverage/
+backend/coverage/
