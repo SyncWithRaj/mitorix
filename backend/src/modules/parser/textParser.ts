@@ -1,4 +1,5 @@
 import fs from "fs";
+import logger from "../../lib/logger.js";
 import { ParsedEntity, ParsedFileMetadata, ParsedRelationship } from "./astParser.js";
 
 // Basic line-based text chunker for HTML/CSS
@@ -71,7 +72,7 @@ export async function parseTextFiles(
         });
       }
     } catch (error) {
-      console.error(`Error parsing text file ${filePath}:`, error);
+      logger.error({ err: error, filePath }, "Failed to parse text file");
     }
   }
 

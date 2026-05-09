@@ -2,6 +2,7 @@ import path from "path";
 import type { Request, Response } from "express";
 import { Repository } from "../models/repo.model.js";
 import { FileContent } from "../models/fileContent.model.js";
+import logger from "../lib/logger.js";
 
 /**
  * Build a nested tree structure from flat FileContent documents.
@@ -67,7 +68,7 @@ export const getFileTree = async (req: Request, res: Response) => {
 
     res.json({ files: tree });
   } catch (err) {
-    console.error(err);
+    logger.error({ err }, "File tree retrieval failed");
     res.status(500).json({ message: "File tree error" });
   }
 };
@@ -110,7 +111,7 @@ export const getFileContent = async (req: Request, res: Response) => {
 
     res.json({ content: fileDoc.content });
   } catch (err) {
-    console.error(err);
+    logger.error({ err }, "File content retrieval failed");
     res.status(500).json({ message: "File content error" });
   }
 };

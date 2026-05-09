@@ -1,4 +1,5 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
+import logger from "../lib/logger.js";
 
 const COLLECTION = "repo_entities";
 
@@ -41,7 +42,7 @@ export class VectorInitService {
           wait: true,
         });
       } catch (e: any) {
-        console.log("Index creation skipped/failed:", e.message);
+        logger.warn({ err: e.message }, "Vector index creation skipped or failed");
       }
       return {
         message: "Collection already exists, ensured payload indexes are present",

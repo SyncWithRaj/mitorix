@@ -3,6 +3,7 @@ import { Repository } from "../models/repo.model.js";
 import { generateChatAnswer, type ChatMessage } from "./llm.service.js";
 import { searchVectors } from "./vector.service.js";
 import path from "path";
+import logger from "../lib/logger.js";
 
 // Approximate token count (1 token ≈ 4 chars). Gemini 2.5 Flash has ~1M tokens,
 // but we cap context to leave room for the model's response.
@@ -16,7 +17,7 @@ export const askQuestion = async (repoId: string, question: string, history: any
   // ── 1. Vector search for relevant code entities ──
   const results = await searchVectors(repoId, question);
 
-  console.log("VECTOR RESULTS:", results.length, "matches");
+  logger.debug({ repoId, matchCount: results.length }, "Vector search completed");
 
   const entityIds = results.map((r: any) => r[0].metadata.mongoId);
 

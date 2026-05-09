@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { FileMetadata } from "../models/fileMetadata.model.js";
+import logger from "../lib/logger.js";
 
 export async function getRepoFilesController(req: Request, res: Response, next: NextFunction) {
   try {
@@ -21,7 +22,7 @@ export async function getRepoFilesController(req: Request, res: Response, next: 
       files,
     });
   } catch (error) {
-    console.error("Get Repo Files Error:", error);
+    logger.error({ err: error }, "Failed to fetch repository files");
 
     next(error);
   }

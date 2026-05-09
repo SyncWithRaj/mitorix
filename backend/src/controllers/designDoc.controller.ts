@@ -4,6 +4,7 @@ import { CodeRelationship } from "../models/relationship.model.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { Repository } from "../models/repo.model.js";
 import { generateAnswer } from "../services/llm.service.js";
+import logger from "../lib/logger.js";
 
 export const generateSystemDesignDoc = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -60,9 +61,7 @@ IMPORTANT MERMAID SYNTAX RULES:
 
     const mermaidMarkdown = await generateAnswer(prompt);
 
-    console.log("=== GENERATED MERMAID SYNTAX ===");
-    console.log(mermaidMarkdown);
-    console.log("================================");
+    logger.debug({ repoId, mermaidLength: mermaidMarkdown.length }, "Mermaid diagram generated");
 
     repo.systemDesignDoc = mermaidMarkdown;
     await repo.save();
@@ -72,7 +71,7 @@ IMPORTANT MERMAID SYNTAX RULES:
       mermaid: mermaidMarkdown,
     });
   } catch (error) {
-    console.error("Error generating system design doc:", error);
+    logger.error({ err: error }, "Error generating system design doc");
     return res
       .status(500)
       .json({ success: false, message: "Failed to generate system design doc" });

@@ -2,6 +2,7 @@ import { Worker, Job } from "bullmq";
 import Redis from "ioredis";
 import { Repository } from "../models/repo.model.js";
 import { purgeRepository } from "../utils/purge.util.js";
+import logger from "../lib/logger.js";
 
 const redisConnection = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
   maxRetriesPerRequest: null,
@@ -14,7 +15,7 @@ const TTL_MS = TTL_HOURS * 60 * 60 * 1000;
 export const cleanupWorker = new Worker(
   "cleanup-queue",
   async (job: Job) => {
-    console.log(`[Cleanup Worker] Starting automated cleanup job ${job.id}`);
+    logger.info({ jobId: job.id }, "Cleanup Worker: starting automated cleanup job");
 
     try {
       const cutoffDate = new Date(Date.now() - TTL_MS);
@@ -24,14 +25,18 @@ export const cleanupWorker = new Worker(
         lastAccessedAt: { $lt: cutoffDate },
       });
 
-      console.log(`[Cleanup Worker] Found ${inactiveRepos.length} inactive repositories to purge.`);
+      logger.info(
+        { inactiveCount: inactiveRepos.length },
+        "Cleanup Worker: found inactive repositories to purge"
+      );
 
       let successCount = 0;
       let failureCount = 0;
 
       for (const repo of inactiveRepos) {
-        console.log(
-          `[Cleanup Worker] Purging inactive repo: ${repo.name} (${repo._id}) - Last accessed: ${repo.lastAccessedAt}`
+        logger.info(
+          { repoId: repo._id, repoName: repo.name, lastAccessedAt: repo.lastAccessedAt },
+          "Cleanup Worker: purging inactive repository"
         );
         const success = await purgeRepository(repo._id.toString());
         if (success) {
@@ -41,8 +46,9 @@ export const cleanupWorker = new Worker(
         }
       }
 
-      console.log(
-        `[Cleanup Worker] Cleanup completed. Successfully purged: ${successCount}. Failed: ${failureCount}.`
+      logger.info(
+        { successCount, failureCount },
+        "Cleanup Worker: cleanup completed"
       );
 
       return {
@@ -50,7 +56,7 @@ export const cleanupWorker = new Worker(
         failed: failureCount,
       };
     } catch (error) {
-      console.error(`[Cleanup Worker] Error during cleanup execution:`, error);
+      logger.error({ err: error, jobId: job.id }, "Cleanup Worker: error during cleanup execution");
       throw error;
     }
   },
@@ -61,9 +67,9 @@ export const cleanupWorker = new Worker(
 );
 
 cleanupWorker.on("completed", (job) => {
-  console.log(`[Cleanup Worker-Event] Job ${job.id} has completed!`);
+  logger.info({ jobId: job.id }, "Cleanup Worker: job completed");
 });
 
 cleanupWorker.on("failed", (job, err) => {
-  console.log(`[Cleanup Worker-Event] Job ${job?.id} has failed with ${err.message}`);
+  logger.error({ jobId: job?.id, err }, "Cleanup Worker: job failed");
 });

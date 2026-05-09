@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
+import logger from "../lib/logger.js";
 
 /**
  * Base directory for all temporary repo clones.
@@ -18,7 +19,7 @@ export function getTempRepoPath(userId: string, repoId: string): string {
 /**
  * Safely delete a temp cloned repo.
  * ONLY deletes paths under TEMP_REPO_BASE to prevent accidental deletion
- * of dashboard data or other files.
+ * of other files on the filesystem.
  */
 export function cleanupTempRepo(repoPath: string): boolean {
   // Safety check: only delete paths under our temp base directory
@@ -26,18 +27,21 @@ export function cleanupTempRepo(repoPath: string): boolean {
   const base = path.resolve(TEMP_REPO_BASE);
 
   if (!resolved.startsWith(base)) {
-    console.warn(`Safety Check: Refused to delete path outside temp directory: ${resolved}`);
+    logger.warn(
+      { resolved, base },
+      "Safety check: refused to delete path outside temp directory"
+    );
     return false;
   }
 
   try {
     if (fs.existsSync(resolved)) {
       fs.rmSync(resolved, { recursive: true, force: true });
-      console.log(`🧹 Cleaned up temp repo: ${resolved}`);
+      logger.info({ path: resolved }, "Cleaned up temp repository directory");
       return true;
     }
   } catch (error) {
-    console.error(`❌ Failed to cleanup temp repo: ${resolved}`, error);
+    logger.error({ err: error, path: resolved }, "Failed to clean up temp repository directory");
   }
 
   return false;

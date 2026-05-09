@@ -6,10 +6,11 @@ import { FileMetadata } from "../models/fileMetadata.model.js";
 import { FileContent } from "../models/fileContent.model.js";
 import ChatHistory from "../models/chatHistory.model.js";
 import { QdrantClient } from "@qdrant/js-client-rest";
+import logger from "../lib/logger.js";
 
 /**
  * Purges all data associated with a repository from MongoDB, Qdrant, and the local filesystem.
- * This is used for the "Nuke My Data" feature and the automated TTL cleanup job.
+ * This is used for the delete repository feature and the automated TTL cleanup job.
  *
  * @param repoId The ID of the repository to purge.
  * @returns true if successful, false otherwise.
@@ -19,19 +20,22 @@ export const purgeRepository = async (repoId: string): Promise<boolean> => {
     const repo = await Repository.findById(repoId);
 
     if (!repo) {
-      console.log(`[Purge Utility] Repo not found for ID: ${repoId}`);
+      logger.warn({ repoId }, "Purge: repository not found");
       return false;
     }
 
-    console.log(`[Purge Utility] Starting purge for repo: ${repo.name} (${repoId})`);
+    logger.info({ repoId, repoName: repo.name }, "Starting repository purge");
 
     // 1. Clean up local filesystem clone (if it exists)
     if (repo.localPath && fs.existsSync(repo.localPath)) {
       try {
         fs.rmSync(repo.localPath, { recursive: true, force: true });
-        console.log(`[Purge Utility] Cleaned up local path: ${repo.localPath}`);
+        logger.info({ repoId, localPath: repo.localPath }, "Local filesystem path cleaned up");
       } catch (fsError) {
-        console.error(`[Purge Utility] Failed to delete local path: ${repo.localPath}`, fsError);
+        logger.error(
+          { err: fsError, repoId, localPath: repo.localPath },
+          "Failed to delete local filesystem path"
+        );
         // Continue with other deletions even if fs cleanup fails
       }
     }
@@ -64,20 +68,22 @@ export const purgeRepository = async (repoId: string): Promise<boolean> => {
               ],
             },
           });
-          console.log(
-            `[Purge Utility] Qdrant vectors deleted for fingerprint: ${repo.fingerprint}`
+          logger.info(
+            { repoId, fingerprint: repo.fingerprint },
+            "Qdrant vectors deleted for fingerprint"
           );
         } catch (qdrantError: any) {
           if (qdrantError?.status === 404) {
-            console.log("[Purge Utility] Qdrant collection not found (safe to skip)");
+            logger.info({ repoId }, "Qdrant collection not found — safe to skip");
           } else {
-            console.error("[Purge Utility] Qdrant deletion failed:", qdrantError);
+            logger.error({ err: qdrantError, repoId }, "Qdrant deletion failed");
             // Continue to delete MongoDB data even if Qdrant fails
           }
         }
       } else {
-        console.log(
-          `[Purge Utility] Skipping Qdrant deletion because fingerprint ${repo.fingerprint} is shared by ${count} repos.`
+        logger.info(
+          { repoId, fingerprint: repo.fingerprint, sharedCount: count },
+          "Skipping Qdrant deletion — fingerprint is shared by multiple repos"
         );
       }
     }
@@ -89,15 +95,15 @@ export const purgeRepository = async (repoId: string): Promise<boolean> => {
     await FileContent.deleteMany({ repoId: repoId });
     await ChatHistory.deleteMany({ repoId: repoId });
 
-    console.log(`[Purge Utility] MongoDB code data and chat history deleted.`);
+    logger.info({ repoId }, "MongoDB code data and chat history deleted");
 
     // 4. Delete the Repository document itself
     await repo.deleteOne();
 
-    console.log(`[Purge Utility] Successfully purged repo: ${repoId}`);
+    logger.info({ repoId }, "Repository purged successfully");
     return true;
   } catch (error) {
-    console.error(`[Purge Utility] Error purging repo ${repoId}:`, error);
+    logger.error({ err: error, repoId }, "Error purging repository");
     return false;
   }
 };

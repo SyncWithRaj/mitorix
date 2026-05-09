@@ -1,48 +1,42 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { askQuestion } from "../services/query.service.js";
+import logger from "../lib/logger.js";
+import { AppError } from "../middlewares/error.middleware.js";
 
-export const ask = async (req: Request, res: Response) => {
+export const ask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { repoId, question } = req.body;
+    const { repoId, question } = req.body as { repoId: string; question: string };
 
-    if (!repoId || !question) {
-      return res.status(400).json({
-        success: false,
-        message: "repoId and question required",
-      });
-    }
+    const user = req.user;
+    if (!user) throw new AppError("Unauthorized", 401);
 
-    const userId = (req as any).user?._id;
+    const userId = user._id;
     let historyMessages: any[] = [];
     let ChatHistory: any = null;
 
-    if (userId) {
-      const ChatHistoryModule = await import("../models/chatHistory.model.js");
-      ChatHistory = ChatHistoryModule.default;
-      const historyDoc = await ChatHistory.findOne({ userId, repoId, type: "chat" });
-      if (historyDoc) {
-        historyMessages = historyDoc.messages;
-      }
+    const ChatHistoryModule = await import("../models/chatHistory.model.js");
+    ChatHistory = ChatHistoryModule.default;
+    const historyDoc = await ChatHistory.findOne({ userId, repoId, type: "chat" });
+    if (historyDoc) {
+      historyMessages = historyDoc.messages;
     }
 
     const result = await askQuestion(repoId, question, historyMessages);
 
-    if (userId && ChatHistory) {
-      await ChatHistory.findOneAndUpdate(
-        { userId, repoId, type: "chat" },
-        {
-          $push: {
-            messages: {
-              $each: [
-                { role: "user", content: question },
-                { role: "assistant", content: result.answer, references: result.references || [] },
-              ],
-            },
+    await ChatHistory.findOneAndUpdate(
+      { userId, repoId, type: "chat" },
+      {
+        $push: {
+          messages: {
+            $each: [
+              { role: "user", content: question },
+              { role: "assistant", content: result.answer, references: result.references || [] },
+            ],
           },
         },
-        { upsert: true }
-      );
-    }
+      },
+      { upsert: true }
+    );
 
     // Update lastAccessedAt for the repository
     const { Repository } = await import("../models/repo.model.js");
@@ -54,11 +48,6 @@ export const ask = async (req: Request, res: Response) => {
       references: result.references,
     });
   } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: "Query failed",
-    });
+    next(error);
   }
 };

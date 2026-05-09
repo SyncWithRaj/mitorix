@@ -17,6 +17,7 @@ import { RubyParser } from "./parsers/RubyParser";
 import { PhpParser } from "./parsers/PhpParser";
 
 import { PathResolver } from "./pathResolver.js";
+import logger from "../../lib/logger.js";
 
 // Export the types so other files can still import them from astParser.ts
 export type { ParsedEntity, ParsedRelationship, ParsedFileMetadata };
@@ -97,7 +98,7 @@ export async function parseRepository(
         fileMetadata.push(result.fileMetadata);
       }
     } catch (err: any) {
-      console.error(`[Worker] Failed to parse AST for file ${filePath}:`, err?.message || err);
+      logger.error({ err: err?.message || err, filePath }, "Failed to parse AST for file");
     }
   }
 

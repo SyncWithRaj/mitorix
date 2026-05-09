@@ -9,6 +9,7 @@ import axios from "axios";
 import { runAnalysisPipeline } from "../services/codeflow/analysis.pipeline.js";
 import { calcBlast } from "../services/codeflow/dependency.service.js";
 import { Repository } from "../models/repo.model.js";
+import logger from "../lib/logger.js";
 
 /**
  * POST /api/v1/codeflow/analyze
@@ -28,14 +29,14 @@ export const analyzeRepository = async (req: Request, res: Response): Promise<an
       return res.status(404).json({ success: false, message: "Repository not found" });
     }
 
-    console.log(`[CodeFlow] Starting analysis for repo ${repoId}...`);
+    logger.info({ repoId }, "CodeFlow: starting analysis pipeline");
     const startTime = Date.now();
     const excludes = ((req.query.excludes as string) || "").split(",").filter(Boolean);
 
     const analysisData = await runAnalysisPipeline(repoId, excludes);
 
     const elapsed = Date.now() - startTime;
-    console.log(
+    logger.info(
       `[CodeFlow] Analysis complete: ${analysisData.stats.files} files, ` +
         `${analysisData.stats.functions} functions, ` +
         `${analysisData.stats.connections} connections in ${elapsed}ms`
@@ -50,7 +51,7 @@ export const analyzeRepository = async (req: Request, res: Response): Promise<an
       },
     });
   } catch (error: any) {
-    console.error("[CodeFlow] Analysis failed:", error);
+    logger.error({ err: error }, "CodeFlow: analysis failed");
     return res.status(500).json({
       success: false,
       message: error.message || "Analysis failed",
@@ -83,7 +84,7 @@ export const getAnalysis = async (req: Request, res: Response): Promise<any> => 
       data: analysisData,
     });
   } catch (error: any) {
-    console.error("[CodeFlow] Get analysis failed:", error);
+    logger.error({ err: error }, "CodeFlow: get analysis failed");
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to get analysis",
@@ -107,7 +108,7 @@ export const getHealthScore = async (req: Request, res: Response): Promise<any> 
       stats: analysisData.stats,
     });
   } catch (error: any) {
-    console.error("[CodeFlow] Health score failed:", error);
+    logger.error({ err: error }, "CodeFlow: health score failed");
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to calculate health score",
@@ -132,7 +133,7 @@ export const getSecurityFindings = async (req: Request, res: Response): Promise<
       highCount: analysisData.securityIssues.filter((i) => i.severity === "high").length,
     });
   } catch (error: any) {
-    console.error("[CodeFlow] Security scan failed:", error);
+    logger.error({ err: error }, "CodeFlow: security scan failed");
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to get security findings",
@@ -158,7 +159,7 @@ export const getPatterns = async (req: Request, res: Response): Promise<any> => 
       antiPatterns: analysisData.patterns.filter((p) => p.isAnti).length,
     });
   } catch (error: any) {
-    console.error("[CodeFlow] Pattern detection failed:", error);
+    logger.error({ err: error }, "CodeFlow: pattern detection failed");
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to detect patterns",
@@ -190,7 +191,7 @@ export const getBlastRadius = async (req: Request, res: Response): Promise<any> 
       filePath,
     });
   } catch (error: any) {
-    console.error("[CodeFlow] Blast radius failed:", error);
+    logger.error({ err: error }, "CodeFlow: blast radius failed");
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to calculate blast radius",
@@ -214,7 +215,7 @@ export const getSuggestions = async (req: Request, res: Response): Promise<any> 
       count: analysisData.suggestions.length,
     });
   } catch (error: any) {
-    console.error("[CodeFlow] Suggestions failed:", error);
+    logger.error({ err: error }, "CodeFlow: suggestions failed");
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to generate suggestions",
@@ -244,7 +245,7 @@ export const getPRAnalysis = async (req: Request, res: Response): Promise<any> =
     const owner = urlParts[0];
     const repoName = urlParts[1].replace(".git", "");
 
-    console.log(`[CodeFlow] Fetching PR #${prNumber} files for ${owner}/${repoName}...`);
+    logger.info({ repoId, owner, repoName, prNumber }, "CodeFlow: fetching PR files");
 
     // Fetch PR files from GitHub API
     const response = await axios.get(
@@ -282,7 +283,7 @@ export const getPRAnalysis = async (req: Request, res: Response): Promise<any> =
       },
     });
   } catch (error: any) {
-    console.error("[CodeFlow] PR fetch failed:", error.response?.data || error.message);
+    logger.error({ err: error?.response?.data || error.message }, "CodeFlow: PR fetch failed");
     return res.status(500).json({
       success: false,
       message: error.response?.data?.message || error.message || "Failed to fetch PR",

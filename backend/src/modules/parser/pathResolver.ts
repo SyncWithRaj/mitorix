@@ -1,4 +1,5 @@
 import fs from "fs";
+import logger from "../../lib/logger.js";
 import path from "path";
 
 export class PathResolver {
@@ -26,14 +27,14 @@ export class PathResolver {
 
           if (config.compilerOptions?.paths) {
             this.pathsMapping = config.compilerOptions.paths;
-            console.log(
-              `[PathResolver] Successfully loaded ${file} path aliases:`,
-              Object.keys(this.pathsMapping)
+            logger.debug(
+              { file, aliases: Object.keys(this.pathsMapping) },
+              "PathResolver: loaded path aliases from config"
             );
             return;
           }
         } catch (err: any) {
-          console.warn(`[PathResolver] Failed to parse ${file}:`, err.message);
+          logger.warn({ err: err.message, file }, 'PathResolver: failed to parse file');
         }
       }
     }

@@ -1,8 +1,10 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { Repository } from "../models/repo.model.js";
 import { FileMetadata } from "../models/fileMetadata.model.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { generateAnswer } from "../services/llm.service.js";
+import logger from "../lib/logger.js";
+import { AppError } from "../middlewares/error.middleware.js";
 
 // ── Icon mapping for each section type ──
 const SECTION_CONFIG: Record<string, { title: string; icon: string }> = {
@@ -15,18 +17,18 @@ const SECTION_CONFIG: Record<string, { title: string; icon: string }> = {
   testSuite: { title: "Test Suite", icon: "test" },
 };
 
-export const generateOnboardingGuide = async (req: Request, res: Response): Promise<any> => {
+export const generateOnboardingGuide = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
   try {
     const repoId = req.params.id;
 
-    if (!repoId) {
-      return res.status(400).json({ success: false, message: "Repository ID is required" });
-    }
+    if (!repoId) throw new AppError("Repository ID is required", 400);
 
     const repo = await Repository.findById(repoId);
-    if (!repo) {
-      return res.status(404).json({ success: false, message: "Repository not found" });
-    }
+    if (!repo) throw new AppError("Repository not found", 404);
 
     // Return the cached guide if it already exists AND is in the new format
     if (repo.onboardingGuide && repo.onboardingGuide.sections) {
@@ -208,13 +210,9 @@ Each section should have 2-6 items maximum. Quality over quantity.`;
         guide: parsedGuide,
       });
     } catch (parseError) {
-      console.error("Failed to parse Gemini response as JSON:", resultText);
-      return res
-        .status(500)
-        .json({ success: false, message: "AI response was not valid JSON", raw: resultText });
+      throw new AppError("AI response was not valid JSON", 500, "PARSING_ERROR");
     }
   } catch (error) {
-    console.error("Error generating onboarding guide:", error);
-    return res.status(500).json({ success: false, message: "Failed to generate onboarding guide" });
+    next(error);
   }
 };

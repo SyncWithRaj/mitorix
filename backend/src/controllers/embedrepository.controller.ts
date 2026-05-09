@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { embedRepository } from "../services/embedRepository.service.js";
+import logger from "../lib/logger.js";
 
 export const embedRepositoryController = async (req: Request, res: Response) => {
   try {
@@ -20,7 +21,7 @@ export const embedRepositoryController = async (req: Request, res: Response) => 
       data: result,
     });
   } catch (error: any) {
-    console.error(error);
+    logger.error({ err: error }, "Repository embedding failed");
 
     return res.status(500).json({
       success: false,

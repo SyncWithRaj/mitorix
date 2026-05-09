@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import CircuitBreaker from "opossum";
+import logger from "../lib/logger.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
@@ -24,22 +25,22 @@ const geminiBreaker = new CircuitBreaker(callGeminiAPI, breakerOptions);
 
 // Fallback function: This runs if the breaker is OPEN or if a request fails/times out
 geminiBreaker.fallback((prompt: string, error?: Error) => {
-  console.error("❌ [Circuit Breaker] Gemini API is down or timing out.");
-  console.error("Actual Error:", error?.message || error || "Unknown error (likely timeout)");
+  logger.error({ err: error }, "[Circuit Breaker] Gemini API is down or timing out");
   return "RepoLens AI is currently experiencing high load or the LLM provider is down. Please try again later. We gracefully degraded to protect system stability.";
 });
 
 // Event listeners for observability
 geminiBreaker.on("open", () =>
-  console.warn(
-    `[Circuit Breaker] OPEN: Gemini API is struggling! Halting requests for ${breakerOptions.resetTimeout / 1000}s.`
+  logger.warn(
+    { resetTimeoutSec: breakerOptions.resetTimeout / 1000 },
+    "[Circuit Breaker] OPEN: Gemini API is struggling — halting requests"
   )
 );
 geminiBreaker.on("halfOpen", () =>
-  console.log("[Circuit Breaker] HALF-OPEN: Testing if Gemini API is back online...")
+  logger.info("[Circuit Breaker] HALF-OPEN: Testing if Gemini API is back online")
 );
 geminiBreaker.on("close", () =>
-  console.log("[Circuit Breaker] CLOSED: Gemini API is healthy again.")
+  logger.info("[Circuit Breaker] CLOSED: Gemini API is healthy again")
 );
 
 // Legacy single-shot (non-chat) export
@@ -78,19 +79,18 @@ const callGeminiChatAPI = async (
 const chatBreaker = new CircuitBreaker(callGeminiChatAPI, breakerOptions);
 
 chatBreaker.fallback((_sys: string, _hist: ChatMessage[], _msg: string, error?: Error) => {
-  console.error("❌ [Circuit Breaker] Gemini Chat API is down or timing out.");
-  console.error("Actual Error:", error?.message || error || "Unknown error (likely timeout)");
+  logger.error({ err: error }, "[Circuit Breaker] Gemini Chat API is down or timing out");
   return "RepoLens AI is currently experiencing high load or the LLM provider is down. Please try again later.";
 });
 
 chatBreaker.on("open", () =>
-  console.warn(`[Circuit Breaker] OPEN: Gemini Chat API is struggling!`)
+  logger.warn("[Circuit Breaker] OPEN: Gemini Chat API is struggling")
 );
 chatBreaker.on("halfOpen", () =>
-  console.log("[Circuit Breaker] HALF-OPEN: Testing if Gemini Chat API is back online...")
+  logger.info("[Circuit Breaker] HALF-OPEN: Testing if Gemini Chat API is back online")
 );
 chatBreaker.on("close", () =>
-  console.log("[Circuit Breaker] CLOSED: Gemini Chat API is healthy again.")
+  logger.info("[Circuit Breaker] CLOSED: Gemini Chat API is healthy again")
 );
 
 export const generateChatAnswer = async (

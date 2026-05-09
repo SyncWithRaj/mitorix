@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { CodeRelationship } from "../models/relationship.model.js";
 import { Repository } from "../models/repo.model.js";
+import logger from "../lib/logger.js";
 
 export async function getRepositoryoRelations(req: Request, res: Response, next: NextFunction) {
   try {
@@ -39,7 +40,7 @@ export async function getRepositoryoRelations(req: Request, res: Response, next:
       data: relations,
     });
   } catch (error) {
-    console.error("Get Repo Relations Error:", error);
+    logger.error({ err: error }, "Failed to fetch repository relations");
     next(error);
   }
 }

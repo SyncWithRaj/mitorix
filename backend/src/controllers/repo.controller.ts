@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import simpleGit from "simple-git";
 import fs from "fs";
 import path from "path";
@@ -15,6 +15,8 @@ import { getTempRepoPath } from "../utils/cleanup.util.js";
 import { repoQueue } from "../queue/jobQueue.js";
 import { QueueEvents } from "bullmq";
 import { purgeRepository } from "../utils/purge.util.js";
+import logger from "../lib/logger.js";
+import { AppError } from "../middlewares/error.middleware.js";
 
 // Prevent Git from trying to prompt for credentials in server environments (Render, Docker, etc.)
 // GIT_TERMINAL_PROMPT=0 disables interactive prompts without injecting fake credentials
@@ -24,17 +26,17 @@ delete process.env.GIT_ASKPASS;
 
 const git = simpleGit();
 
-export const addRepository = async (req: Request, res: Response) => {
+export const addRepository = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { githubUrl } = req.body;
-    const user = (req as any).user;
+    const user = req.user;
 
     if (!user) {
-      return res.status(401).json({ message: "Not authorized" });
+      throw new AppError("Not authorized", 401);
     }
 
     if (!githubUrl) {
-      return res.status(400).json({ message: "GitHub URL is required" });
+      throw new AppError("GitHub URL is required", 400);
     }
 
     if (!githubUrl.startsWith("https://github.com/")) {
@@ -64,15 +66,14 @@ export const addRepository = async (req: Request, res: Response) => {
     await repo.save();
 
     try {
-      console.log("Initiating repository clone...");
+      logger.info({ repoId: repo._id, githubUrl }, "Initiating repository clone");
 
       // Disable any stored credential helpers that might provide stale/bad creds
       await git.clone(githubUrl, repoPath, ["--depth", "1", "-c", "credential.helper="]);
 
-      console.log("Clone operation completed successfully");
+      logger.info({ repoId: repo._id }, "Clone operation completed successfully");
 
       const files = fs.readdirSync(repoPath);
-      console.log("FILES AFTER CLONE:", files);
 
       if (files.length === 0) {
         throw new Error("Clone failed: empty directory");
@@ -81,7 +82,7 @@ export const addRepository = async (req: Request, res: Response) => {
       const gitRepo = simpleGit(repoPath);
       const latestCommit = await gitRepo.revparse(["HEAD"]);
 
-      console.log("COMMIT:", latestCommit);
+      logger.info({ repoId: repo._id, commitHash: latestCommit }, "Repository commit resolved");
 
       repo.commitHash = latestCommit;
       repo.fingerprint = `${repo.githubUrl}_${latestCommit}`;
@@ -89,9 +90,9 @@ export const addRepository = async (req: Request, res: Response) => {
 
       await repo.save();
 
-      console.log("Repository status saved: cloned");
+      logger.info({ repoId: repo._id }, "Repository status saved: cloned");
     } catch (cloneError) {
-      console.error("❌ CLONE ERROR:", cloneError);
+      logger.error({ err: cloneError, repoId: repo._id }, "Repository clone failed");
 
       repo.status = "failed";
       await repo.save();
@@ -111,112 +112,57 @@ export const addRepository = async (req: Request, res: Response) => {
       repo,
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      success: false,
-      message: "Repository cloning failed",
-    });
+    next(error);
   }
 };
 
-export const getUserRepositories = async (req: Request, res: Response) => {
-  try {
-    const user = (req as any).user;
-
-    if (!user) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
-
-    const repos = await Repository.find({ user: user._id }).select("-__v");
-
-    res.json({
-      success: true,
-      repos,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Failes to fetch repositories" });
-  }
-};
-
-export const getRepositoryById = async (req: Request, res: Response) => {
+export const getUserRepositories = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
+    if (!user) throw new AppError("Unauthorized", 401);
 
-    if (!user) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
-
-    const repo = await Repository.findOne({
-      _id: req.params.id,
-      user: user._id,
-    }).select("-__v");
-
-    if (!repo) {
-      return res.status(404).json({ message: "Repo not found" });
-    }
-
-    // Update lastAccessedAt
-    repo.lastAccessedAt = new Date();
-    await repo.save();
-
-    res.json({
-      success: true,
-      repo,
-    });
+    const repos = await Repository.find({ user: user._id }).sort({ createdAt: -1 });
+    res.json(repos);
   } catch (error) {
-    res.status(500).json({ message: "Failes to fetch repositories" });
+    next(error);
   }
 };
 
-export const deleteRepository = async (req: Request, res: Response) => {
+export const getRepositoryById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const repoId = req.params.id;
-    const user = (req as any).user;
-
-    // Ensure user owns the repository before deleting
-    const repo = await Repository.findOne({ _id: repoId, user: user._id });
-
-    if (!repo) {
-      return res.status(404).json({
-        success: false,
-        message: "Repo not found or unauthorized",
-      });
-    }
-
-    const success = await purgeRepository(repoId);
-
-    if (success) {
-      res.json({
-        success: true,
-        message: "Repository and all related data deleted",
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        message: "Failed to fully delete repository data",
-      });
-    }
+    const repo = await Repository.findById(req.params.id);
+    if (!repo) throw new AppError("Repository not found", 404);
+    res.json(repo);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete repository",
-    });
+    next(error);
   }
 };
 
-export const scanRepository = async (req: Request, res: Response) => {
+export const deleteRepository = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = (req as any).user;
+    const repo = await Repository.findById(req.params.id);
+    if (!repo) throw new AppError("Repository not found", 404);
+
+    await purgeRepository(repo._id.toString());
+    await Repository.findByIdAndDelete(req.params.id);
+
+    res.json({ message: "Repository deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const scanRepository = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user;
+    if (!user) throw new AppError("Unauthorized", 401);
 
     const repo = await Repository.findOne({
       _id: req.params.id,
       user: user._id,
     });
 
-    if (!repo) {
-      return res.status(404).json({ message: "Repository not found" });
-    }
+    if (!repo) throw new AppError("Repository not found", 404);
 
     // Read from FileMetadata in DB instead of disk
     const files = await FileMetadata.find({ repoId: repo._id }).select("-__v").lean();
@@ -227,27 +173,23 @@ export const scanRepository = async (req: Request, res: Response) => {
       files,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Scan Failed" });
+    next(error);
   }
 };
 
-export const processRepoController = async (req: Request, res: Response) => {
+export const processRepoController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { githubUrl } = req.body;
-    const user = (req as any).user;
+    const user = req.user;
 
-    if (!user) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
+    if (!user) throw new AppError("Unauthorized", 401);
 
     if (!githubUrl || !githubUrl.startsWith("https://github.com/")) {
-      return res.status(400).json({ message: "Invalid GitHub URL" });
+      throw new AppError("Invalid GitHub URL", 400);
     }
 
     const repoName = githubUrl.split("/").pop()?.replace(".git", "");
-    if (!repoName) {
-      return res.status(400).json({ message: "Invalid GitHub URL" });
-    }
+    if (!repoName) throw new AppError("Invalid GitHub URL", 400);
 
     const repo = new Repository({
       user: user._id,
@@ -277,12 +219,11 @@ export const processRepoController = async (req: Request, res: Response) => {
       repoId: repo._id.toString(),
     });
   } catch (error) {
-    console.error("Queue add failed", error);
-    return res.status(500).json({ message: "Failed to queue repository" });
+    next(error);
   }
 };
 
-export const jobStatusController = async (req: Request, res: Response) => {
+export const jobStatusController = async (req: Request, res: Response, next: NextFunction) => {
   const { id: jobId } = req.params;
 
   res.setHeader("Content-Type", "text/event-stream");
@@ -359,7 +300,7 @@ export const upload = multer({ storage });
 
 export const uploadLocalRepository = async (req: Request, res: Response): Promise<any> => {
   try {
-    const user = (req as any).user;
+    const user = req.user;
     if (!user) {
       return res.status(401).json({ success: false, message: "Not authorized" });
     }
@@ -387,7 +328,7 @@ export const uploadLocalRepository = async (req: Request, res: Response): Promis
     let queuedSuccessfully = false;
 
     try {
-      console.log(`[LocalUpload] Extracting zip file for repo ${repo._id}...`);
+      logger.info({ repoId: repo._id }, "Extracting uploaded zip file");
       const zip = new AdmZip(zipPath);
       zip.extractAllTo(repoPath, true);
 
@@ -396,7 +337,7 @@ export const uploadLocalRepository = async (req: Request, res: Response): Promis
         throw new Error("No valid code files found to parse inside the zip archive.");
       }
 
-      console.log(`[LocalUpload] Queueing background job for ${repoName}...`);
+      logger.info({ repoId: repo._id, repoName }, "Queueing background processing job");
       const job = await repoQueue.add("process-repo", {
         repoUrl: `local://${repoName}`,
         userId: user._id.toString(),
@@ -412,7 +353,7 @@ export const uploadLocalRepository = async (req: Request, res: Response): Promis
         fs.unlinkSync(zipPath);
       }
 
-      console.log(`[LocalUpload] Background job ${job.id} queued successfully.`);
+      logger.info({ jobId: job.id, repoId: repo._id }, "Background job queued successfully");
 
       return res.status(202).json({
         success: true,
@@ -422,7 +363,7 @@ export const uploadLocalRepository = async (req: Request, res: Response): Promis
         message: "Repository uploaded and queued for processing successfully.",
       });
     } catch (innerError: any) {
-      console.error("[LocalUpload] Extraction/queueing failed:", innerError);
+      logger.error({ err: innerError, repoId: repo._id }, "Local upload extraction or queuing failed");
       repo.status = "failed";
       await repo.save();
 
@@ -441,7 +382,7 @@ export const uploadLocalRepository = async (req: Request, res: Response): Promis
       }
     }
   } catch (error: any) {
-    console.error("[LocalUpload] Upload handler failed:", error);
+    logger.error({ err: error }, "Local upload handler failed");
     return res.status(500).json({
       success: false,
       message: error.message || "Local upload failed.",
@@ -449,17 +390,13 @@ export const uploadLocalRepository = async (req: Request, res: Response): Promis
   }
 };
 
-export const getRepoSecurityIssues = async (req: Request, res: Response) => {
+export const getRepoSecurityIssues = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = (req as any).user;
+    const user = req.user;
     const repoId = req.params.id;
 
     const repo = await Repository.findOne({ _id: repoId, user: user._id });
-    if (!repo) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Repository not found or unauthorized" });
-    }
+    if (!repo) throw new AppError("Repository not found or unauthorized", 404);
 
     const { SecurityIssue } = await import("../models/securityIssue.model.js");
     const issues = await SecurityIssue.find({ repoId }).sort({ severity: 1, path: 1 }).lean();
@@ -469,23 +406,18 @@ export const getRepoSecurityIssues = async (req: Request, res: Response) => {
       totalIssues: issues.length,
       issues,
     });
-  } catch (error: any) {
-    console.error("[SecurityController] Failed to fetch security issues:", error);
-    return res.status(500).json({ success: false, message: "Failed to fetch security issues" });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const getRepoArchitectureViolations = async (req: Request, res: Response) => {
+export const getRepoArchitectureViolations = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = (req as any).user;
+    const user = req.user;
     const repoId = req.params.id;
 
     const repo = await Repository.findOne({ _id: repoId, user: user._id });
-    if (!repo) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Repository not found or unauthorized" });
-    }
+    if (!repo) throw new AppError("Repository not found or unauthorized", 404);
 
     const { ArchitectureViolation } = await import("../models/architectureViolation.model.js");
     const violations = await ArchitectureViolation.find({ repoId })
@@ -497,10 +429,7 @@ export const getRepoArchitectureViolations = async (req: Request, res: Response)
       totalViolations: violations.length,
       violations,
     });
-  } catch (error: any) {
-    console.error("[ArchitectureController] Failed to fetch architecture violations:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to fetch architecture violations" });
+  } catch (error) {
+    next(error);
   }
 };

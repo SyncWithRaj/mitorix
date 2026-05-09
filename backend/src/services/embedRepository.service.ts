@@ -5,6 +5,7 @@ import { CodeEntity } from "../models/codeEntity.model.js";
 import { v4 as uuidv4 } from "uuid";
 import { Repository } from "../models/repo.model.js";
 import { VectorInitService } from "./vectorInit.service.js";
+import logger from "../lib/logger.js";
 
 const COLLECTION = "repo_entities";
 
@@ -29,7 +30,7 @@ export async function embedRepository(repoId: string) {
     throw new Error("Repo or fingerprint missing");
   }
 
-  console.log(`\nChecking embeddings for repo: ${repoId}`);
+  logger.info({ repoId }, "Checking if embeddings already exist");
 
   const existing = await qdrant.scroll(COLLECTION, {
     limit: 1,
@@ -44,8 +45,7 @@ export async function embedRepository(repoId: string) {
   });
 
   if (existing.points.length > 0) {
-    console.log("Embeddings already exist for this repository. Skipping...\n");
-
+    logger.info({ repoId }, "Embeddings already exist for this repository — skipping");
     return {
       success: true,
       message: "Embeddings already exist",
@@ -53,7 +53,7 @@ export async function embedRepository(repoId: string) {
     };
   }
 
-  console.log(`Starting embedding for repo: ${repoId}`);
+  logger.info({ repoId }, "Starting vector embedding");
 
   const entities = await CodeEntity.find({
     repoId: new mongoose.Types.ObjectId(repoId),
@@ -61,7 +61,7 @@ export async function embedRepository(repoId: string) {
 
   const total = entities.length;
 
-  console.log(`Found ${total} entities`);
+  logger.info({ repoId, entityCount: total }, "Code entities loaded for embedding");
 
   if (!total) {
     throw new Error("No entities found for this repository");
@@ -72,7 +72,9 @@ export async function embedRepository(repoId: string) {
   for (let i = 0; i < total; i++) {
     const entity = entities[i];
 
-    console.log(`Embedding ${i + 1}/${total}: ${entity.name}`);
+    if ((i + 1) % 10 === 0 || i === 0) {
+      logger.debug({ repoId, progress: `${i + 1}/${total}`, name: entity.name }, "Embedding entity");
+    }
 
     const text = `
 Entity Type: ${entity?.type}
@@ -105,14 +107,14 @@ ${entity?.content || ""}
     });
   }
 
-  console.log(`Uploading ${points.length} vectors to Qdrant in chunks...`);
+  logger.info({ repoId, vectorCount: points.length }, "Uploading vectors to Qdrant");
 
   const CHUNK_SIZE = 200;
+  const totalChunks = Math.ceil(points.length / CHUNK_SIZE);
   for (let i = 0; i < points.length; i += CHUNK_SIZE) {
     const chunk = points.slice(i, i + CHUNK_SIZE);
-    console.log(
-      `Pushing chunk ${Math.floor(i / CHUNK_SIZE) + 1} of ${Math.ceil(points.length / CHUNK_SIZE)}`
-    );
+    const chunkNum = Math.floor(i / CHUNK_SIZE) + 1;
+    logger.debug({ repoId, chunk: `${chunkNum}/${totalChunks}` }, "Uploading vector chunk");
 
     await qdrant.upsert(COLLECTION, {
       wait: true,
@@ -120,7 +122,7 @@ ${entity?.content || ""}
     });
   }
 
-  console.log(`Embedding completed: ${total}/${total} stored in Qdrant\n`);
+  logger.info({ repoId, embedded: total }, "Vector embedding completed");
 
   return {
     success: true,

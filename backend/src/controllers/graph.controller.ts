@@ -4,6 +4,7 @@ import { CodeRelationship } from "../models/relationship.model.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { Repository } from "../models/repo.model.js";
 import path from "path";
+import logger from "../lib/logger.js";
 
 export const getRepositoryGraph = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -178,7 +179,7 @@ export const getRepositoryGraph = async (req: Request, res: Response): Promise<a
       },
     });
   } catch (error) {
-    console.error("Error fetching repository graph:", error);
+    logger.error({ err: error }, "Error fetching repository graph");
     return res.status(500).json({ success: false, message: "Failed to fetch repository graph" });
   }
 };

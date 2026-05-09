@@ -8,6 +8,7 @@ import { getTempRepoPath } from "../utils/cleanup.util.js";
 import { scanCodeFiles } from "../modules/indexer/fileScanner.js";
 import { processRepositoryParsing } from "../services/parser.service.js";
 import { embedRepository } from "../services/embedRepository.service.js";
+import logger from "../lib/logger.js";
 
 const redisConnection = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
   maxRetriesPerRequest: null,
@@ -24,7 +25,7 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
     const repoPath = getTempRepoPath(userId, repoId);
 
     try {
-      console.log(`[Worker] Started processing job ${job.id} for repo ${repoUrl}`);
+      logger.info({ jobId: job.id, repoUrl, repoId }, "Started processing repository job");
 
       // === STEP 1: Git Clone ===
       await job.updateProgress(10);
@@ -44,9 +45,7 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
       let privateKey = process.env.GITHUB_APP_PRIVATE_KEY;
 
       if (appId && privateKey) {
-        console.log(
-          `[Worker] GitHub App Config detected. Attempting to negotiate Installation Token for Private Clone...`
-        );
+        logger.info({ repoId }, "GitHub App config detected — negotiating installation token");
 
         // Handle newlines in env variables depending on how they were pasted
         privateKey = privateKey.replace(/\\n/g, "\n");
@@ -76,19 +75,20 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
           });
 
           cloneUrl = `https://x-access-token:${token}@github.com/${owner}/${repoName}.git`;
-          console.log(
-            `[Worker] Installation Token successfully generated for ${owner}/${repoName}. Securely cloning private repository.`
+          logger.info(
+            { owner, repoName, repoId },
+            "Installation token generated — cloning private repository"
           );
         } catch (e: any) {
-          console.log(
-            `[Worker] Warning: Could not negotiate GitHub App token (verify installation status): ${e.message}`
+          logger.warn(
+            { err: e, repoId },
+            "Could not negotiate GitHub App token — falling back to public anonymous clone"
           );
-          console.log(`[Worker] Falling back to public anonymous clone attempt...`);
         }
       }
 
       if (repoUrl.startsWith("local://")) {
-        console.log(`[Worker] Detected local uploaded repository ${repoId}. Skipping Git Clone.`);
+        logger.info({ repoId }, "Detected local uploaded repository — skipping git clone");
         if (!fs.existsSync(repoPath)) {
           throw new Error("Temporary local upload path does not exist or has expired.");
         }
@@ -103,7 +103,7 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
           fs.mkdirSync(repoPath, { recursive: true });
         }
 
-        console.log(`[Worker] Cloning ${safeUrl} into ${repoPath}`);
+        logger.info({ safeUrl, repoPath, repoId }, "Cloning repository");
         const git = simpleGit();
         await git.clone(cloneUrl, repoPath, ["--depth", "1", "-c", "credential.helper="]);
 
@@ -120,7 +120,7 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
       await job.updateProgress(30);
 
       // === STEP 2: AST Parsing ===
-      console.log(`[Worker] Generating AST for ${repoId}`);
+      logger.info({ repoId }, "Generating AST");
 
       // Clean up old data to prevent duplicates on re-analysis
       const { CodeEntity } = await import("../models/codeEntity.model.js");
@@ -143,31 +143,31 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
       await processRepositoryParsing(repoId, filePaths);
 
       // Save file tree and contents to MongoDB so FileExplorer works
-      console.log(`[Worker] Saving file tree and contents to MongoDB for ${repoId}`);
+      logger.info({ repoId }, "Saving file tree and contents to MongoDB");
       const { saveRepoFilesToDB } = await import("../services/parser.service.js");
       const savedFilesCount = await saveRepoFilesToDB(repoId, repoPath);
-      console.log(`[Worker] Saved ${savedFilesCount} files/dirs to MongoDB`);
+      logger.info({ repoId, savedFilesCount }, "File tree saved to MongoDB");
 
       await job.updateProgress(60);
 
       // === STEP 2.5: Static Security Scan ===
-      console.log(`[Worker] Running Static Security Scan for ${repoId}`);
+      logger.info({ repoId }, "Running static security scan");
       const { runSecurityScan } = await import("../services/securityScanner.service.js");
       const issueCount = await runSecurityScan(repoId, repoPath);
-      console.log(`[Worker] Detected and saved ${issueCount} security issues.`);
+      logger.info({ repoId, issueCount }, "Security scan complete");
 
       await job.updateProgress(70);
 
       // === STEP 2.7: Clean Architecture Boundary Scan ===
-      console.log(`[Worker] Running Clean Architecture Boundary Scan for ${repoId}`);
+      logger.info({ repoId }, "Running clean architecture boundary scan");
       const { runArchitectureCheck } = await import("../services/architectureEngine.service.js");
       const violationCount = await runArchitectureCheck(repoId);
-      console.log(`[Worker] Detected and saved ${violationCount} architecture violations.`);
+      logger.info({ repoId, violationCount }, "Architecture scan complete");
 
       await job.updateProgress(75);
 
       // === STEP 3: Vector Embedding ===
-      console.log(`[Worker] Uploading semantics to Qdrant for ${repoId}`);
+      logger.info({ repoId }, "Uploading semantics to Qdrant");
       await job.updateProgress(80);
       await embedRepository(repoId);
 
@@ -175,10 +175,10 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
       await Repository.findByIdAndUpdate(repoId, { status: "indexed" });
       await job.updateProgress(100);
 
-      console.log(`[Worker] Job ${job.id} completed successfully.`);
+      logger.info({ jobId: job.id, repoId }, "Repository processing job completed successfully");
       return { success: true, repoId, message: "Repository processed successfully." };
     } catch (error: any) {
-      console.error(`[Worker] Job ${job.id} failed:`, error);
+      logger.error({ err: error, jobId: job.id, repoId }, "Repository processing job failed");
 
       await Repository.findByIdAndUpdate(repoId, { status: "failed" });
 
@@ -188,10 +188,10 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
       try {
         if (fs.existsSync(repoPath)) {
           await fs.promises.rm(repoPath, { recursive: true, force: true });
-          console.log(`[Worker] Successfully cleaned up temporary directory: ${repoPath}`);
+          logger.info({ repoPath, repoId }, "Temporary directory cleaned up");
         }
       } catch (cleanupError) {
-        console.error(`[Worker] FATAL: Failed to clean up ${repoPath}:`, cleanupError);
+        logger.error({ err: cleanupError, repoPath }, "FATAL: Failed to clean up temporary directory");
       }
     }
   },
@@ -202,9 +202,9 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
 );
 
 repoWorker.on("completed", (job) => {
-  console.log(`[Worker-Event] Job ${job.id} has completed!`);
+  logger.info({ jobId: job.id }, "Worker: job completed");
 });
 
 repoWorker.on("failed", (job, err) => {
-  console.log(`[Worker-Event] Job ${job?.id} has failed with ${err.message}`);
+  logger.error({ jobId: job?.id, err }, "Worker: job failed");
 });

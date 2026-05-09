@@ -2,17 +2,18 @@ import fs from "fs";
 import path from "path";
 import { SecurityIssue } from "../models/securityIssue.model.js";
 import { scanCodeFiles } from "../modules/indexer/fileScanner.js";
+import logger from "../lib/logger.js";
 
 export async function runSecurityScan(repoId: string, repoPath: string): Promise<number> {
   try {
-    console.log(`[SecurityScanner] Starting scan for repository ${repoId} at ${repoPath}`);
+    logger.info({ repoId, repoPath }, "Starting security scan");
 
     // Clean up any old scan issues for this repository
     await SecurityIssue.deleteMany({ repoId });
 
     const scannedFiles = scanCodeFiles(repoPath);
     if (scannedFiles.length === 0) {
-      console.log(`[SecurityScanner] No files found to scan.`);
+      logger.info({ repoId }, "No files found to scan");
       return 0;
     }
 
@@ -181,20 +182,20 @@ export async function runSecurityScan(repoId: string, repoPath: string): Promise
           });
         }
       } catch (fileReadError) {
-        console.error(`[SecurityScanner] Failed to read/scan file ${fileName}:`, fileReadError);
+        logger.error({ err: fileReadError, file: fileName }, "Security scanner failed to read file");
       }
     }
 
     if (issuesToSave.length > 0) {
       await SecurityIssue.insertMany(issuesToSave);
-      console.log(`[SecurityScanner] Saved ${issuesToSave.length} security issues to database.`);
+      logger.info({ repoId, issueCount: issuesToSave.length }, "Security issues saved to database");
     } else {
-      console.log(`[SecurityScanner] No security issues detected.`);
+      logger.info({ repoId }, "No security issues detected");
     }
 
     return issuesToSave.length;
   } catch (err) {
-    console.error(`[SecurityScanner] Scan failed for repo ${repoId}:`, err);
+    logger.error({ err, repoId }, "Security scan failed");
     return 0;
   }
 }

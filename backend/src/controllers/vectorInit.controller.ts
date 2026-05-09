@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { VectorInitService } from "../services/vectorInit.service.js";
+import logger from "../lib/logger.js";
 
 export class VectorController {
   private vectorService = new VectorInitService();
@@ -10,7 +11,7 @@ export class VectorController {
 
       res.status(200).json(result);
     } catch (error: any) {
-      console.error(error);
+      logger.error({ err: error }, "Vector collection initialization failed");
       res.status(500).json({
         message: "Vector collection initialization failed",
         error: error.message || error.toString(),

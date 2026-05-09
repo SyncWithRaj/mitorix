@@ -1,6 +1,7 @@
 import path from "path";
 import { CodeRelationship } from "../models/relationship.model.js";
 import { ArchitectureViolation } from "../models/architectureViolation.model.js";
+import logger from "../lib/logger.js";
 
 interface LayerDefinition {
   name: string;
@@ -47,7 +48,7 @@ function getFileLayer(filePath: string): LayerDefinition | null {
 
 export async function runArchitectureCheck(repoId: string): Promise<number> {
   try {
-    console.log(`[ArchitectureEngine] Running boundary checks for repository ${repoId}`);
+    logger.info({ repoId }, "Running clean architecture boundary checks");
 
     // 1. Clean up old violations for this repository
     await ArchitectureViolation.deleteMany({ repoId });
@@ -55,7 +56,7 @@ export async function runArchitectureCheck(repoId: string): Promise<number> {
     // 2. Fetch all code relations for this repository
     const relationships = await CodeRelationship.find({ repoId }).lean();
     if (relationships.length === 0) {
-      console.log(`[ArchitectureEngine] No relations found for repo ${repoId}. Skipping check.`);
+      logger.info({ repoId }, "No relations found for repository — skipping architecture check");
       return 0;
     }
 
@@ -103,16 +104,17 @@ export async function runArchitectureCheck(repoId: string): Promise<number> {
 
     if (violationsToSave.length > 0) {
       await ArchitectureViolation.insertMany(violationsToSave);
-      console.log(
-        `[ArchitectureEngine] Detected and saved ${violationsToSave.length} layer boundary violations.`
+      logger.info(
+        { repoId, violationCount: violationsToSave.length },
+        "Detected and saved layer boundary violations"
       );
     } else {
-      console.log(`[ArchitectureEngine] Codebase is architecturally compliant. Zero violations.`);
+      logger.info({ repoId }, "Codebase is architecturally compliant — zero violations");
     }
 
     return violationsToSave.length;
   } catch (error) {
-    console.error(`[ArchitectureEngine] Check failed for repository ${repoId}:`, error);
+    logger.error({ err: error, repoId }, "Architecture check failed");
     return 0;
   }
 }
