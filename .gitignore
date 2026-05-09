@@ -88,3 +88,7 @@ frontend/**/*.md
 # ── Test Coverage Output ──────────────────────────────────────
 coverage/
 backend/coverage/
+
+architecture.md
+DEPLOYMENT_GUIDE.md
+PLANNING.md
