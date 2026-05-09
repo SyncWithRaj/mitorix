@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import passport from "./config/passport.js";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./lib/swagger.js";
 
 import healthRoute from "./routes/index.js";
 import authRoute from "./routes/auth.route.js";
@@ -37,7 +39,10 @@ app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(passport.initialize());
 
-// routes
+// API Documentation — available at /api/docs
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Routes
 app.use("/api/v1", healthRoute);
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/repos", repoRoutes);

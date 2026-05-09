@@ -3,8 +3,9 @@ dotenv.config();
 
 import app from "./app.js";
 import { connectDB } from "./config/db.js";
+import logger from "./lib/logger.js";
 
-// Import the workers so they start with the server process
+// Import workers so they start with the server process
 import "./workers/repoWorker.js";
 import "./workers/cleanupWorker.js";
 import { cleanupQueue } from "./queue/jobQueue.js";
@@ -26,8 +27,11 @@ const startServer = async () => {
   );
 
   app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    logger.info({ port }, `RepoLens server is running`);
   });
 };
 
-startServer();
+startServer().catch((err) => {
+  logger.error({ err }, "Failed to start server");
+  process.exit(1);
+});
