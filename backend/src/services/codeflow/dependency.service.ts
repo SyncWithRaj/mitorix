@@ -76,7 +76,7 @@ export function buildDependencyGraph(
   }
 
   // Build a lookup of function names → defining file
-  const fnToFile: Record<string, string> = {};
+  const fnToFile: Record<string, string> = Object.create(null);
   for (const fn of allFns) {
     if (!fnToFile[fn.name]) {
       fnToFile[fn.name] = fn.file;
@@ -84,7 +84,7 @@ export function buildDependencyGraph(
   }
 
   // Build a lookup of module/file names -> defining file
-  const moduleToFile: Record<string, string> = {};
+  const moduleToFile: Record<string, string> = Object.create(null);
   for (const f of files) {
     const relPath = f.path.replace(/\\/g, "/");
     const parts = relPath.split("/");
@@ -157,11 +157,11 @@ export function buildDependencyGraph(
     // Resolve missing toFilePath dynamically using Scope-Aware lookup first, then global fallbacks
     if (!defFile) {
       const srcImports = importsMap[sourceFile];
-      if (srcImports && srcImports[targetFnName]) {
+      if (srcImports && typeof srcImports[targetFnName] === "string") {
         defFile = srcImports[targetFnName];
-      } else if (fnToFile[targetFnName]) {
+      } else if (typeof fnToFile[targetFnName] === "string") {
         defFile = fnToFile[targetFnName].replace(/\\/g, "/");
-      } else if (moduleToFile[targetFnName]) {
+      } else if (typeof moduleToFile[targetFnName] === "string") {
         defFile = moduleToFile[targetFnName].replace(/\\/g, "/");
       }
     }
