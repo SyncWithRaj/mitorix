@@ -13,6 +13,8 @@ import {
   getRepoArchitectureViolations,
 } from "../controllers/repo.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
+import { validate } from "../lib/validate.js";
+import { addRepositorySchema, processRepoSchema } from "../schemas/repo.schema.js";
 import { parseRepoController } from "../controllers/parser.controller.js";
 import { getRepositoryEntities } from "../controllers/codeEntity.controller.js";
 import { getRepositoryoRelations } from "../controllers/relationship.controller.js";
@@ -23,9 +25,9 @@ import { generateOnboardingGuide } from "../controllers/onboarding.controller.js
 
 const router = Router();
 
-router.post("/", protect, addRepository);
+router.post("/", protect, validate(addRepositorySchema), addRepository);
 router.post("/upload-local", protect, upload.single("file"), uploadLocalRepository);
-router.post("/process", protect, processRepoController);
+router.post("/process", protect, validate(processRepoSchema), processRepoController);
 router.get("/jobs/:id/status", protect, jobStatusController);
 router.get("/", protect, getUserRepositories);
 router.get("/:id", protect, getRepositoryById);

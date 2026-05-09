@@ -3,6 +3,7 @@ import passport from "passport";
 import jwt from "jsonwebtoken";
 import { protect } from "../middlewares/auth.middleware.js";
 import { User } from "../models/auth.model.js";
+import logger from "../lib/logger.js";
 
 const router = Router();
 
@@ -80,7 +81,7 @@ if (process.env.NODE_ENV !== "production") {
         },
       });
     } catch (error) {
-      console.error("Dev login error:", error);
+      logger.error({ err: error }, "Dev login failed");
       res.status(500).json({ success: false, message: "Dev login failed" });
     }
   });
