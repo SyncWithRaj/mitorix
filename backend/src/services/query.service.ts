@@ -14,7 +14,17 @@ export const askQuestion = async (repoId: string, question: string, history: any
   const repo = await Repository.findById(repoId);
   if (!repo) throw new Error("Repository not found");
 
-  // ── 1. Vector search for relevant code entities ──
+  // ── 1. On-demand Vector Embedding if not already done ──
+  if (!repo.isEmbedded) {
+    logger.info({ repoId }, "On-demand embedding triggered for first chat");
+    const { embedRepository } = await import("./embedRepository.service.js");
+    await embedRepository(repoId);
+    await Repository.findByIdAndUpdate(repoId, { isEmbedded: true });
+    // Refresh repo object
+    repo.isEmbedded = true;
+  }
+
+  // ── 2. Vector search for relevant code entities ──
   const results = await searchVectors(repoId, question);
 
   logger.debug({ repoId, matchCount: results.length }, "Vector search completed");

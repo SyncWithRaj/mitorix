@@ -445,3 +445,28 @@ export const getRepoArchitectureViolations = async (req: Request, res: Response,
     next(error);
   }
 };
+
+export const triggerEmbedding = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id: repoId } = req.params;
+    const repo = await Repository.findById(repoId);
+    if (!repo) throw new AppError("Repository not found", 404);
+
+    if (repo.isEmbedded) {
+      return res.json({ success: true, message: "Repository already embedded" });
+    }
+
+    logger.info({ repoId }, "Manual embedding trigger started");
+    const { embedRepository } = await import("../services/embedRepository.service.js");
+    await embedRepository(repoId);
+    await Repository.findByIdAndUpdate(repoId, { isEmbedded: true });
+
+    res.json({
+      success: true,
+      message: "Repository embedded successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

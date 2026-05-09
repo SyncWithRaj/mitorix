@@ -15,6 +15,7 @@ export interface IRepository extends Document {
   onboardingGuide?: any;
   systemDesignDoc?: string;
   isSession?: boolean;
+  isEmbedded?: boolean;
 }
 
 const repoSchema = new Schema<IRepository>(
@@ -67,6 +68,10 @@ const repoSchema = new Schema<IRepository>(
       type: String,
     },
     isSession: {
+      type: Boolean,
+      default: false,
+    },
+    isEmbedded: {
       type: Boolean,
       default: false,
     },

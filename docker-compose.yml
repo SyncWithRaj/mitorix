@@ -9,7 +9,7 @@ services:
       - ./backend/qdrant_storage:/qdrant/storage
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
+      test: ["CMD", "bash", "-c", "cat < /dev/null > /dev/tcp/localhost/6333"]
       interval: 10s
       timeout: 5s
       retries: 5

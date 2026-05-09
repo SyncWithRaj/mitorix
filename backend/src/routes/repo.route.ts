@@ -11,6 +11,7 @@ import {
   uploadLocalRepository,
   getRepoSecurityIssues,
   getRepoArchitectureViolations,
+  triggerEmbedding,
 } from "../controllers/repo.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 import { validate } from "../lib/validate.js";
@@ -42,5 +43,6 @@ router.get("/:id/design-doc", protect, generateSystemDesignDoc);
 router.get("/:id/onboarding", protect, generateOnboardingGuide);
 router.get("/:id/security", protect, getRepoSecurityIssues);
 router.get("/:id/violations", protect, getRepoArchitectureViolations);
+router.post("/:id/trigger-embedding", protect, triggerEmbedding);
 
 export default router;

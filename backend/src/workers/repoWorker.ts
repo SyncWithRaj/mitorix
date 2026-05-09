@@ -148,7 +148,7 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
       const savedFilesCount = await saveRepoFilesToDB(repoId, repoPath);
       logger.info({ repoId, savedFilesCount }, "File tree saved to MongoDB");
 
-      await job.updateProgress(60);
+      await job.updateProgress(70);
 
       // === STEP 2.5: Static Security Scan ===
       logger.info({ repoId }, "Running static security scan");
@@ -156,7 +156,7 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
       const issueCount = await runSecurityScan(repoId, repoPath);
       logger.info({ repoId, issueCount }, "Security scan complete");
 
-      await job.updateProgress(70);
+      await job.updateProgress(85);
 
       // === STEP 2.7: Clean Architecture Boundary Scan ===
       logger.info({ repoId }, "Running clean architecture boundary scan");
@@ -164,13 +164,13 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
       const violationCount = await runArchitectureCheck(repoId);
       logger.info({ repoId, violationCount }, "Architecture scan complete");
 
-      await job.updateProgress(75);
+      // await job.updateProgress(75);
 
-      // === STEP 3: Vector Embedding ===
-      logger.info({ repoId }, "Uploading semantics to Qdrant");
-      await job.updateProgress(80);
-      await embedRepository(repoId);
-
+      // === STEP 3: Vector Embedding (DEFERRED — Now happens on-demand when chat is used) ===
+      // logger.info({ repoId }, "Uploading semantics to Qdrant");
+      // await job.updateProgress(80);
+      // await embedRepository(repoId);
+      
       // === SUCCESS ===
       await Repository.findByIdAndUpdate(repoId, { status: "indexed" });
       await job.updateProgress(100);
