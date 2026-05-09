@@ -22,6 +22,7 @@ import {
   Code,
   FileText,
   BookOpen,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import HealthRing from "./sidebar/HealthRing";
@@ -87,6 +88,8 @@ export default function CodeflowLayout({
     setUseWebWorker,
     analysisProgress,
     setAnalysisProgress,
+    folderFilter,
+    setFolderFilter,
   } = useCodeflow();
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
@@ -271,6 +274,24 @@ export default function CodeflowLayout({
             <div className="flex flex-col h-full bg-gh-bg w-full relative">
               {/* Upper Section */}
               <div className="flex-1 p-4 space-y-5 overflow-y-auto custom-scrollbar">
+                {folderFilter && (
+                  <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-2 flex items-center justify-between gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <Folder size={14} className="text-[#58a6ff] shrink-0" />
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[10px] text-[#8b949e] uppercase font-bold tracking-tight">Active Filter</span>
+                        <span className="text-xs text-[#c9d1d9] font-medium truncate">{folderFilter}</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setFolderFilter(null)}
+                      className="p-1.5 hover:bg-[#21262d] rounded-md text-[#8b949e] hover:text-[#f85149] transition-colors"
+                      title="Clear Filter"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
                 <HealthRing
                   score={analysisData.health?.score || 0}
                   grade={analysisData.health?.grade || "F"}
