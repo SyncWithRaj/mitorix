@@ -172,32 +172,48 @@ export async function processRepositoryParsing(repoId: string, filePaths: string
     await CodeEntity.insertMany(entities, { ordered: false });
   }
 
-  // Filter out third-party relationships
   const internalRelativePaths = new Set(
     filePaths.map((p) => path.relative(basePath, p).replace(/\\/g, "/"))
   );
 
-  const internalRelationships = relationships.filter((rel) => {
-    if (!rel.toFilePath) return true; // Keep unresolved calls/accesses
-    
-    const targetPath = rel.toFilePath.replace(/\\/g, "/");
-    
-    // Exactly matches a resolved internal file
-    if (internalRelativePaths.has(targetPath)) return true;
-    if (filePaths.includes(targetPath)) return true;
-    
-    // Explicitly local paths (e.g., "./styles.css") even if not fully resolved
-    if (targetPath.startsWith("./") || targetPath.startsWith("../") || targetPath.startsWith("/")) {
-      return true;
+  const deduplicatedRelationships = new Map<string, any>();
+
+  for (const rel of relationships) {
+    let isExternal = false;
+    let targetPath = rel.toFilePath ? rel.toFilePath.replace(/\\/g, "/") : null;
+
+    if (targetPath) {
+      if (
+        !internalRelativePaths.has(targetPath) &&
+        !filePaths.includes(targetPath) &&
+        !targetPath.startsWith("./") &&
+        !targetPath.startsWith("../") &&
+        !targetPath.startsWith("/")
+      ) {
+        isExternal = true;
+      }
     }
 
-    // Otherwise, it's an external third-party package (e.g., 'express', 'cors', 'react')
-    return false;
-  });
+    const key = `${rel.fromFilePath}|${rel.toName}|${targetPath || ""}|${rel.relationType}`;
+    
+    if (deduplicatedRelationships.has(key)) {
+      const existing = deduplicatedRelationships.get(key);
+      existing.count = (existing.count || 1) + 1;
+    } else {
+      deduplicatedRelationships.set(key, {
+        ...rel,
+        toFilePath: targetPath,
+        isExternal,
+        count: 1,
+      });
+    }
+  }
+
+  const relationshipsToInsert = Array.from(deduplicatedRelationships.values());
 
   // Insert relationships
-  if (internalRelationships.length) {
-    await CodeRelationship.insertMany(internalRelationships, { ordered: false });
+  if (relationshipsToInsert.length) {
+    await CodeRelationship.insertMany(relationshipsToInsert, { ordered: false });
   }
 
   // Insert file metadata
@@ -230,6 +246,8 @@ export async function processRepositoryParsing(repoId: string, filePaths: string
       toFilePath: target.filePath,
       relationType: "handles",
       line: route.startLine,
+      count: 1,
+      isExternal: false,
     });
   }
 

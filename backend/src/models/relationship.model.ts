@@ -9,6 +9,8 @@ export interface ICodeRelationship extends Document {
   toFilePath: string | null;
   relationType: "calls" | "accesses" | "imports" | "handles";
   line: number;
+  count: number;
+  isExternal: boolean;
 }
 
 const relationshipSchema = new Schema<ICodeRelationship>(
@@ -46,6 +48,14 @@ const relationshipSchema = new Schema<ICodeRelationship>(
     line: {
       type: Number,
       required: true,
+    },
+    count: {
+      type: Number,
+      default: 1,
+    },
+    isExternal: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

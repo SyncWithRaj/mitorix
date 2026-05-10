@@ -47,6 +47,8 @@ export function buildDependencyGraph(
     toFilePath?: string | null;
     relationType: string;
     line: number;
+    count: number;
+    isExternal: boolean;
   }>
 ): DependencyResult {
   const connections: Connection[] = [];
@@ -179,20 +181,20 @@ export function buildDependencyGraph(
     const isInternal = sourceFile === defFile;
     if (isInternal) {
       if (fnStats[targetFnName]) {
-        fnStats[targetFnName].internal += 1;
+        fnStats[targetFnName].internal += rel.count;
       }
     }
 
     const connKey = `${defFile}|${sourceFile}|${targetFnName}`;
     const existingConn = connectionKeys.get(connKey);
     if (existingConn) {
-      existingConn.count = (existingConn.count || 1) + 1;
+      existingConn.count = (existingConn.count || 1) + rel.count;
     } else {
       const conn: any = {
         source: defFile,
         target: sourceFile,
         fn: targetFnName,
-        count: 1,
+        count: rel.count,
         isInternal,
         type: rel.relationType
       };
@@ -202,7 +204,7 @@ export function buildDependencyGraph(
 
     if (!isInternal) {
       if (fnStats[targetFnName]) {
-        fnStats[targetFnName].external += 1;
+        fnStats[targetFnName].external += rel.count;
         // ... (rest of the callerMaps logic)
 
         if (!callerMaps[targetFnName]) {
@@ -210,13 +212,13 @@ export function buildDependencyGraph(
         }
         const existing = callerMaps[targetFnName].get(sourceFile);
         if (existing) {
-          existing.count += 1;
+          existing.count += rel.count;
         } else {
           const sourceFileName = sourceFile.split("/").pop() || sourceFile;
           callerMaps[targetFnName].set(sourceFile, {
             file: sourceFile,
             name: sourceFileName,
-            count: 1,
+            count: rel.count,
           });
         }
       }

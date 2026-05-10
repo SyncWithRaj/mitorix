@@ -255,6 +255,8 @@ export async function runAnalysisPipeline(
     toFilePath: r.toFilePath || null,
     relationType: r.relationType,
     line: r.line || 0,
+    count: r.count || 1,
+    isExternal: r.isExternal || false,
   }));
 
   const depResult = buildDependencyGraph(analyzedFiles, allFns, rawRels);
