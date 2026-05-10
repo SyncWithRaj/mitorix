@@ -142,8 +142,8 @@ export default function GraphView({ repoId }: { repoId: string }) {
         return;
       }
       
-      // If highlightLinks is off, discard all non-hierarchy links entirely to "free" the layout
-      if (!highlightLinks) return;
+      // Non-hierarchy links are always passed to simulation to keep physics stable
+      // Visually, they will be hidden using linkColor if highlightLinks is off
 
       const visibleSrc = findVisibleAncestor(sId);
       const visibleTgt = findVisibleAncestor(tId);
@@ -164,7 +164,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
     });
 
     return { nodes, links: Array.from(elevatedLinksMap.values()) };
-  }, [graphData, collapsedNodes, highlightLinks]);
+  }, [graphData, collapsedNodes]);
 
   const triggerBlastRadius = useCallback(
     async (targetNode: any) => {
@@ -252,7 +252,8 @@ export default function GraphView({ repoId }: { repoId: string }) {
   useEffect(() => {
     if (fgRef.current) {
       fgRef.current.d3Force("charge").strength(-1200); // push nodes apart strongly
-      fgRef.current.d3Force("link").distance(360); // much longer links to un-clump nodes
+      fgRef.current.d3Force("link").distance((link: any) => link.label === "contains" ? 80 : 360); 
+      fgRef.current.d3Force("link").strength((link: any) => link.label === "contains" ? 1 : 0.01);
     }
   }, [visibleGraphData]);
 
@@ -581,15 +582,15 @@ export default function GraphView({ repoId }: { repoId: string }) {
           }
         }}
         linkWidth={(link: any) => {
-          if (link.label === "contains") return 1;
-          return Math.sqrt(link.value || 1) + 1; // Scale thickness by relationship strength
+          if (link.label === "contains") return 0.5;
+          return Math.sqrt(link.value || 1) * 0.6 + 0.4; // Scale thickness by relationship strength
         }}
         linkCurvature={0.25}
         linkDirectionalArrowLength={(link: any) => {
           if (blastRadius && !blastRadius.affectedNodeIds.has(link.source?.id || link.source))
             return 0;
           if (link.label === "contains") return 0;
-          return highlightLinks ? 6 : 4; // Decreased arrow head size
+          return highlightLinks ? 6 : 0; // Hide arrow head if disabled
         }}
         linkDirectionalArrowRelPos={1}
         linkColor={(link: any) => {
@@ -606,9 +607,12 @@ export default function GraphView({ repoId }: { repoId: string }) {
             return highlightLinks ? "rgba(139, 148, 158, 0.05)" : "rgba(139, 148, 158, 0.15)";
           }
           
+          // If links are globally disabled, hide completely
+          if (!highlightLinks) return "rgba(0, 0, 0, 0)";
+
           // Color code by relationship type (access: red, calls: blue, imports: green, handles: yellow)
           const type = link.label?.toLowerCase() || "";
-          const opacity = highlightLinks ? 0.95 : 0.6;
+          const opacity = 0.55; // Slightly dimmed
 
           if (type.includes("access")) return `rgba(239, 68, 68, ${opacity})`;   // Red
           if (type.includes("call")) return `rgba(59, 130, 246, ${opacity})`;    // Blue

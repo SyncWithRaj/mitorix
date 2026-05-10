@@ -54,15 +54,13 @@ export default function ForceGraph() {
     }));
 
     const linkMap = new Map<string, any>();
-    if (highlightLinks) {
-      filteredConnections.forEach((c) => {
-        if (!fileIds.has(c.source) || !fileIds.has(c.target)) return;
-        if (c.source === c.target) return;
-        const k = `${c.source}|${c.target}`;
-        if (!linkMap.has(k)) linkMap.set(k, { source: c.source, target: c.target, count: 0, type: c.type });
-        linkMap.get(k)!.count += c.count;
-      });
-    }
+    filteredConnections.forEach((c) => {
+      if (!fileIds.has(c.source) || !fileIds.has(c.target)) return;
+      if (c.source === c.target) return;
+      const k = `${c.source}|${c.target}`;
+      if (!linkMap.has(k)) linkMap.set(k, { source: c.source, target: c.target, count: 0, type: c.type });
+      linkMap.get(k)!.count += c.count;
+    });
     const links = Array.from(linkMap.values());
 
     // --- Helpers (identical to index.html) ---
@@ -135,7 +133,7 @@ export default function ForceGraph() {
             .forceLink(links)
             .id((d: any) => d.id)
             .distance(graphConfig.linkDist * 9) // 300% of previous length
-            .strength(0.3)
+            .strength(0.01) // Extremely weak so folder clusters dominate
         )
         .force("charge", d3.forceManyBody().strength(-graphConfig.spacing * 2).distanceMax(600)) // Push nodes away from each other
         .force(
@@ -164,7 +162,7 @@ export default function ForceGraph() {
             .forceLink(links)
             .id((d: any) => d.id)
             .distance(graphConfig.linkDist * 0.5)
-            .strength(0.05)
+            .strength(0.01)
         )
         .force("charge", d3.forceManyBody().strength(-graphConfig.spacing * 0.3))
         .force(
@@ -210,7 +208,7 @@ export default function ForceGraph() {
             .forceLink(links)
             .id((d: any) => d.id)
             .distance(graphConfig.linkDist)
-            .strength(0.1)
+            .strength(0.01)
         )
         .force(
           "charge",
@@ -240,7 +238,7 @@ export default function ForceGraph() {
             .forceLink(links)
             .id((d: any) => d.id)
             .distance(graphConfig.linkDist * 1.5)
-            .strength(0.02)
+            .strength(0.01)
         )
         .force(
           "collision",
@@ -287,7 +285,7 @@ export default function ForceGraph() {
             .forceLink(links)
             .id((d: any) => d.id)
             .distance(graphConfig.linkDist)
-            .strength(0.05)
+            .strength(0.01)
         )
         .force(
           "collision",
@@ -324,9 +322,9 @@ export default function ForceGraph() {
       .attr("id", (d, i) => `edgepath-${i}`)
       .attr("fill", "none")
       .attr("stroke", (d: any) => `#${getColor(d.type)}`)
-      .attr("stroke-width", (d: any) => Math.max(1, Math.min(2, Math.sqrt(d.count) * 0.3)))
-      .attr("stroke-opacity", 0.6)
-      .attr("marker-end", (d: any) => `url(#arr-${getColor(d.type)})`);
+      .attr("stroke-width", (d: any) => Math.max(0.6, Math.min(1.5, Math.sqrt(d.count) * 0.3)))
+      .attr("stroke-opacity", 0)
+      .attr("marker-end", "");
 
     // --- Nodes ---
     const node = nodeLayer
@@ -519,8 +517,7 @@ export default function ForceGraph() {
     selectFile,
     deselectFile,
     filteredFiles,
-    filteredConnections,
-    highlightLinks
+    filteredConnections
   ]);
 
   // Secondary effect to handle dynamic coloring and blast radius highlighting without restarting simulation
@@ -590,12 +587,14 @@ export default function ForceGraph() {
         const t = l.target.id || l.target;
         if (highlightLinks) {
           if (selectedFile) {
-            return s === selectedFile || t === selectedFile ? 1.0 : 0.15;
+            return s === selectedFile || t === selectedFile ? 0.9 : 0.1;
           }
-          return 0.85;
+          return 0.55; // Slightly dimmed by default
         }
-        if (s === selectedFile || t === selectedFile) return 0.8;
-        return selectedFile ? 0.05 : 0.4;
+        if (selectedFile) {
+          return s === selectedFile || t === selectedFile ? 0.8 : 0;
+        }
+        return 0;
       })
       .attr("stroke", (l: any) => {
         const s = l.source.id || l.source;
@@ -616,8 +615,8 @@ export default function ForceGraph() {
         return "#333333";
       })
       .attr("stroke-width", (d: any) => {
-        const base = Math.max(1, Math.min(2, Math.sqrt(d.count) * 0.3));
-        return highlightLinks ? base * 1.8 : base;
+        const base = Math.max(0.6, Math.min(1.5, Math.sqrt(d.count) * 0.3));
+        return highlightLinks ? base * 1.2 : base;
       })
       .attr("marker-end", (l: any) => {
         const s = l.source.id || l.source;
@@ -629,8 +628,13 @@ export default function ForceGraph() {
         else if (typeStr.includes("import") || typeStr.includes("export")) baseColor = "22c55e";
         else if (typeStr.includes("handle")) baseColor = "eab308";
 
-        if (!selectedFile) return `url(#arr-${baseColor})`;
-        if (s === selectedFile || t === selectedFile) return `url(#arr-${baseColor})`;
+        if (highlightLinks) {
+          if (!selectedFile) return `url(#arr-${baseColor})`;
+          if (s === selectedFile || t === selectedFile) return `url(#arr-${baseColor})`;
+          return "";
+        }
+        
+        if (selectedFile && (s === selectedFile || t === selectedFile)) return `url(#arr-${baseColor})`;
         return "";
       });
   }, [analysisData, colorMode, selectedFile, blastRadius, highlightLinks]);

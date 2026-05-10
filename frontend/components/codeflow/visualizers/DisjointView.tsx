@@ -9,6 +9,11 @@ export default function DisjointView() {
   const { analysisData, folderFilter, selectFile, filteredFiles, filteredConnections, highlightLinks } =
     useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
+  const highlightLinksRef = useRef(highlightLinks);
+
+  useEffect(() => {
+    highlightLinksRef.current = highlightLinks;
+  }, [highlightLinks]);
 
   useEffect(() => {
     if (!analysisData || !containerRef.current) return;
@@ -86,15 +91,13 @@ export default function DisjointView() {
     }));
 
     const links: any[] = [];
-    if (highlightLinks) {
-      filteredConnections.forEach((c) => {
-        const src = c.source;
-        const tgt = c.target;
-        if (fileIdx[src] !== undefined && fileIdx[tgt] !== undefined && src !== tgt) {
-          links.push({ source: src, target: tgt, count: c.count || 1, type: c.type });
-        }
-      });
-    }
+    filteredConnections.forEach((c) => {
+      const src = c.source;
+      const tgt = c.target;
+      if (fileIdx[src] !== undefined && fileIdx[tgt] !== undefined && src !== tgt) {
+        links.push({ source: src, target: tgt, count: c.count || 1, type: c.type });
+      }
+    });
 
     const sim = d3
       .forceSimulation(nodes as any)
@@ -104,7 +107,7 @@ export default function DisjointView() {
           .forceLink(links)
           .id((d: any) => d.id)
           .distance(300) // Much longer arrows to avoid clutter
-          .strength(0.3)
+          .strength(0.01) // Weak link force so x/y folder clusters dominate
       )
       .force("charge", d3.forceManyBody().strength(-200)) // Push nodes away from each other
       .force("x", d3.forceX((d: any) => d.cx).strength(0.15))
@@ -167,9 +170,9 @@ export default function DisjointView() {
       .attr("class", "disjoint-link")
       .attr("fill", "none")
       .attr("stroke", (d: any) => `#${getColor(d.type)}`)
-      .attr("stroke-width", 1.5)
-      .attr("stroke-opacity", 0.6)
-      .attr("marker-end", (d: any) => `url(#disjoint-arr-${getColor(d.type)})`);
+      .attr("stroke-width", 0.8)
+      .attr("stroke-opacity", 0) // let secondary effect handle it
+      .attr("marker-end", "");
 
     const tooltip = container
       .append("div")
@@ -230,14 +233,15 @@ export default function DisjointView() {
           .style("left", `${e.offsetX + 15}px`)
           .style("top", `${e.offsetY + 15}px`);
 
+        const hl = highlightLinksRef.current;
         link
           .attr("stroke-opacity", (l: any) =>
-            l.source.id === d.id || l.target.id === d.id ? 0.8 : 0.05
+            l.source.id === d.id || l.target.id === d.id ? 0.9 : (hl ? 0.05 : 0)
           )
           .attr("stroke", (l: any) =>
             l.source.id === d.id || l.target.id === d.id ? `#${getColor(l.type)}` : "#30363d"
           )
-          .attr("stroke-width", (l: any) => (l.source.id === d.id || l.target.id === d.id ? 2 : 1.5))
+          .attr("stroke-width", (l: any) => (l.source.id === d.id || l.target.id === d.id ? 1.5 : 0.8))
           .attr("marker-end", (l: any) =>
             l.source.id === d.id || l.target.id === d.id ? `url(#disjoint-arr-${getColor(l.type)})` : ""
           );
@@ -255,11 +259,12 @@ export default function DisjointView() {
       })
       .on("mouseleave", function (e, d: any) {
         tooltip.style("display", "none");
+        const hl = highlightLinksRef.current;
         link
-          .attr("stroke-opacity", 0.6)
+          .attr("stroke-opacity", hl ? 0.45 : 0) // slightly dimmed
           .attr("stroke", (l: any) => `#${getColor(l.type)}`)
-          .attr("stroke-width", 1.5)
-          .attr("marker-end", (l: any) => `url(#disjoint-arr-${getColor(l.type)})`);
+          .attr("stroke-width", 0.8)
+          .attr("marker-end", (l: any) => hl ? `url(#disjoint-arr-${getColor(l.type)})` : "");
         d3.select(this)
           .select("circle")
           .transition()
@@ -305,7 +310,29 @@ export default function DisjointView() {
       window.removeEventListener("codeflow:resetZoom", handleResetZoom);
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
-  }, [analysisData, folderFilter, selectFile, filteredFiles, filteredConnections, highlightLinks]);
+  }, [analysisData, folderFilter, selectFile, filteredFiles, filteredConnections]);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const svg = d3.select(containerRef.current).select("svg");
+    if (svg.empty()) return;
+
+    const getColor = (type: string) => {
+      const t = (type || "").toLowerCase();
+      if (t.includes("access")) return "ef4444";
+      if (t.includes("call")) return "3b82f6";
+      if (t.includes("import") || t.includes("export")) return "22c55e";
+      if (t.includes("handle")) return "eab308";
+      return "30363d";
+    };
+
+    svg.selectAll(".disjoint-link")
+      .transition()
+      .duration(300)
+      .attr("stroke-opacity", highlightLinks ? 0.45 : 0)
+      .attr("stroke-width", highlightLinks ? 0.8 : 0.8)
+      .attr("marker-end", (d: any) => highlightLinks ? `url(#disjoint-arr-${getColor(d.type)})` : "");
+  }, [highlightLinks]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }
