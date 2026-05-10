@@ -237,7 +237,10 @@ export default function DisjointView() {
           .attr("stroke", (l: any) =>
             l.source.id === d.id || l.target.id === d.id ? `#${getColor(l.type)}` : "#30363d"
           )
-          .attr("stroke-width", (l: any) => (l.source.id === d.id || l.target.id === d.id ? 2 : 1.5));
+          .attr("stroke-width", (l: any) => (l.source.id === d.id || l.target.id === d.id ? 2 : 1.5))
+          .attr("marker-end", (l: any) =>
+            l.source.id === d.id || l.target.id === d.id ? `url(#disjoint-arr-${getColor(l.type)})` : ""
+          );
 
         d3.select(this)
           .select("circle")
@@ -252,7 +255,11 @@ export default function DisjointView() {
       })
       .on("mouseleave", function (e, d: any) {
         tooltip.style("display", "none");
-        link.attr("stroke-opacity", 0.6).attr("stroke", (l: any) => `#${getColor(l.type)}`).attr("stroke-width", 1.5);
+        link
+          .attr("stroke-opacity", 0.6)
+          .attr("stroke", (l: any) => `#${getColor(l.type)}`)
+          .attr("stroke-width", 1.5)
+          .attr("marker-end", (l: any) => `url(#disjoint-arr-${getColor(l.type)})`);
         d3.select(this)
           .select("circle")
           .transition()

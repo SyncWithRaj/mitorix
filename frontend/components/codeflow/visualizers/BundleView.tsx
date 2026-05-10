@@ -171,6 +171,7 @@ export default function BundleView() {
           })
           .attr("stroke-opacity", (l) => (l[0] === d || l[l.length - 1] === d ? 0.9 : 0.05))
           .attr("stroke-width", (l) => (l[0] === d || l[l.length - 1] === d ? 2 : 1))
+          .attr("marker-mid", (l: any) => (l[0] === d || l[l.length - 1] === d ? `url(#bundle-arr-${getColor(l.type)})` : ""))
           .raise();
       })
       .on("mouseleave", function () {
@@ -183,7 +184,11 @@ export default function BundleView() {
             return COLORS[folderIdx % COLORS.length] || COLORS[0];
           });
 
-        link.attr("stroke", (l: any) => `#${getColor(l.type)}`).attr("stroke-opacity", 0.6).attr("stroke-width", 1.5);
+        link
+          .attr("stroke", (l: any) => `#${getColor(l.type)}`)
+          .attr("stroke-opacity", 0.6)
+          .attr("stroke-width", 1.5)
+          .attr("marker-mid", (l: any) => `url(#bundle-arr-${getColor(l.type)})`);
       })
       .on("click", (e, d: any) => {
         e.stopPropagation();

@@ -618,6 +618,20 @@ export default function ForceGraph() {
       .attr("stroke-width", (d: any) => {
         const base = Math.max(1, Math.min(2, Math.sqrt(d.count) * 0.3));
         return highlightLinks ? base * 1.8 : base;
+      })
+      .attr("marker-end", (l: any) => {
+        const s = l.source.id || l.source;
+        const t = l.target.id || l.target;
+        const typeStr = (l.type || "").toLowerCase();
+        let baseColor = "8b949e";
+        if (typeStr.includes("access")) baseColor = "ef4444";
+        else if (typeStr.includes("call")) baseColor = "3b82f6";
+        else if (typeStr.includes("import") || typeStr.includes("export")) baseColor = "22c55e";
+        else if (typeStr.includes("handle")) baseColor = "eab308";
+
+        if (!selectedFile) return `url(#arr-${baseColor})`;
+        if (s === selectedFile || t === selectedFile) return `url(#arr-${baseColor})`;
+        return "";
       });
   }, [analysisData, colorMode, selectedFile, blastRadius, highlightLinks]);
 
