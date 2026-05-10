@@ -29,6 +29,7 @@ export class TypeScriptParser extends BaseParser {
     relationships: ParsedRelationship[];
     fileMetadata: ParsedFileMetadata;
   }> {
+    this.clearImports();
     const fileMetadata = this.extractFileMetadata(repoId, filePath, content);
     const tree = this.parser.parse(content);
 
@@ -179,6 +180,30 @@ export class TypeScriptParser extends BaseParser {
       } else if (node.type === "import_statement") {
         const source = node.childForFieldName("source")?.text || "";
         const cleanSource = source.replace(/['"`]/g, "");
+        const resolvedTarget = pathResolver
+          ? pathResolver.resolveImport(cleanSource, filePath)
+          : null;
+          
+        const importClause = node.child(1);
+        if (importClause && importClause.type === "import_clause") {
+          const processImport = (n: Parser.SyntaxNode) => {
+            if (n.type === "identifier") {
+              this.registerImportAlias(n.text, resolvedTarget || cleanSource);
+            } else if (n.type === "namespace_import") {
+              const aliasNode = n.child(2);
+              if (aliasNode) this.registerImportAlias(aliasNode.text, resolvedTarget || cleanSource);
+            } else if (n.type === "import_specifier") {
+              const aliasNode = n.childForFieldName("alias") || n.childForFieldName("name");
+              if (aliasNode) this.registerImportAlias(aliasNode.text, resolvedTarget || cleanSource);
+            } else {
+              for (let i = 0; i < n.childCount; i++) {
+                processImport(n.child(i)!);
+              }
+            }
+          };
+          processImport(importClause);
+        }
+
         entities.push(
           this.createEntity(
             repoId,
@@ -200,9 +225,13 @@ export class TypeScriptParser extends BaseParser {
       if (node.type === "call_expression") {
         const func = node.childForFieldName("function");
         if (func) {
+          let targetFile: string | null = null;
+          let baseObjName: string | null = null;
+
           if (func.type === "member_expression" || func.type === "property_access_expression") {
             const obj = func.childForFieldName("object")?.text;
             const prop = func.childForFieldName("property")?.text;
+            baseObjName = obj || null;
             if (
               (obj === "router" || obj === "app") &&
               ["get", "post", "put", "delete", "patch"].includes(prop || "")
@@ -223,7 +252,14 @@ export class TypeScriptParser extends BaseParser {
                 );
               }
             }
+          } else if (func.type === "identifier") {
+            baseObjName = func.text;
           }
+
+          if (baseObjName) {
+            targetFile = this.resolveCallTarget(baseObjName);
+          }
+
           relationships.push(
             this.createRelationship(
               repoId,
@@ -231,7 +267,8 @@ export class TypeScriptParser extends BaseParser {
               filePath,
               func.text,
               "calls",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }
@@ -259,8 +296,13 @@ export class TypeScriptParser extends BaseParser {
       }
 
       if (node.type === "member_expression" || node.type === "property_access_expression") {
+        const obj = node.childForFieldName("object")?.text;
         const prop = node.childForFieldName("property")?.text;
         if (prop && parentName) {
+          let targetFile: string | null = null;
+          if (obj) {
+            targetFile = this.resolveCallTarget(obj);
+          }
           relationships.push(
             this.createRelationship(
               repoId,
@@ -268,7 +310,8 @@ export class TypeScriptParser extends BaseParser {
               filePath,
               prop,
               "accesses",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }

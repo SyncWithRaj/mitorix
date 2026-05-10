@@ -75,6 +75,23 @@ export interface LanguageParser {
 export abstract class BaseParser implements LanguageParser {
   abstract languageName: string;
 
+  protected fileImportsMap: Map<string, string> = new Map();
+
+  protected clearImports() {
+    this.fileImportsMap.clear();
+  }
+
+  protected registerImportAlias(localAlias: string, resolvedPath: string) {
+    if (localAlias && resolvedPath) {
+      this.fileImportsMap.set(localAlias, resolvedPath);
+    }
+  }
+
+  protected resolveCallTarget(objectName: string): string | null {
+    if (!objectName) return null;
+    return this.fileImportsMap.get(objectName) || null;
+  }
+
   protected extractFileMetadata(
     repoId: string,
     filePath: string,
