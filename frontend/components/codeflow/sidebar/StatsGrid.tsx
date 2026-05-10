@@ -44,6 +44,8 @@ export default function StatsGrid() {
     filteredConnections,
     highlightLinks,
     setHighlightLinks,
+    relationFilters,
+    setRelationFilters,
   } = useCodeflow();
 
   if (!analysisData) return null;
@@ -156,29 +158,54 @@ export default function StatsGrid() {
         </div>
       </div>
 
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col gap-2 hover:bg-[#21262d] transition-colors mt-2">
-        <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider text-center border-b border-[#30363d] pb-2 mb-1">
-          Relationship Colors
+      {highlightLinks && (
+        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col gap-2 transition-colors mt-2">
+          <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider text-center border-b border-[#30363d] pb-2 mb-1 flex items-center justify-between">
+            <span>Filter Relations</span>
+            <span className="text-[8px] bg-[#30363d] text-[#8b949e] px-1.5 py-0.5 rounded-sm">
+              Click to toggle
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-y-2 gap-x-1 text-xs font-mono">
+            <button
+              onClick={() => setRelationFilters((p) => ({ ...p, accesses: !p.accesses }))}
+              className={`flex items-center gap-1.5 p-1 rounded transition-colors ${
+                relationFilters.accesses ? "hover:bg-[#ef4444]/10" : "opacity-40 hover:opacity-80"
+              }`}
+            >
+              <span className={`w-2.5 h-2.5 rounded-full bg-[#ef4444] ${relationFilters.accesses ? "shadow-[0_0_8px_rgba(239,68,68,0.5)]" : ""}`}></span>
+              <span className={relationFilters.accesses ? "text-[#c9d1d9]" : "text-[#8b949e] line-through"}>Access</span>
+            </button>
+            <button
+              onClick={() => setRelationFilters((p) => ({ ...p, calls: !p.calls }))}
+              className={`flex items-center gap-1.5 p-1 rounded transition-colors ${
+                relationFilters.calls ? "hover:bg-[#3b82f6]/10" : "opacity-40 hover:opacity-80"
+              }`}
+            >
+              <span className={`w-2.5 h-2.5 rounded-full bg-[#3b82f6] ${relationFilters.calls ? "shadow-[0_0_8px_rgba(59,130,246,0.5)]" : ""}`}></span>
+              <span className={relationFilters.calls ? "text-[#c9d1d9]" : "text-[#8b949e] line-through"}>Call</span>
+            </button>
+            <button
+              onClick={() => setRelationFilters((p) => ({ ...p, imports: !p.imports }))}
+              className={`flex items-center gap-1.5 p-1 rounded transition-colors ${
+                relationFilters.imports ? "hover:bg-[#22c55e]/10" : "opacity-40 hover:opacity-80"
+              }`}
+            >
+              <span className={`w-2.5 h-2.5 rounded-full bg-[#22c55e] ${relationFilters.imports ? "shadow-[0_0_8px_rgba(34,197,94,0.5)]" : ""}`}></span>
+              <span className={relationFilters.imports ? "text-[#c9d1d9]" : "text-[#8b949e] line-through"}>Import</span>
+            </button>
+            <button
+              onClick={() => setRelationFilters((p) => ({ ...p, handles: !p.handles }))}
+              className={`flex items-center gap-1.5 p-1 rounded transition-colors ${
+                relationFilters.handles ? "hover:bg-[#eab308]/10" : "opacity-40 hover:opacity-80"
+              }`}
+            >
+              <span className={`w-2.5 h-2.5 rounded-full bg-[#eab308] ${relationFilters.handles ? "shadow-[0_0_8px_rgba(234,179,8,0.5)]" : ""}`}></span>
+              <span className={relationFilters.handles ? "text-[#c9d1d9]" : "text-[#8b949e] line-through"}>Handle</span>
+            </button>
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-y-2 gap-x-1 text-xs font-mono">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.5)]"></span>
-            <span className="text-[#c9d1d9]">Access</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#3b82f6] shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
-            <span className="text-[#c9d1d9]">Call</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span>
-            <span className="text-[#c9d1d9]">Import</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#eab308] shadow-[0_0_8px_rgba(234,179,8,0.5)]"></span>
-            <span className="text-[#c9d1d9]">Handle</span>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

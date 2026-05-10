@@ -20,6 +20,7 @@ export default function ForceGraph() {
     filteredFiles,
     filteredConnections,
     highlightLinks,
+    relationFilters
   } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
   const simRef = useRef<any>(null);
@@ -578,11 +579,21 @@ export default function ForceGraph() {
         return c ? c.brighter(0.3).formatHex() : "#fff";
       });
 
+    const isVisible = (type: string) => {
+      const t = (type || "").toLowerCase();
+      if (t.includes("call") && !relationFilters.calls) return false;
+      if (t.includes("access") && !relationFilters.accesses) return false;
+      if ((t.includes("import") || t.includes("export")) && !relationFilters.imports) return false;
+      if (t.includes("handle") && !relationFilters.handles) return false;
+      return true;
+    };
+
     svg
       .selectAll(".edge-path")
       .transition()
       .duration(200)
       .attr("stroke-opacity", (l: any) => {
+        if (!isVisible(l.type)) return 0;
         const s = l.source.id || l.source;
         const t = l.target.id || l.target;
         if (highlightLinks) {
@@ -619,6 +630,8 @@ export default function ForceGraph() {
         return highlightLinks ? base * 1.2 : base;
       })
       .attr("marker-end", (l: any) => {
+        if (!isVisible(l.type)) return "";
+
         const s = l.source.id || l.source;
         const t = l.target.id || l.target;
         const typeStr = (l.type || "").toLowerCase();
@@ -637,7 +650,7 @@ export default function ForceGraph() {
         if (selectedFile && (s === selectedFile || t === selectedFile)) return `url(#arr-${baseColor})`;
         return "";
       });
-  }, [analysisData, colorMode, selectedFile, blastRadius, highlightLinks]);
+  }, [analysisData, colorMode, selectedFile, blastRadius, highlightLinks, relationFilters]);
 
   if (!analysisData) {
     return (

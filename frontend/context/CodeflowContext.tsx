@@ -19,6 +19,8 @@ interface CodeflowState {
   filteredTree: any | null;
   highlightLinks: boolean;
   setHighlightLinks: (highlight: boolean) => void;
+  relationFilters: { calls: boolean; accesses: boolean; imports: boolean; handles: boolean };
+  setRelationFilters: React.Dispatch<React.SetStateAction<{ calls: boolean; accesses: boolean; imports: boolean; handles: boolean }>>;
 
   // Data from backend
   analysisData: AnalysisData | null;
@@ -189,6 +191,12 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
 
   const [codeFilterMode, setCodeFilterMode] = useState<"all" | "programming">("programming");
   const [highlightLinks, setHighlightLinks] = useState<boolean>(false);
+  const [relationFilters, setRelationFilters] = useState({
+    calls: true,
+    accesses: true,
+    imports: true,
+    handles: true,
+  });
 
   const filteredFiles = React.useMemo(() => {
     if (!analysisData) return [];
@@ -317,6 +325,8 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
         filteredTree,
         highlightLinks,
         setHighlightLinks,
+        relationFilters,
+        setRelationFilters,
         analysisData,
         setAnalysisData,
         isLoading,

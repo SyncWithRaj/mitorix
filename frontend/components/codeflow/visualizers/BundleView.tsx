@@ -15,9 +15,16 @@ const getColor = (type: string) => {
 };
 
 export default function BundleView() {
-  const { analysisData, folderFilter, selectFile, filteredFiles, filteredConnections, highlightLinks } =
+  const { analysisData, folderFilter, selectFile, filteredFiles, filteredConnections, highlightLinks, relationFilters } =
     useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
+  const highlightLinksRef = useRef(highlightLinks);
+  const relationFiltersRef = useRef(relationFilters);
+
+  useEffect(() => {
+    highlightLinksRef.current = highlightLinks;
+    relationFiltersRef.current = relationFilters;
+  }, [highlightLinks, relationFilters]);
 
   useEffect(() => {
     if (!analysisData || !containerRef.current) return;
@@ -124,9 +131,9 @@ export default function BundleView() {
       .attr("d", line)
       .attr("fill", "none")
       .attr("stroke", (l: any) => `#${getColor(l.type)}`)
-      .attr("stroke-width", 1.5)
-      .attr("stroke-opacity", 0.6)
-      .attr("marker-mid", (l: any) => `url(#bundle-arr-${getColor(l.type)})`);
+      .attr("stroke-width", 0.8)
+      .attr("stroke-opacity", 0)
+      .attr("marker-mid", "");
 
     const node = g
       .append("g")
@@ -164,14 +171,35 @@ export default function BundleView() {
         d3.select(this).select("text").attr("fill", "#c9d1d9").attr("font-weight", "bold");
         d3.select(this).select("circle").attr("r", 6).attr("fill", "#58a6ff");
 
+        const hl = highlightLinksRef.current;
+        const rf = relationFiltersRef.current;
+        
+        const isVisible = (type: string) => {
+          const t = (type || "").toLowerCase();
+          if (t.includes("call") && !rf.calls) return false;
+          if (t.includes("access") && !rf.accesses) return false;
+          if ((t.includes("import") || t.includes("export")) && !rf.imports) return false;
+          if (t.includes("handle") && !rf.handles) return false;
+          return true;
+        };
+
         link
           .attr("stroke", (l: any) => {
             if (l[0] === d || l[l.length - 1] === d) return `#${getColor(l.type)}`;
             return "#30363d";
           })
-          .attr("stroke-opacity", (l) => (l[0] === d || l[l.length - 1] === d ? 0.9 : 0.05))
-          .attr("stroke-width", (l) => (l[0] === d || l[l.length - 1] === d ? 2 : 1))
-          .attr("marker-mid", (l: any) => (l[0] === d || l[l.length - 1] === d ? `url(#bundle-arr-${getColor(l.type)})` : ""))
+          .attr("stroke-opacity", (l: any) => {
+            if (!isVisible(l.type)) return 0;
+            return (l[0] === d || l[l.length - 1] === d ? 0.9 : (hl ? 0.05 : 0));
+          })
+          .attr("stroke-width", (l: any) => {
+            if (!isVisible(l.type)) return 0.8;
+            return (l[0] === d || l[l.length - 1] === d ? 1.5 : 0.8);
+          })
+          .attr("marker-mid", (l: any) => {
+            if (!isVisible(l.type)) return "";
+            return (l[0] === d || l[l.length - 1] === d ? `url(#bundle-arr-${getColor(l.type)})` : "");
+          })
           .raise();
       })
       .on("mouseleave", function () {
@@ -184,11 +212,23 @@ export default function BundleView() {
             return COLORS[folderIdx % COLORS.length] || COLORS[0];
           });
 
+        const hl = highlightLinksRef.current;
+        const rf = relationFiltersRef.current;
+        
+        const isVisible = (type: string) => {
+          const t = (type || "").toLowerCase();
+          if (t.includes("call") && !rf.calls) return false;
+          if (t.includes("access") && !rf.accesses) return false;
+          if ((t.includes("import") || t.includes("export")) && !rf.imports) return false;
+          if (t.includes("handle") && !rf.handles) return false;
+          return true;
+        };
+
         link
           .attr("stroke", (l: any) => `#${getColor(l.type)}`)
-          .attr("stroke-opacity", 0.6)
-          .attr("stroke-width", 1.5)
-          .attr("marker-mid", (l: any) => `url(#bundle-arr-${getColor(l.type)})`);
+          .attr("stroke-opacity", (l: any) => hl && isVisible(l.type) ? 0.45 : 0)
+          .attr("stroke-width", 0.8)
+          .attr("marker-mid", (l: any) => hl && isVisible(l.type) ? `url(#bundle-arr-${getColor(l.type)})` : "");
       })
       .on("click", (e, d: any) => {
         e.stopPropagation();
@@ -216,7 +256,29 @@ export default function BundleView() {
       window.removeEventListener("codeflow:resetZoom", handleResetZoom);
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
-  }, [analysisData, folderFilter, selectFile, filteredFiles, filteredConnections, highlightLinks]);
+  }, [analysisData, folderFilter, selectFile, filteredFiles, filteredConnections]);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const svg = d3.select(containerRef.current).select("svg");
+    if (svg.empty()) return;
+
+    const isVisible = (type: string) => {
+      const t = (type || "").toLowerCase();
+      if (t.includes("call") && !relationFilters.calls) return false;
+      if (t.includes("access") && !relationFilters.accesses) return false;
+      if ((t.includes("import") || t.includes("export")) && !relationFilters.imports) return false;
+      if (t.includes("handle") && !relationFilters.handles) return false;
+      return true;
+    };
+
+    svg.selectAll(".bundle-link")
+      .transition()
+      .duration(300)
+      .attr("stroke-opacity", (l: any) => highlightLinks && isVisible(l.type) ? 0.45 : 0)
+      .attr("stroke-width", 0.8)
+      .attr("marker-mid", (l: any) => highlightLinks && isVisible(l.type) ? `url(#bundle-arr-${getColor(l.type)})` : "");
+  }, [highlightLinks, relationFilters]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }

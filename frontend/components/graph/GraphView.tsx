@@ -21,7 +21,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
     links: [],
   });
   const [loading, setLoading] = useState(true);
-  const { selectFile, selectedFile, setRightTab, highlightLinks } = useCodeflow();
+  const { selectFile, selectedFile, setRightTab, highlightLinks, relationFilters } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
   const fgRef = useRef<any>(null);
   const [hoverNode, setHoverNode] = useState<any | null>(null);
@@ -590,7 +590,15 @@ export default function GraphView({ repoId }: { repoId: string }) {
           if (blastRadius && !blastRadius.affectedNodeIds.has(link.source?.id || link.source))
             return 0;
           if (link.label === "contains") return 0;
-          return highlightLinks ? 6 : 0; // Hide arrow head if disabled
+          if (!highlightLinks) return 0; // Hide arrow head if disabled
+          
+          const type = link.label?.toLowerCase() || "";
+          if (type.includes("call") && !relationFilters.calls) return 0;
+          if (type.includes("access") && !relationFilters.accesses) return 0;
+          if ((type.includes("import") || type.includes("export")) && !relationFilters.imports) return 0;
+          if (type.includes("handle") && !relationFilters.handles) return 0;
+
+          return 6;
         }}
         linkDirectionalArrowRelPos={1}
         linkColor={(link: any) => {
@@ -612,6 +620,12 @@ export default function GraphView({ repoId }: { repoId: string }) {
 
           // Color code by relationship type (access: red, calls: blue, imports: green, handles: yellow)
           const type = link.label?.toLowerCase() || "";
+          
+          if (type.includes("call") && !relationFilters.calls) return "rgba(0, 0, 0, 0)";
+          if (type.includes("access") && !relationFilters.accesses) return "rgba(0, 0, 0, 0)";
+          if ((type.includes("import") || type.includes("export")) && !relationFilters.imports) return "rgba(0, 0, 0, 0)";
+          if (type.includes("handle") && !relationFilters.handles) return "rgba(0, 0, 0, 0)";
+
           const opacity = 0.55; // Slightly dimmed
 
           if (type.includes("access")) return `rgba(239, 68, 68, ${opacity})`;   // Red

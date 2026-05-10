@@ -6,14 +6,16 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function DisjointView() {
-  const { analysisData, folderFilter, selectFile, filteredFiles, filteredConnections, highlightLinks } =
+  const { analysisData, folderFilter, selectFile, filteredFiles, filteredConnections, highlightLinks, relationFilters } =
     useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
   const highlightLinksRef = useRef(highlightLinks);
+  const relationFiltersRef = useRef(relationFilters);
 
   useEffect(() => {
     highlightLinksRef.current = highlightLinks;
-  }, [highlightLinks]);
+    relationFiltersRef.current = relationFilters;
+  }, [highlightLinks, relationFilters]);
 
   useEffect(() => {
     if (!analysisData || !containerRef.current) return;
@@ -234,17 +236,33 @@ export default function DisjointView() {
           .style("top", `${e.offsetY + 15}px`);
 
         const hl = highlightLinksRef.current;
+        const rf = relationFiltersRef.current;
+
+        const isVisible = (type: string) => {
+          const t = (type || "").toLowerCase();
+          if (t.includes("call") && !rf.calls) return false;
+          if (t.includes("access") && !rf.accesses) return false;
+          if ((t.includes("import") || t.includes("export")) && !rf.imports) return false;
+          if (t.includes("handle") && !rf.handles) return false;
+          return true;
+        };
+
         link
-          .attr("stroke-opacity", (l: any) =>
-            l.source.id === d.id || l.target.id === d.id ? 0.9 : (hl ? 0.05 : 0)
-          )
+          .attr("stroke-opacity", (l: any) => {
+            if (!isVisible(l.type)) return 0;
+            return l.source.id === d.id || l.target.id === d.id ? 0.9 : (hl ? 0.05 : 0);
+          })
           .attr("stroke", (l: any) =>
             l.source.id === d.id || l.target.id === d.id ? `#${getColor(l.type)}` : "#30363d"
           )
-          .attr("stroke-width", (l: any) => (l.source.id === d.id || l.target.id === d.id ? 1.5 : 0.8))
-          .attr("marker-end", (l: any) =>
-            l.source.id === d.id || l.target.id === d.id ? `url(#disjoint-arr-${getColor(l.type)})` : ""
-          );
+          .attr("stroke-width", (l: any) => {
+            if (!isVisible(l.type)) return 0.8;
+            return l.source.id === d.id || l.target.id === d.id ? 1.5 : 0.8;
+          })
+          .attr("marker-end", (l: any) => {
+            if (!isVisible(l.type)) return "";
+            return l.source.id === d.id || l.target.id === d.id ? `url(#disjoint-arr-${getColor(l.type)})` : "";
+          });
 
         d3.select(this)
           .select("circle")
@@ -260,11 +278,22 @@ export default function DisjointView() {
       .on("mouseleave", function (e, d: any) {
         tooltip.style("display", "none");
         const hl = highlightLinksRef.current;
+        const rf = relationFiltersRef.current;
+
+        const isVisible = (type: string) => {
+          const t = (type || "").toLowerCase();
+          if (t.includes("call") && !rf.calls) return false;
+          if (t.includes("access") && !rf.accesses) return false;
+          if ((t.includes("import") || t.includes("export")) && !rf.imports) return false;
+          if (t.includes("handle") && !rf.handles) return false;
+          return true;
+        };
+
         link
-          .attr("stroke-opacity", hl ? 0.45 : 0) // slightly dimmed
+          .attr("stroke-opacity", (l: any) => hl && isVisible(l.type) ? 0.45 : 0) // slightly dimmed
           .attr("stroke", (l: any) => `#${getColor(l.type)}`)
           .attr("stroke-width", 0.8)
-          .attr("marker-end", (l: any) => hl ? `url(#disjoint-arr-${getColor(l.type)})` : "");
+          .attr("marker-end", (l: any) => hl && isVisible(l.type) ? `url(#disjoint-arr-${getColor(l.type)})` : "");
         d3.select(this)
           .select("circle")
           .transition()
@@ -326,13 +355,22 @@ export default function DisjointView() {
       return "30363d";
     };
 
+    const isVisible = (type: string) => {
+      const t = (type || "").toLowerCase();
+      if (t.includes("call") && !relationFilters.calls) return false;
+      if (t.includes("access") && !relationFilters.accesses) return false;
+      if ((t.includes("import") || t.includes("export")) && !relationFilters.imports) return false;
+      if (t.includes("handle") && !relationFilters.handles) return false;
+      return true;
+    };
+
     svg.selectAll(".disjoint-link")
       .transition()
       .duration(300)
-      .attr("stroke-opacity", highlightLinks ? 0.45 : 0)
-      .attr("stroke-width", highlightLinks ? 0.8 : 0.8)
-      .attr("marker-end", (d: any) => highlightLinks ? `url(#disjoint-arr-${getColor(d.type)})` : "");
-  }, [highlightLinks]);
+      .attr("stroke-opacity", (d: any) => highlightLinks && isVisible(d.type) ? 0.45 : 0)
+      .attr("stroke-width", (d: any) => highlightLinks && isVisible(d.type) ? 0.8 : 0.8)
+      .attr("marker-end", (d: any) => highlightLinks && isVisible(d.type) ? `url(#disjoint-arr-${getColor(d.type)})` : "");
+  }, [highlightLinks, relationFilters]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }
