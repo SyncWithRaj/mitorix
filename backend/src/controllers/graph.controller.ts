@@ -148,13 +148,51 @@ export const getRepositoryGraph = async (
     }
 
     // 3. Add structural Code Dependencies (imports, calls, etc.)
-    for (const rel of relationships) {
-      if (rel.fromFilePath && rel.toFilePath) {
-        const sourceEntityId = `${rel.fromFilePath}::${rel.fromName}`;
-        const targetEntityId = `${rel.toFilePath}::${rel.toName}`;
+    // 3. Resolve and Add structural Code Dependencies (imports, calls, etc.)
+    const fnToFile: Record<string, string> = Object.create(null);
+    for (const entity of entities) {
+      if (!fnToFile[entity.name]) fnToFile[entity.name] = entity.filePath;
+    }
 
-        let sourceNodeId = rel.fromFilePath;
-        let targetNodeId = rel.toFilePath;
+    const importsMap: Record<string, Record<string, string>> = Object.create(null);
+    for (const rel of relationships) {
+      if (rel.relationType === "imports" && rel.fromFilePath && rel.toFilePath) {
+        if (!importsMap[rel.fromFilePath]) importsMap[rel.fromFilePath] = Object.create(null);
+        if (rel.toName) importsMap[rel.fromFilePath][rel.toName] = rel.toFilePath;
+      }
+    }
+
+    for (const rel of relationships) {
+      if (!rel.fromFilePath) continue;
+
+      let defFile = rel.toFilePath;
+      const targetName = rel.toName;
+      const sourceFile = rel.fromFilePath;
+
+      // Dynamic Resolution if toFilePath is missing
+      if (!defFile) {
+        const srcImports = importsMap[sourceFile];
+        if (srcImports && typeof srcImports[targetName] === "string") {
+          defFile = srcImports[targetName];
+        } else if (typeof fnToFile[targetName] === "string") {
+          defFile = fnToFile[targetName];
+        }
+      }
+
+      if (defFile) {
+        // Normalize defFile to absolute path if it is a relative import path
+        if (!defFile.startsWith("/")) {
+          const match = files.find((f: any) => f.filePath.endsWith("/" + defFile) || f.filePath === defFile);
+          if (match) {
+            defFile = match.filePath;
+          }
+        }
+
+        const sourceEntityId = `${sourceFile}::${rel.fromName}`;
+        const targetEntityId = `${defFile}::${targetName}`;
+
+        let sourceNodeId = sourceFile;
+        let targetNodeId = defFile;
 
         if (nodeIds.has(sourceEntityId)) sourceNodeId = sourceEntityId;
         if (nodeIds.has(targetEntityId)) targetNodeId = targetEntityId;

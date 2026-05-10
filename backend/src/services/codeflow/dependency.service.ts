@@ -168,30 +168,42 @@ export function buildDependencyGraph(
 
     if (!sourceFile || !defFile) continue;
 
-    if (sourceFile === defFile) {
-      // Internal call
+    // Normalize defFile to absolute path if it is a relative import path
+    if (!defFile.startsWith("/")) {
+      const match = files.find(f => f.path.endsWith("/" + defFile) || f.path === defFile);
+      if (match) {
+        defFile = match.path;
+      }
+    }
+
+    const isInternal = sourceFile === defFile;
+    if (isInternal) {
       if (fnStats[targetFnName]) {
         fnStats[targetFnName].internal += 1;
       }
-    } else {
-      // External call → creates a connection or increments count of existing connection
-      const connKey = `${defFile}|${sourceFile}|${targetFnName}`;
-      const existingConn = connectionKeys.get(connKey);
-      if (existingConn) {
-        existingConn.count = (existingConn.count || 1) + 1;
-      } else {
-        const conn: Connection = {
-          source: defFile,
-          target: sourceFile,
-          fn: targetFnName,
-          count: 1,
-        };
-        connectionKeys.set(connKey, conn);
-        connections.push(conn);
-      }
+    }
 
+    const connKey = `${defFile}|${sourceFile}|${targetFnName}`;
+    const existingConn = connectionKeys.get(connKey);
+    if (existingConn) {
+      existingConn.count = (existingConn.count || 1) + 1;
+    } else {
+      const conn: any = {
+        source: defFile,
+        target: sourceFile,
+        fn: targetFnName,
+        count: 1,
+        isInternal,
+        type: rel.relationType
+      };
+      connectionKeys.set(connKey, conn);
+      connections.push(conn);
+    }
+
+    if (!isInternal) {
       if (fnStats[targetFnName]) {
         fnStats[targetFnName].external += 1;
+        // ... (rest of the callerMaps logic)
 
         if (!callerMaps[targetFnName]) {
           callerMaps[targetFnName] = new Map();

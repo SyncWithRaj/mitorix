@@ -21,7 +21,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
     links: [],
   });
   const [loading, setLoading] = useState(true);
-  const { selectFile, selectedFile, setRightTab } = useCodeflow();
+  const { selectFile, selectedFile, setRightTab, highlightLinks } = useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
   const fgRef = useRef<any>(null);
   const [hoverNode, setHoverNode] = useState<any | null>(null);
@@ -93,6 +93,23 @@ export default function GraphView({ repoId }: { repoId: string }) {
 
   const visibleGraphData = useMemo(() => {
     const hiddenNodes = new Set<string>();
+    const parentMap = new Map<string, string>(); // childId -> parentId
+
+    // Build parent map from "contains" links
+    graphData.links.forEach((l: any) => {
+      if (l.label === "contains") {
+        parentMap.set(l.target?.id || l.target, l.source?.id || l.source);
+      }
+    });
+
+    const findVisibleAncestor = (nodeId: string): string | null => {
+      let curr = nodeId;
+      while (curr) {
+        if (!hiddenNodes.has(curr)) return curr;
+        curr = parentMap.get(curr)!;
+      }
+      return null;
+    };
 
     // Find all descendants of collapsed folders recursively
     const findDescendants = (parentId: string) => {
@@ -110,13 +127,40 @@ export default function GraphView({ repoId }: { repoId: string }) {
     collapsedNodes.forEach((nodeId) => findDescendants(nodeId));
 
     const nodes = graphData.nodes.filter((n: any) => !hiddenNodes.has(n.id));
-    const links = graphData.links.filter((l: any) => {
-      const sourceId = l.source?.id || l.source;
-      const targetId = l.target?.id || l.target;
-      return !hiddenNodes.has(sourceId) && !hiddenNodes.has(targetId);
+    
+    // Elevate links to nearest visible ancestors
+    const elevatedLinksMap = new Map<string, any>();
+
+    graphData.links.forEach((l: any) => {
+      const sId = l.source?.id || l.source;
+      const tId = l.target?.id || l.target;
+
+      if (l.label === "contains") {
+        if (!hiddenNodes.has(sId) && !hiddenNodes.has(tId)) {
+          elevatedLinksMap.set(`${sId}-${tId}-${l.label}`, { ...l, source: sId, target: tId });
+        }
+        return;
+      }
+      
+      const visibleSrc = findVisibleAncestor(sId);
+      const visibleTgt = findVisibleAncestor(tId);
+
+      if (visibleSrc && visibleTgt && visibleSrc !== visibleTgt) {
+        const key = `${visibleSrc}-${visibleTgt}-${l.label}`;
+        if (elevatedLinksMap.has(key)) {
+          elevatedLinksMap.get(key).value = (elevatedLinksMap.get(key).value || 1) + 1;
+        } else {
+          elevatedLinksMap.set(key, { 
+            ...l, 
+            source: visibleSrc, 
+            target: visibleTgt,
+            value: 1 
+          });
+        }
+      }
     });
 
-    return { nodes, links };
+    return { nodes, links: Array.from(elevatedLinksMap.values()) };
   }, [graphData, collapsedNodes]);
 
   const triggerBlastRadius = useCallback(
@@ -533,10 +577,15 @@ export default function GraphView({ repoId }: { repoId: string }) {
             ctx.fillText(collapsedNodes.has(node.id) ? "+" : "−", node.x, node.y);
           }
         }}
+        linkWidth={(link: any) => {
+          if (link.label === "contains") return 1;
+          return Math.sqrt(link.value || 1) + 1; // Scale thickness by relationship strength
+        }}
         linkDirectionalArrowLength={(link: any) => {
           if (blastRadius && !blastRadius.affectedNodeIds.has(link.source?.id || link.source))
             return 0;
-          return link.label === "contains" ? 0 : 3.5;
+          if (link.label === "contains") return 0;
+          return highlightLinks ? 6 : 4; // Larger arrows when highlighted
         }}
         linkDirectionalArrowRelPos={1}
         linkColor={(link: any) => {
@@ -546,9 +595,22 @@ export default function GraphView({ repoId }: { repoId: string }) {
             if (blastRadius.affectedNodeIds.has(sId) && blastRadius.affectedNodeIds.has(tId)) {
               return "rgba(255, 88, 88, 0.8)";
             }
-            return "rgba(255, 255, 255, 0.02)"; // Dim unaffected
+            return "rgba(255, 255, 255, 0.02)"; 
           }
-          return link.label === "contains" ? "rgba(139, 148, 158, 0.2)" : "rgba(88, 166, 255, 0.5)";
+          
+          if (link.label === "contains") {
+            return highlightLinks ? "rgba(139, 148, 158, 0.05)" : "rgba(139, 148, 158, 0.15)";
+          }
+          
+          // Color code by relationship type
+          const type = link.label?.toLowerCase() || "";
+          const opacity = highlightLinks ? 0.95 : 0.6; // High opacity when highlighted
+
+          if (type.includes("import") || type.includes("export")) return `rgba(0, 255, 255, ${opacity})`; 
+          if (type.includes("call")) return `rgba(255, 191, 0, ${opacity})`; 
+          if (type.includes("access") || type.includes("handle")) return `rgba(99, 102, 241, ${opacity})`; 
+          
+          return `rgba(88, 166, 255, ${opacity})`;
         }}
         // Custom canvas draw for edge labels
         linkCanvasObjectMode={() => "after"}

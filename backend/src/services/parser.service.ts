@@ -172,9 +172,32 @@ export async function processRepositoryParsing(repoId: string, filePaths: string
     await CodeEntity.insertMany(entities, { ordered: false });
   }
 
+  // Filter out third-party relationships
+  const internalRelativePaths = new Set(
+    filePaths.map((p) => path.relative(basePath, p).replace(/\\/g, "/"))
+  );
+
+  const internalRelationships = relationships.filter((rel) => {
+    if (!rel.toFilePath) return true; // Keep unresolved calls/accesses
+    
+    const targetPath = rel.toFilePath.replace(/\\/g, "/");
+    
+    // Exactly matches a resolved internal file
+    if (internalRelativePaths.has(targetPath)) return true;
+    if (filePaths.includes(targetPath)) return true;
+    
+    // Explicitly local paths (e.g., "./styles.css") even if not fully resolved
+    if (targetPath.startsWith("./") || targetPath.startsWith("../") || targetPath.startsWith("/")) {
+      return true;
+    }
+
+    // Otherwise, it's an external third-party package (e.g., 'express', 'cors', 'react')
+    return false;
+  });
+
   // Insert relationships
-  if (relationships.length) {
-    await CodeRelationship.insertMany(relationships, { ordered: false });
+  if (internalRelationships.length) {
+    await CodeRelationship.insertMany(internalRelationships, { ordered: false });
   }
 
   // Insert file metadata
