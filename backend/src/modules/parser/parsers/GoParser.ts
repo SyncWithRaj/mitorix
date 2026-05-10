@@ -28,6 +28,7 @@ export class GoParser extends BaseParser {
     relationships: ParsedRelationship[];
     fileMetadata: ParsedFileMetadata;
   }> {
+    this.clearImports();
     const fileMetadata = this.extractFileMetadata(repoId, filePath, content);
     const tree = this.parser.parse(content);
 
@@ -112,6 +113,20 @@ export class GoParser extends BaseParser {
       if (node.type === "call_expression") {
         const func = node.childForFieldName("function");
         if (func && parentName) {
+          let targetFile: string | null = null;
+          let baseObjName: string | null = null;
+
+          if (func.type === "selector_expression") {
+            const operand = func.childForFieldName("operand")?.text;
+            baseObjName = operand || null;
+          } else if (func.type === "identifier") {
+            baseObjName = func.text;
+          }
+
+          if (baseObjName) {
+            targetFile = this.resolveCallTarget(baseObjName);
+          }
+
           relationships.push(
             this.createRelationship(
               repoId,
@@ -119,7 +134,8 @@ export class GoParser extends BaseParser {
               filePath,
               func.text,
               "calls",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }
@@ -129,14 +145,27 @@ export class GoParser extends BaseParser {
       if (node.type === "import_spec") {
         const pathNode = node.childForFieldName("path");
         if (pathNode) {
+          const cleanSource = pathNode.text.replace(/['"]/g, "");
+          const resolvedTarget = pathResolver ? pathResolver.resolveImport(cleanSource, filePath) : null;
+          
+          const nameNode = node.childForFieldName("name");
+          let alias = "";
+          if (nameNode && nameNode.text !== ".") {
+             alias = nameNode.text;
+          } else {
+             alias = cleanSource.split("/").pop() || cleanSource;
+          }
+          this.registerImportAlias(alias, resolvedTarget || cleanSource);
+
           relationships.push(
             this.createRelationship(
               repoId,
               filePath.split("/").pop() || filePath,
               filePath,
-              pathNode.text.replace(/['"]/g, ""),
+              cleanSource,
               "imports",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              resolvedTarget || cleanSource
             )
           );
         }
@@ -144,8 +173,13 @@ export class GoParser extends BaseParser {
 
       // ── Relationships: selector (field/method access) ──
       if (node.type === "selector_expression") {
+        const operand = node.childForFieldName("operand")?.text;
         const field = node.childForFieldName("field")?.text;
         if (field && parentName) {
+          let targetFile: string | null = null;
+          if (operand) {
+            targetFile = this.resolveCallTarget(operand);
+          }
           relationships.push(
             this.createRelationship(
               repoId,
@@ -153,7 +187,8 @@ export class GoParser extends BaseParser {
               filePath,
               field,
               "accesses",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }

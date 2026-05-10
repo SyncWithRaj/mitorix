@@ -28,6 +28,7 @@ export class CParser extends BaseParser {
     relationships: ParsedRelationship[];
     fileMetadata: ParsedFileMetadata;
   }> {
+    this.clearImports();
     const fileMetadata = this.extractFileMetadata(repoId, filePath, content);
     const tree = this.parser.parse(content);
 
@@ -65,6 +66,13 @@ export class CParser extends BaseParser {
       if (node.type === "call_expression") {
         const func = node.childForFieldName("function");
         if (func && parentName) {
+          let targetFile: string | null = null;
+          if (func.type === "field_expression") {
+            const argument = func.childForFieldName("argument")?.text;
+            if (argument) targetFile = this.resolveCallTarget(argument);
+          } else if (func.type === "identifier") {
+            targetFile = this.resolveCallTarget(func.text);
+          }
           relationships.push(
             this.createRelationship(
               repoId,
@@ -72,7 +80,8 @@ export class CParser extends BaseParser {
               filePath,
               func.text,
               "calls",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }
@@ -80,21 +89,27 @@ export class CParser extends BaseParser {
 
       if (node.type === "preproc_include") {
         const path = node.childForFieldName("path")?.text || "";
+        const cleanPath = path.replace(/[<>"]/g, "");
+        this.registerImportAlias(cleanPath, cleanPath);
         relationships.push(
           this.createRelationship(
             repoId,
             filePath.split("/").pop() || filePath,
             filePath,
-            path.replace(/[<>"]/g, ""),
+            cleanPath,
             "imports",
-            node.startPosition.row + 1
+            node.startPosition.row + 1,
+            cleanPath
           )
         );
       }
 
       if (node.type === "field_expression") {
+        const argument = node.childForFieldName("argument")?.text;
         const field = node.childForFieldName("field")?.text;
         if (field && parentName) {
+          let targetFile: string | null = null;
+          if (argument) targetFile = this.resolveCallTarget(argument);
           relationships.push(
             this.createRelationship(
               repoId,
@@ -102,7 +117,8 @@ export class CParser extends BaseParser {
               filePath,
               field,
               "accesses",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }

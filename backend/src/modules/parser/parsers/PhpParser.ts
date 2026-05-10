@@ -28,6 +28,7 @@ export class PhpParser extends BaseParser {
     relationships: ParsedRelationship[];
     fileMetadata: ParsedFileMetadata;
   }> {
+    this.clearImports();
     const fileMetadata = this.extractFileMetadata(repoId, filePath, content);
     const tree = this.parser.parse(content);
     const entities: ParsedEntity[] = [];
@@ -62,6 +63,14 @@ export class PhpParser extends BaseParser {
       if (node.type === "function_call_expression" || node.type === "member_call_expression") {
         const func = node.childForFieldName("name")?.text || node.child(0)?.text;
         if (func && parentName) {
+          let targetFile: string | null = null;
+          if (node.type === "member_call_expression") {
+            const obj = node.childForFieldName("object")?.text;
+            if (obj) targetFile = this.resolveCallTarget(obj);
+          } else if (node.type === "function_call_expression") {
+            targetFile = this.resolveCallTarget(func);
+          }
+
           relationships.push(
             this.createRelationship(
               repoId,
@@ -69,24 +78,30 @@ export class PhpParser extends BaseParser {
               filePath,
               func,
               "calls",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }
       }
 
       if (node.type === "namespace_use_declaration") {
+        const importText = node.text
+          .replace(/use\s+/i, "")
+          .replace(";", "")
+          .trim();
+        const alias = importText.split("\\").pop() || importText;
+        this.registerImportAlias(alias, importText);
+
         relationships.push(
           this.createRelationship(
             repoId,
             filePath.split("/").pop() || filePath,
             filePath,
-            node.text
-              .replace(/use\s+/i, "")
-              .replace(";", "")
-              .trim(),
+            importText,
             "imports",
-            node.startPosition.row + 1
+            node.startPosition.row + 1,
+            importText
           )
         );
       }

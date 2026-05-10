@@ -28,6 +28,7 @@ export class RustParser extends BaseParser {
     relationships: ParsedRelationship[];
     fileMetadata: ParsedFileMetadata;
   }> {
+    this.clearImports();
     const fileMetadata = this.extractFileMetadata(repoId, filePath, content);
     const tree = this.parser.parse(content);
 
@@ -127,6 +128,23 @@ export class RustParser extends BaseParser {
         const func = node.childForFieldName("function");
         if (func) {
           const caller = parentName || insideImpl || "anonymous";
+          let targetFile: string | null = null;
+          let baseObjName: string | null = null;
+
+          if (func.type === "field_expression") {
+            const value = func.childForFieldName("value")?.text;
+            baseObjName = value || null;
+          } else if (func.type === "scoped_identifier") {
+            const path = func.childForFieldName("path")?.text;
+            baseObjName = path || null;
+          } else if (func.type === "identifier") {
+            baseObjName = func.text;
+          }
+
+          if (baseObjName) {
+            targetFile = this.resolveCallTarget(baseObjName);
+          }
+
           relationships.push(
             this.createRelationship(
               repoId,
@@ -134,7 +152,8 @@ export class RustParser extends BaseParser {
               filePath,
               func.text,
               "calls",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }
@@ -161,6 +180,9 @@ export class RustParser extends BaseParser {
       // ── Relationships: use declarations ──
       if (node.type === "use_declaration") {
         const usePath = node.text.replace("use ", "").replace(";", "").trim();
+        const alias = usePath.split("::").pop() || usePath;
+        this.registerImportAlias(alias, usePath);
+
         relationships.push(
           this.createRelationship(
             repoId,
@@ -168,15 +190,21 @@ export class RustParser extends BaseParser {
             filePath,
             usePath,
             "imports",
-            node.startPosition.row + 1
+            node.startPosition.row + 1,
+            usePath
           )
         );
       }
 
       // ── Relationships: field/method access ──
       if (node.type === "field_expression") {
+        const value = node.childForFieldName("value")?.text;
         const field = node.childForFieldName("field")?.text;
         if (field && (parentName || insideImpl)) {
+          let targetFile: string | null = null;
+          if (value) {
+            targetFile = this.resolveCallTarget(value);
+          }
           relationships.push(
             this.createRelationship(
               repoId,
@@ -184,7 +212,8 @@ export class RustParser extends BaseParser {
               filePath,
               field,
               "accesses",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }

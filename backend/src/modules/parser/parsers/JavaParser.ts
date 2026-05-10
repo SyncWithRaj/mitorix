@@ -28,6 +28,7 @@ export class JavaParser extends BaseParser {
     relationships: ParsedRelationship[];
     fileMetadata: ParsedFileMetadata;
   }> {
+    this.clearImports();
     const fileMetadata = this.extractFileMetadata(repoId, filePath, content);
     const tree = this.parser.parse(content);
     const entities: ParsedEntity[] = [];
@@ -76,6 +77,11 @@ export class JavaParser extends BaseParser {
         const name = node.childForFieldName("name")?.text;
         const obj = node.childForFieldName("object")?.text;
         if (name && parentName) {
+          let targetFile: string | null = null;
+          if (obj) {
+            targetFile = this.resolveCallTarget(obj);
+          }
+
           const target = obj ? `${obj}.${name}` : name;
           relationships.push(
             this.createRelationship(
@@ -84,7 +90,8 @@ export class JavaParser extends BaseParser {
               filePath,
               target,
               "calls",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }
@@ -97,6 +104,10 @@ export class JavaParser extends BaseParser {
           .replace("static ", "")
           .replace(";", "")
           .trim();
+          
+        const alias = importText.split(".").pop() || importText;
+        this.registerImportAlias(alias, importText);
+
         relationships.push(
           this.createRelationship(
             repoId,
@@ -104,14 +115,20 @@ export class JavaParser extends BaseParser {
             filePath,
             importText,
             "imports",
-            node.startPosition.row + 1
+            node.startPosition.row + 1,
+            importText
           )
         );
       }
 
       if (node.type === "field_access") {
+        const obj = node.childForFieldName("object")?.text;
         const field = node.childForFieldName("field")?.text;
         if (field && parentName) {
+          let targetFile: string | null = null;
+          if (obj) {
+            targetFile = this.resolveCallTarget(obj);
+          }
           relationships.push(
             this.createRelationship(
               repoId,
@@ -119,7 +136,8 @@ export class JavaParser extends BaseParser {
               filePath,
               field,
               "accesses",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }

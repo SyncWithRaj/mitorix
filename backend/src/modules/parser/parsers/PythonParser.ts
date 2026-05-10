@@ -28,6 +28,7 @@ export class PythonParser extends BaseParser {
     relationships: ParsedRelationship[];
     fileMetadata: ParsedFileMetadata;
   }> {
+    this.clearImports();
     const fileMetadata = this.extractFileMetadata(repoId, filePath, content);
     const tree = this.parser.parse(content);
 
@@ -76,6 +77,20 @@ export class PythonParser extends BaseParser {
       if (node.type === "call") {
         const func = node.childForFieldName("function");
         if (func && parentName) {
+          let targetFile: string | null = null;
+          let baseObjName: string | null = null;
+
+          if (func.type === "attribute") {
+            const obj = func.childForFieldName("object")?.text;
+            baseObjName = obj || null;
+          } else if (func.type === "identifier") {
+            baseObjName = func.text;
+          }
+
+          if (baseObjName) {
+            targetFile = this.resolveCallTarget(baseObjName);
+          }
+
           relationships.push(
             this.createRelationship(
               repoId,
@@ -83,7 +98,8 @@ export class PythonParser extends BaseParser {
               filePath,
               func.text,
               "calls",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }
@@ -91,23 +107,53 @@ export class PythonParser extends BaseParser {
 
       // ── Relationships: imports ──
       if (node.type === "import_statement") {
-        const nameNode = node.child(1); // `import <module>`
-        if (nameNode) {
-          relationships.push(
-            this.createRelationship(
-              repoId,
-              filePath.split("/").pop() || filePath,
-              filePath,
-              nameNode.text,
-              "imports",
-              node.startPosition.row + 1
-            )
-          );
+        const processImport = (child: Parser.SyntaxNode) => {
+          if (child.type === "aliased_import") {
+            const nameNode = child.childForFieldName("name");
+            const aliasNode = child.childForFieldName("alias");
+            if (nameNode && aliasNode) {
+              const cleanSource = nameNode.text;
+              const resolvedTarget = pathResolver ? pathResolver.resolveImport(cleanSource, filePath) : null;
+              this.registerImportAlias(aliasNode.text, resolvedTarget || cleanSource);
+              relationships.push(
+                this.createRelationship(repoId, filePath.split("/").pop() || filePath, filePath, cleanSource, "imports", node.startPosition.row + 1, resolvedTarget || cleanSource)
+              );
+            }
+          } else if (child.type === "dotted_name") {
+            const cleanSource = child.text;
+            const resolvedTarget = pathResolver ? pathResolver.resolveImport(cleanSource, filePath) : null;
+            const baseName = child.text.split(".")[0];
+            this.registerImportAlias(baseName, resolvedTarget || cleanSource);
+            this.registerImportAlias(child.text, resolvedTarget || cleanSource);
+            relationships.push(
+              this.createRelationship(repoId, filePath.split("/").pop() || filePath, filePath, cleanSource, "imports", node.startPosition.row + 1, resolvedTarget || cleanSource)
+            );
+          }
+        };
+
+        for (let i = 0; i < node.childCount; i++) {
+          processImport(node.child(i)!);
         }
       }
+      
       if (node.type === "import_from_statement") {
         const moduleNode = node.childForFieldName("module_name");
         if (moduleNode) {
+          const cleanSource = moduleNode.text;
+          const resolvedTarget = pathResolver ? pathResolver.resolveImport(cleanSource, filePath) : null;
+          
+          for (let i = 0; i < node.childCount; i++) {
+            const child = node.child(i)!;
+            if (child.type === "aliased_import") {
+              const aliasNode = child.childForFieldName("alias");
+              if (aliasNode) this.registerImportAlias(aliasNode.text, resolvedTarget || cleanSource);
+            } else if (child.type === "dotted_name" || child.type === "identifier") {
+              if (child !== moduleNode) {
+                 this.registerImportAlias(child.text, resolvedTarget || cleanSource);
+              }
+            }
+          }
+          
           relationships.push(
             this.createRelationship(
               repoId,
@@ -115,7 +161,8 @@ export class PythonParser extends BaseParser {
               filePath,
               moduleNode.text,
               "imports",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              resolvedTarget || cleanSource
             )
           );
         }
@@ -123,8 +170,13 @@ export class PythonParser extends BaseParser {
 
       // ── Relationships: attribute access (obj.method) ──
       if (node.type === "attribute") {
+        const obj = node.childForFieldName("object")?.text;
         const attr = node.childForFieldName("attribute")?.text;
         if (attr && parentName) {
+          let targetFile: string | null = null;
+          if (obj) {
+            targetFile = this.resolveCallTarget(obj);
+          }
           relationships.push(
             this.createRelationship(
               repoId,
@@ -132,7 +184,8 @@ export class PythonParser extends BaseParser {
               filePath,
               attr,
               "accesses",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }

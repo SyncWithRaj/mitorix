@@ -28,6 +28,7 @@ export class RubyParser extends BaseParser {
     relationships: ParsedRelationship[];
     fileMetadata: ParsedFileMetadata;
   }> {
+    this.clearImports();
     const fileMetadata = this.extractFileMetadata(repoId, filePath, content);
     const tree = this.parser.parse(content);
     const entities: ParsedEntity[] = [];
@@ -57,7 +58,23 @@ export class RubyParser extends BaseParser {
 
       if (node.type === "call") {
         const method = node.childForFieldName("method")?.text;
-        if (method && parentName) {
+        const receiver = node.childForFieldName("receiver")?.text;
+
+        if (method === "require" || method === "require_relative") {
+           const arg = node.childForFieldName("arguments")?.text?.replace(/['"]/g, "");
+           if (arg) {
+             const alias = arg.split("/").pop() || arg;
+             this.registerImportAlias(alias, arg);
+             relationships.push(
+               this.createRelationship(repoId, filePath.split("/").pop() || filePath, filePath, arg, "imports", node.startPosition.row + 1, arg)
+             );
+           }
+        } else if (method && parentName) {
+          let targetFile: string | null = null;
+          if (receiver) {
+             targetFile = this.resolveCallTarget(receiver);
+          }
+
           relationships.push(
             this.createRelationship(
               repoId,
@@ -65,7 +82,8 @@ export class RubyParser extends BaseParser {
               filePath,
               method,
               "calls",
-              node.startPosition.row + 1
+              node.startPosition.row + 1,
+              targetFile
             )
           );
         }
