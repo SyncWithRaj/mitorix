@@ -54,13 +54,15 @@ export default function ForceGraph() {
     }));
 
     const linkMap = new Map<string, any>();
-    filteredConnections.forEach((c) => {
-      if (!fileIds.has(c.source) || !fileIds.has(c.target)) return;
-      if (c.source === c.target) return;
-      const k = `${c.source}|${c.target}`;
-      if (!linkMap.has(k)) linkMap.set(k, { source: c.source, target: c.target, count: 0 });
-      linkMap.get(k)!.count += c.count;
-    });
+    if (highlightLinks) {
+      filteredConnections.forEach((c) => {
+        if (!fileIds.has(c.source) || !fileIds.has(c.target)) return;
+        if (c.source === c.target) return;
+        const k = `${c.source}|${c.target}`;
+        if (!linkMap.has(k)) linkMap.set(k, { source: c.source, target: c.target, count: 0, type: c.type });
+        linkMap.get(k)!.count += c.count;
+      });
+    }
     const links = Array.from(linkMap.values());
 
     // --- Helpers (identical to index.html) ---
@@ -94,17 +96,20 @@ export default function ForceGraph() {
 
     const container = svg.append("g");
     const defs = svg.append("defs");
-    defs
-      .append("marker")
-      .attr("id", "arr")
-      .attr("viewBox", "0 -5 10 10")
-      .attr("refX", 14)
-      .attr("markerWidth", 4)
-      .attr("markerHeight", 4)
-      .attr("orient", "auto")
-      .append("path")
-      .attr("d", "M0,-4L10,0L0,4")
-      .attr("fill", "#444");
+    const colors = ["ef4444", "3b82f6", "22c55e", "eab308", "8b949e"];
+    colors.forEach(c => {
+      defs
+        .append("marker")
+        .attr("id", `arr-${c}`)
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 18)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("path")
+        .attr("d", "M0,-4L10,0L0,4")
+        .attr("fill", `#${c}`);
+    });
 
     const hullLayer = container.append("g");
     const linkLayer = container.append("g");
@@ -129,13 +134,13 @@ export default function ForceGraph() {
           d3
             .forceLink(links)
             .id((d: any) => d.id)
-            .distance(graphConfig.linkDist)
+            .distance(graphConfig.linkDist * 9) // 300% of previous length
             .strength(0.3)
         )
-        .force("charge", d3.forceManyBody().strength(-graphConfig.spacing).distanceMax(400))
+        .force("charge", d3.forceManyBody().strength(-graphConfig.spacing * 2).distanceMax(600)) // Push nodes away from each other
         .force(
           "collision",
-          d3.forceCollide().radius((d: any) => getR(d) + 12)
+          d3.forceCollide().radius((d: any) => getR(d) + 20)
         )
         .force(
           "x",
@@ -298,16 +303,30 @@ export default function ForceGraph() {
     simRef.current = sim;
 
     // --- Links ---
-    const link = linkLayer
-      .selectAll(".edge-path")
+    const linkGroup = linkLayer
+      .selectAll(".edge-group")
       .data(links)
-      .join("path")
+      .join("g")
+      .attr("class", "edge-group");
+
+    const getColor = (type: string) => {
+      const t = (type || "").toLowerCase();
+      if (t.includes("access")) return "ef4444";
+      if (t.includes("call")) return "3b82f6";
+      if (t.includes("import") || t.includes("export")) return "22c55e";
+      if (t.includes("handle")) return "eab308";
+      return "8b949e";
+    };
+
+    const link = linkGroup
+      .append("path")
       .attr("class", "edge-path")
+      .attr("id", (d, i) => `edgepath-${i}`)
       .attr("fill", "none")
-      .attr("stroke", "#333")
+      .attr("stroke", (d: any) => `#${getColor(d.type)}`)
       .attr("stroke-width", (d: any) => Math.max(1, Math.min(2, Math.sqrt(d.count) * 0.3)))
-      .attr("stroke-opacity", 0.4)
-      .attr("marker-end", "url(#arr)");
+      .attr("stroke-opacity", 0.6)
+      .attr("marker-end", (d: any) => `url(#arr-${getColor(d.type)})`);
 
     // --- Nodes ---
     const node = nodeLayer
@@ -449,16 +468,12 @@ export default function ForceGraph() {
     let tickCount = 0;
 
     sim.on("tick", () => {
-      if (graphConfig.curvedLinks) {
-        link.attr("d", (d: any) => {
-          const dx = d.target.x - d.source.x;
-          const dy = d.target.y - d.source.y;
-          const dr = Math.sqrt(dx * dx + dy * dy);
-          return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
-        });
-      } else {
-        link.attr("d", (d: any) => `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`);
-      }
+      link.attr("d", (d: any) => {
+        const dx = d.target.x - d.source.x;
+        const dy = d.target.y - d.source.y;
+        const dr = Math.sqrt(dx * dx + dy * dy);
+        return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+      });
       node.attr("transform", (d: any) => `translate(${d.x},${d.y})`);
       tickCount++;
       if (tickCount % hullInterval === 0) updateHulls();
@@ -505,6 +520,7 @@ export default function ForceGraph() {
     deselectFile,
     filteredFiles,
     filteredConnections,
+    highlightLinks
   ]);
 
   // Secondary effect to handle dynamic coloring and blast radius highlighting without restarting simulation
@@ -584,8 +600,20 @@ export default function ForceGraph() {
       .attr("stroke", (l: any) => {
         const s = l.source.id || l.source;
         const t = l.target.id || l.target;
-        if (s === selectedFile || t === selectedFile) return "#58a6ff";
-        return highlightLinks ? "#58a6ff" : "#333";
+        
+        const typeStr = (l.type || "").toLowerCase();
+        let baseColor = "8b949e";
+        if (typeStr.includes("access")) baseColor = "ef4444";
+        else if (typeStr.includes("call")) baseColor = "3b82f6";
+        else if (typeStr.includes("import") || typeStr.includes("export")) baseColor = "22c55e";
+        else if (typeStr.includes("handle")) baseColor = "eab308";
+        
+        // If not selected, just show its type color
+        if (!selectedFile) return `#${baseColor}`;
+        
+        // If selected, highlight the connection in its color, otherwise dim
+        if (s === selectedFile || t === selectedFile) return `#${baseColor}`;
+        return "#333333";
       })
       .attr("stroke-width", (d: any) => {
         const base = Math.max(1, Math.min(2, Math.sqrt(d.count) * 0.3));

@@ -155,6 +155,30 @@ export default function StatsGrid() {
           </div>
         </div>
       </div>
+
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col gap-2 hover:bg-[#21262d] transition-colors mt-2">
+        <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider text-center border-b border-[#30363d] pb-2 mb-1">
+          Relationship Colors
+        </div>
+        <div className="grid grid-cols-2 gap-y-2 gap-x-1 text-xs font-mono">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.5)]"></span>
+            <span className="text-[#c9d1d9]">Access</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#3b82f6] shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+            <span className="text-[#c9d1d9]">Call</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span>
+            <span className="text-[#c9d1d9]">Import</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#eab308] shadow-[0_0_8px_rgba(234,179,8,0.5)]"></span>
+            <span className="text-[#c9d1d9]">Handle</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

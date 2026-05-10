@@ -6,7 +6,7 @@ import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
 export default function DisjointView() {
-  const { analysisData, folderFilter, selectFile, filteredFiles, filteredConnections } =
+  const { analysisData, folderFilter, selectFile, filteredFiles, filteredConnections, highlightLinks } =
     useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -20,6 +20,23 @@ export default function DisjointView() {
     const h = containerRef.current.clientHeight || 600;
 
     const svg = container.append("svg").attr("width", w).attr("height", h).style("cursor", "grab");
+    
+    const defs = svg.append("defs");
+    const colors = ["ef4444", "3b82f6", "22c55e", "eab308", "30363d"];
+    colors.forEach(c => {
+      defs
+        .append("marker")
+        .attr("id", `disjoint-arr-${c}`)
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 18)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("path")
+        .attr("d", "M0,-4L10,0L0,4")
+        .attr("fill", `#${c}`);
+    });
+
     const g = svg.append("g");
 
     const zoom = d3
@@ -69,13 +86,15 @@ export default function DisjointView() {
     }));
 
     const links: any[] = [];
-    filteredConnections.forEach((c) => {
-      const src = c.source;
-      const tgt = c.target;
-      if (fileIdx[src] !== undefined && fileIdx[tgt] !== undefined && src !== tgt) {
-        links.push({ source: src, target: tgt, count: c.count || 1 });
-      }
-    });
+    if (highlightLinks) {
+      filteredConnections.forEach((c) => {
+        const src = c.source;
+        const tgt = c.target;
+        if (fileIdx[src] !== undefined && fileIdx[tgt] !== undefined && src !== tgt) {
+          links.push({ source: src, target: tgt, count: c.count || 1, type: c.type });
+        }
+      });
+    }
 
     const sim = d3
       .forceSimulation(nodes as any)
@@ -84,13 +103,13 @@ export default function DisjointView() {
         d3
           .forceLink(links)
           .id((d: any) => d.id)
-          .distance(40)
+          .distance(300) // Much longer arrows to avoid clutter
           .strength(0.3)
       )
-      .force("charge", d3.forceManyBody().strength(-80))
+      .force("charge", d3.forceManyBody().strength(-200)) // Push nodes away from each other
       .force("x", d3.forceX((d: any) => d.cx).strength(0.15))
       .force("y", d3.forceY((d: any) => d.cy).strength(0.15))
-      .force("collide", d3.forceCollide(45));
+      .force("collide", d3.forceCollide(60));
 
     // Folder backgrounds
     g.selectAll("rect.cluster-bg")
@@ -127,14 +146,30 @@ export default function DisjointView() {
       .attr("font-family", '"JetBrains Mono", monospace')
       .text((d) => d.split("/").pop() || "root");
 
-    const link = g
-      .selectAll("line.disjoint-link")
+    const linkGroup = g
+      .selectAll("g.disjoint-link-group")
       .data(links)
-      .join("line")
+      .join("g")
+      .attr("class", "disjoint-link-group");
+
+    const getColor = (type: string) => {
+      const t = (type || "").toLowerCase();
+      if (t.includes("access")) return "ef4444";
+      if (t.includes("call")) return "3b82f6";
+      if (t.includes("import") || t.includes("export")) return "22c55e";
+      if (t.includes("handle")) return "eab308";
+      return "30363d";
+    };
+
+    const link = linkGroup
+      .append("path")
+      .attr("id", (d, i) => `disjoint-edge-${i}`)
       .attr("class", "disjoint-link")
-      .attr("stroke", "#30363d")
-      .attr("stroke-width", 1)
-      .attr("stroke-opacity", 0.3);
+      .attr("fill", "none")
+      .attr("stroke", (d: any) => `#${getColor(d.type)}`)
+      .attr("stroke-width", 1.5)
+      .attr("stroke-opacity", 0.6)
+      .attr("marker-end", (d: any) => `url(#disjoint-arr-${getColor(d.type)})`);
 
     const tooltip = container
       .append("div")
@@ -196,13 +231,13 @@ export default function DisjointView() {
           .style("top", `${e.offsetY + 15}px`);
 
         link
-          .attr("stroke-opacity", (l) =>
+          .attr("stroke-opacity", (l: any) =>
             l.source.id === d.id || l.target.id === d.id ? 0.8 : 0.05
           )
-          .attr("stroke", (l) =>
-            l.source.id === d.id || l.target.id === d.id ? "#58a6ff" : "#30363d"
+          .attr("stroke", (l: any) =>
+            l.source.id === d.id || l.target.id === d.id ? `#${getColor(l.type)}` : "#30363d"
           )
-          .attr("stroke-width", (l) => (l.source.id === d.id || l.target.id === d.id ? 2 : 1));
+          .attr("stroke-width", (l: any) => (l.source.id === d.id || l.target.id === d.id ? 2 : 1.5));
 
         d3.select(this)
           .select("circle")
@@ -217,7 +252,7 @@ export default function DisjointView() {
       })
       .on("mouseleave", function (e, d: any) {
         tooltip.style("display", "none");
-        link.attr("stroke-opacity", 0.3).attr("stroke", "#30363d").attr("stroke-width", 1);
+        link.attr("stroke-opacity", 0.6).attr("stroke", (l: any) => `#${getColor(l.type)}`).attr("stroke-width", 1.5);
         d3.select(this)
           .select("circle")
           .transition()
@@ -232,11 +267,12 @@ export default function DisjointView() {
       });
 
     sim.on("tick", () => {
-      link
-        .attr("x1", (d: any) => d.source.x)
-        .attr("y1", (d: any) => d.source.y)
-        .attr("x2", (d: any) => d.target.x)
-        .attr("y2", (d: any) => d.target.y);
+      link.attr("d", (d: any) => {
+        const dx = d.target.x - d.source.x;
+        const dy = d.target.y - d.source.y;
+        const dr = Math.sqrt(dx * dx + dy * dy);
+        return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+      });
       node.attr("transform", (d: any) => `translate(${d.x},${d.y})`);
     });
 
@@ -262,7 +298,7 @@ export default function DisjointView() {
       window.removeEventListener("codeflow:resetZoom", handleResetZoom);
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
-  }, [analysisData, folderFilter, selectFile, filteredFiles, filteredConnections]);
+  }, [analysisData, folderFilter, selectFile, filteredFiles, filteredConnections, highlightLinks]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }

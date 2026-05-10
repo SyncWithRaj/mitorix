@@ -5,8 +5,17 @@ import * as d3 from "d3";
 import { useCodeflow } from "../../../context/CodeflowContext";
 import { COLORS } from "../../../lib/codeflow.constants";
 
+const getColor = (type: string) => {
+  const t = (type || "").toLowerCase();
+  if (t.includes("access")) return "ef4444";
+  if (t.includes("call")) return "3b82f6";
+  if (t.includes("import") || t.includes("export")) return "22c55e";
+  if (t.includes("handle")) return "eab308";
+  return "30363d";
+};
+
 export default function BundleView() {
-  const { analysisData, folderFilter, selectFile, filteredFiles, filteredConnections } =
+  const { analysisData, folderFilter, selectFile, filteredFiles, filteredConnections, highlightLinks } =
     useCodeflow();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -38,8 +47,8 @@ export default function BundleView() {
 
     const activeFiles = folderFilter
       ? filteredFiles.filter(
-          (f) => f.folder === folderFilter || f.folder.startsWith(folderFilter + "/")
-        )
+        (f) => f.folder === folderFilter || f.folder.startsWith(folderFilter + "/")
+      )
       : filteredFiles;
 
     const files = activeFiles.slice(0, 100);
@@ -77,7 +86,9 @@ export default function BundleView() {
       const tgt = c.target;
       if (filePaths.has(src) && filePaths.has(tgt) && src !== tgt) {
         if (nodeByPath[src] && nodeByPath[tgt]) {
-          links.push(nodeByPath[src].path(nodeByPath[tgt]));
+          const lpath: any = nodeByPath[src].path(nodeByPath[tgt]);
+          lpath.type = c.type; // Attach relationship type metadata
+          links.push(lpath);
         }
       }
     });
@@ -88,6 +99,22 @@ export default function BundleView() {
       .radius((d) => d.y)
       .angle((d) => d.x);
 
+    const defs = svg.append("defs");
+    const colors = ["ef4444", "3b82f6", "22c55e", "eab308", "30363d"];
+    colors.forEach(c => {
+      defs
+        .append("marker")
+        .attr("id", `bundle-arr-${c}`)
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", -2)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("path")
+        .attr("d", "M0,-4L10,0L0,4")
+        .attr("fill", `#${c}`);
+    });
+
     const link = g
       .append("g")
       .selectAll("path.bundle-link")
@@ -96,9 +123,10 @@ export default function BundleView() {
       .attr("class", "bundle-link")
       .attr("d", line)
       .attr("fill", "none")
-      .attr("stroke", "#30363d")
+      .attr("stroke", (l: any) => `#${getColor(l.type)}`)
       .attr("stroke-width", 1.5)
-      .attr("stroke-opacity", 0.4);
+      .attr("stroke-opacity", 0.6)
+      .attr("marker-mid", (l: any) => `url(#bundle-arr-${getColor(l.type)})`);
 
     const node = g
       .append("g")
@@ -137,12 +165,11 @@ export default function BundleView() {
         d3.select(this).select("circle").attr("r", 6).attr("fill", "#58a6ff");
 
         link
-          .attr("stroke", (l) => {
-            if (l[0] === d) return "#58a6ff"; // outgoing
-            if (l[l.length - 1] === d) return "#ff7b72"; // incoming
+          .attr("stroke", (l: any) => {
+            if (l[0] === d || l[l.length - 1] === d) return `#${getColor(l.type)}`;
             return "#30363d";
           })
-          .attr("stroke-opacity", (l) => (l[0] === d || l[l.length - 1] === d ? 0.8 : 0.05))
+          .attr("stroke-opacity", (l) => (l[0] === d || l[l.length - 1] === d ? 0.9 : 0.05))
           .attr("stroke-width", (l) => (l[0] === d || l[l.length - 1] === d ? 2 : 1))
           .raise();
       })
@@ -156,7 +183,7 @@ export default function BundleView() {
             return COLORS[folderIdx % COLORS.length] || COLORS[0];
           });
 
-        link.attr("stroke", "#30363d").attr("stroke-opacity", 0.4).attr("stroke-width", 1.5);
+        link.attr("stroke", (l: any) => `#${getColor(l.type)}`).attr("stroke-opacity", 0.6).attr("stroke-width", 1.5);
       })
       .on("click", (e, d: any) => {
         e.stopPropagation();
@@ -184,7 +211,7 @@ export default function BundleView() {
       window.removeEventListener("codeflow:resetZoom", handleResetZoom);
       window.removeEventListener("codeflow:fitView", handleFitView);
     };
-  }, [analysisData, folderFilter, selectFile, filteredFiles, filteredConnections]);
+  }, [analysisData, folderFilter, selectFile, filteredFiles, filteredConnections, highlightLinks]);
 
   return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
 }

@@ -142,6 +142,9 @@ export default function GraphView({ repoId }: { repoId: string }) {
         return;
       }
       
+      // If highlightLinks is off, discard all non-hierarchy links entirely to "free" the layout
+      if (!highlightLinks) return;
+
       const visibleSrc = findVisibleAncestor(sId);
       const visibleTgt = findVisibleAncestor(tId);
 
@@ -161,7 +164,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
     });
 
     return { nodes, links: Array.from(elevatedLinksMap.values()) };
-  }, [graphData, collapsedNodes]);
+  }, [graphData, collapsedNodes, highlightLinks]);
 
   const triggerBlastRadius = useCallback(
     async (targetNode: any) => {
@@ -248,8 +251,8 @@ export default function GraphView({ repoId }: { repoId: string }) {
   // Adjust force graph physics to make it cleaner and less clumped
   useEffect(() => {
     if (fgRef.current) {
-      fgRef.current.d3Force("charge").strength(-400); // push nodes apart
-      fgRef.current.d3Force("link").distance(50); // space out links
+      fgRef.current.d3Force("charge").strength(-1200); // push nodes apart strongly
+      fgRef.current.d3Force("link").distance(360); // much longer links to un-clump nodes
     }
   }, [visibleGraphData]);
 
@@ -581,11 +584,12 @@ export default function GraphView({ repoId }: { repoId: string }) {
           if (link.label === "contains") return 1;
           return Math.sqrt(link.value || 1) + 1; // Scale thickness by relationship strength
         }}
+        linkCurvature={0.25}
         linkDirectionalArrowLength={(link: any) => {
           if (blastRadius && !blastRadius.affectedNodeIds.has(link.source?.id || link.source))
             return 0;
           if (link.label === "contains") return 0;
-          return highlightLinks ? 6 : 4; // Larger arrows when highlighted
+          return highlightLinks ? 6 : 4; // Decreased arrow head size
         }}
         linkDirectionalArrowRelPos={1}
         linkColor={(link: any) => {
@@ -602,66 +606,16 @@ export default function GraphView({ repoId }: { repoId: string }) {
             return highlightLinks ? "rgba(139, 148, 158, 0.05)" : "rgba(139, 148, 158, 0.15)";
           }
           
-          // Color code by relationship type
+          // Color code by relationship type (access: red, calls: blue, imports: green, handles: yellow)
           const type = link.label?.toLowerCase() || "";
-          const opacity = highlightLinks ? 0.95 : 0.6; // High opacity when highlighted
+          const opacity = highlightLinks ? 0.95 : 0.6;
 
-          if (type.includes("import") || type.includes("export")) return `rgba(0, 255, 255, ${opacity})`; 
-          if (type.includes("call")) return `rgba(255, 191, 0, ${opacity})`; 
-          if (type.includes("access") || type.includes("handle")) return `rgba(99, 102, 241, ${opacity})`; 
+          if (type.includes("access")) return `rgba(239, 68, 68, ${opacity})`;   // Red
+          if (type.includes("call")) return `rgba(59, 130, 246, ${opacity})`;    // Blue
+          if (type.includes("import") || type.includes("export")) return `rgba(34, 197, 94, ${opacity})`; // Green
+          if (type.includes("handle")) return `rgba(234, 179, 8, ${opacity})`;   // Yellow
           
-          return `rgba(88, 166, 255, ${opacity})`;
-        }}
-        // Custom canvas draw for edge labels
-        linkCanvasObjectMode={() => "after"}
-        linkCanvasObject={(link: any, ctx, globalScale) => {
-          const MAX_FONT_SIZE = 4;
-          const LABEL_NODE_MARGIN = 4;
-
-          const start = link.source;
-          const end = link.target;
-
-          // Ignore unbound links
-          if (typeof start !== "object" || typeof end !== "object") return;
-
-          // Never show cluttered label text for hierarchy links
-          if (link.label === "contains") return;
-
-          // Hide text if blast radius is active and this link is not involved
-          if (
-            blastRadius &&
-            (!blastRadius.affectedNodeIds.has(start.id) || !blastRadius.affectedNodeIds.has(end.id))
-          ) {
-            return;
-          }
-
-          const textPos = {
-            x: start.x + (end.x - start.x) / 2,
-            y: start.y + (end.y - start.y) / 2,
-          };
-          const relLink = { x: end.x - start.x, y: end.y - start.y };
-          const maxTextLength =
-            Math.sqrt(Math.pow(relLink.x, 2) + Math.pow(relLink.y, 2)) - LABEL_NODE_MARGIN * 2;
-
-          let textAngle = Math.atan2(relLink.y, relLink.x);
-          if (textAngle > Math.PI / 2) textAngle = -(Math.PI - textAngle);
-          if (textAngle < -Math.PI / 2) textAngle = -(-Math.PI - textAngle);
-
-          const label = link.label;
-          const fontSize = Math.min(MAX_FONT_SIZE, maxTextLength / label.length);
-          if (fontSize < 1) return; // Hide unreadable microscopic text
-
-          ctx.font = `${fontSize}px Sans-Serif`;
-          ctx.fillStyle =
-            link.label === "contains" ? "rgba(139, 148, 158, 0.7)" : "rgba(88, 166, 255, 0.9)";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-
-          ctx.save();
-          ctx.translate(textPos.x, textPos.y);
-          ctx.rotate(textAngle);
-          ctx.fillText(label, 0, 0);
-          ctx.restore();
+          return `rgba(139, 148, 158, ${opacity})`;
         }}
         onNodeClick={handleNodeClick}
       />
