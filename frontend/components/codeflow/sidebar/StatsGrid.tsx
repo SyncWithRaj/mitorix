@@ -62,7 +62,18 @@ export default function StatsGrid() {
     codeFilterMode === "all"
       ? stats.functions
       : filteredFiles.reduce((sum, f) => sum + (f.functions?.length || 0), 0);
-  const linksCount = codeFilterMode === "all" ? stats.connections : filteredConnections.length;
+  const visibleLinksCount = React.useMemo(() => {
+    const baseConns = codeFilterMode === "all" ? analysisData.connections : filteredConnections;
+    
+    return baseConns.filter(c => {
+      const t = (c.type || "").toLowerCase();
+      if (t.includes("call") && !relationFilters.calls) return false;
+      if (t.includes("access") && !relationFilters.accesses) return false;
+      if ((t.includes("import") || t.includes("export")) && !relationFilters.imports) return false;
+      if (t.includes("handle") && !relationFilters.handles) return false;
+      return true;
+    }).length;
+  }, [analysisData.connections, filteredConnections, codeFilterMode, relationFilters]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -91,7 +102,7 @@ export default function StatsGrid() {
           <div
             className={`text-xl font-bold font-mono transition-colors ${highlightLinks ? "text-[#58a6ff]" : "text-[#c9d1d9]"}`}
           >
-            {linksCount}
+            {visibleLinksCount}
           </div>
           <div className="flex flex-col items-center gap-0.5 mt-1">
             <span className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider">
