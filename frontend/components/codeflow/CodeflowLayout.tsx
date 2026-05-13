@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useCodeflow } from "../../context/CodeflowContext";
 import type { RightTab } from "../../context/CodeflowContext";
 import api from "../../lib/axios";
@@ -23,7 +23,14 @@ import {
   FileText,
   BookOpen,
   X,
+  MessageSquare,
+  Bot,
+  Loader2,
 } from "lucide-react";
+import ChatPanel from "../chat/ChatPanel";
+import DragGhost from "./DragGhost";
+import type { DraggedContextNode } from "../../lib/dragdrop.types";
+import { useDragStore } from "../../lib/dragStore";
 import Link from "next/link";
 import HealthRing from "./sidebar/HealthRing";
 import ColorModeSelector from "./sidebar/ColorModeSelector";
@@ -96,6 +103,87 @@ export default function CodeflowLayout({
   const [isDesignDocOpen, setIsDesignDocOpen] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
+  // ── Chat Slide-Out State ──
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [callMessages, setCallMessages] = useState<any[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [streamingIndex, setStreamingIndex] = useState<number | null>(null);
+  const [attachedNodes, setAttachedNodes] = useState<DraggedContextNode[]>([]);
+  const [embeddingInProgress, setEmbeddingInProgress] = useState(false);
+
+  // ── Fetch chat history when chat opens ──
+  useEffect(() => {
+    if (!chatOpen) return;
+    const fetchChatHistory = async () => {
+      try {
+        const chatRes = await api.get(`/history/${repoId}?type=chat`);
+        if (chatRes.data.success) setChatMessages(chatRes.data.messages || []);
+        const callRes = await api.get(`/history/${repoId}?type=call`);
+        if (callRes.data.success) setCallMessages(callRes.data.messages || []);
+      } catch (err) {
+        console.error("Failed to load chat history", err);
+      }
+    };
+    fetchChatHistory();
+  }, [chatOpen, repoId]);
+
+  const sendMessage = useCallback(async () => {
+    if (!chatInput.trim() && attachedNodes.length === 0) return;
+
+    const userMsg: any = { role: "user", content: chatInput };
+    if (attachedNodes.length > 0) {
+      userMsg.attachedNodes = [...attachedNodes];
+    }
+    setChatMessages((prev) => [...prev, userMsg]);
+    const questionText = chatInput;
+    setChatInput("");
+    const sentNodes = [...attachedNodes];
+    setAttachedNodes([]);
+    setChatLoading(true);
+
+    try {
+      const res = await api.post("/query/ask", {
+        repoId,
+        question: questionText,
+        attachedNodes: sentNodes.length > 0 ? sentNodes : undefined,
+      });
+
+      const aiMsg = {
+        role: "assistant",
+        content: res.data.answer,
+        references: res.data.references || [],
+      };
+
+      setChatMessages((prev) => {
+        const newMessages = [...prev, aiMsg];
+        setStreamingIndex(newMessages.length - 1);
+        return newMessages;
+      });
+    } catch {
+      setChatMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Sorry, something went wrong. Please try again." },
+      ]);
+      toast.error("Failed to get response. Please try again.");
+    }
+
+    setChatLoading(false);
+  }, [chatInput, attachedNodes, repoId]);
+
+  const handleDeleteChat = useCallback(async (type: "chat" | "call") => {
+    try {
+      await api.delete(`/history/${repoId}?type=${type}`);
+      if (type === "chat") setChatMessages([]);
+      else setCallMessages([]);
+      setStreamingIndex(null);
+    } catch (err) {
+      console.error("Delete chat error:", err);
+      toast.error("Failed to delete chat history");
+    }
+  }, [repoId]);
+
   useEffect(() => {
     const fetchAnalysis = async () => {
       try {
@@ -130,11 +218,11 @@ export default function CodeflowLayout({
         if (res.data.success) {
           setAnalysisData(res.data.data);
         } else {
-          toast.error("Failed to load CodeFlow analysis");
+          toast.error("Failed to load RepoLens analysis");
         }
       } catch (err) {
         console.error("Error loading analysis:", err);
-        toast.error("Failed to load CodeFlow analysis");
+        toast.error("Failed to load RepoLens analysis");
       } finally {
         setIsLoading(false);
         setAnalysisProgress(null);
@@ -183,10 +271,10 @@ export default function CodeflowLayout({
               </span>
             </button>
             <div className="w-6 h-6 rounded bg-gh-btn-secondary flex items-center justify-center text-gh-text border border-gh-border ml-1 hidden md:flex">
-              <span className="font-bold text-xs">CF</span>
+              <span className="font-bold text-xs">RL</span>
             </div>
             <span className="font-bold text-gh-text tracking-wide text-sm hidden lg:block">
-              CODEFLOW
+              REPOLENS
             </span>
           </div>
         </div>
@@ -251,6 +339,18 @@ export default function CodeflowLayout({
             <Share2 size={16} />
           </button>
           <div className="hidden sm:block">{/* <ThemeToggle /> */}</div>
+          <button
+            className={`p-1.5 rounded-md transition flex items-center gap-1.5 ${
+              chatOpen
+                ? "text-[#58a6ff] bg-[#58a6ff]/10 border border-[#58a6ff]/30"
+                : "text-gh-text-muted hover:text-[#58a6ff] hover:bg-gh-btn-secondary-hover"
+            }`}
+            title="AI Chat"
+            onClick={() => setChatOpen(!chatOpen)}
+          >
+            <MessageSquare size={16} />
+            <span className="text-[10px] uppercase font-bold hidden xl:inline">AI Chat</span>
+          </button>
           <button
             className="lg:hidden p-1.5 text-gh-text-muted hover:text-gh-text"
             onClick={() => setRightOpen(!rightOpen)}
@@ -404,9 +504,31 @@ export default function CodeflowLayout({
             )}
           </div>
         </ResizablePanel>
+
+        {/* ── Chat Slide-Out Panel ── */}
+        {chatOpen && (
+          <div className="w-[380px] shrink-0 z-[60] border-l border-gh-border bg-[#0d1117] shadow-[-10px_0_20px_rgba(0,0,0,0.2)] flex flex-col animate-in slide-in-from-right duration-300 relative">
+            <ChatPanel
+              repoId={repoId}
+              chatMessages={chatMessages}
+              callMessages={callMessages}
+              input={chatInput}
+              setInput={setChatInput}
+              sendMessage={sendMessage}
+              addCallMessages={(newMsgs: any[]) => setCallMessages((prev) => [...prev, ...newMsgs])}
+              loading={chatLoading}
+              streamingIndex={streamingIndex}
+              onStreamComplete={() => setStreamingIndex(null)}
+              onDeleteChat={handleDeleteChat}
+              attachedNodes={attachedNodes}
+              setAttachedNodes={setAttachedNodes}
+            />
+          </div>
+        )}
       </div>
 
       {/* Global Modals */}
+      <DragGhost />
       <DrillDownModal />
       <FilePreviewModal />
       <PRAnalysisModal repoId={repoId} />
