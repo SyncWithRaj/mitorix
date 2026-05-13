@@ -3,6 +3,8 @@
 import React from "react";
 import { useCodeflow } from "../../../context/CodeflowContext";
 import { Sparkles, Copy, Lightbulb } from "lucide-react";
+import { useDragStore } from "../../../lib/dragStore";
+import type { DraggedContextNode } from "../../../lib/dragdrop.types";
 
 export default function SuggestionsPanel() {
   const { analysisData, setDrillDown } = useCodeflow();
@@ -59,6 +61,20 @@ export default function SuggestionsPanel() {
               <div
                 key={i}
                 className={`p-3 rounded-lg border-l-2 border border-[#30363d]/50 ${getPriorityStyle(s.priority)}`}
+                draggable
+                onDragStart={(e) => {
+                  const payload: DraggedContextNode = {
+                    id: `suggestion-${i}-${s.title}`,
+                    type: "SUGGESTION",
+                    name: s.title,
+                    source: "RIGHT_PANEL",
+                    metadata: { priority: s.priority, desc: s.desc, action: s.action, impact: s.impact },
+                  };
+                  e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+                  e.dataTransfer.effectAllowed = "copy";
+                  useDragStore.getState().startDrag(payload);
+                }}
+                onDragEnd={() => useDragStore.getState().stopDrag()}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Lightbulb size={14} className="text-[#c9d1d9] shrink-0" />
@@ -97,6 +113,20 @@ export default function SuggestionsPanel() {
                     key={i}
                     className="bg-[#0d1117] border border-[#30363d]/50 rounded-md p-2.5 text-[10px] cursor-pointer hover:bg-[#161b22] transition"
                     onClick={() => setDrillDown({ type: "duplicate", data: d })}
+                    draggable
+                    onDragStart={(e) => {
+                      const payload: DraggedContextNode = {
+                        id: `duplicate-${i}-${d.name}`,
+                        type: "DUPLICATE",
+                        name: d.name,
+                        source: "RIGHT_PANEL",
+                        metadata: { duplicateType: d.type, fileCount: d.files?.length || 0 },
+                      };
+                      e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+                      e.dataTransfer.effectAllowed = "copy";
+                      useDragStore.getState().startDrag(payload);
+                    }}
+                    onDragEnd={() => useDragStore.getState().stopDrag()}
                   >
                     <div
                       className={`font-semibold ${d.type === "code" ? "text-[#a855f7]" : "text-[#ff9f43]"}`}

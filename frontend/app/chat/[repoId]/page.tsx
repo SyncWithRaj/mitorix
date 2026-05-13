@@ -11,6 +11,7 @@ import { Panel, Group, Separator } from "react-resizable-panels";
 import { Files, MessageSquare, Settings } from "lucide-react";
 import { useEditor } from "@/context/EditorContext";
 import toast from "react-hot-toast";
+import type { DraggedContextNode } from "@/lib/dragdrop.types";
 
 const getLanguage = (filename: string) => {
   const ext = filename.split(".").pop()?.toLowerCase();
@@ -45,6 +46,7 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [repoValid, setRepoValid] = useState<boolean | null>(null);
   const [streamingIndex, setStreamingIndex] = useState<number | null>(null);
+  const [attachedNodes, setAttachedNodes] = useState<DraggedContextNode[]>([]);
 
   useEffect(() => {
     const checkRepo = async () => {
@@ -81,17 +83,24 @@ export default function ChatPage() {
   }, [repoValid, repoId]);
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() && attachedNodes.length === 0) return;
 
-    const userMsg = { role: "user", content: input };
+    const userMsg: any = { role: "user", content: input };
+    if (attachedNodes.length > 0) {
+      userMsg.attachedNodes = [...attachedNodes];
+    }
     setChatMessages((prev) => [...prev, userMsg]);
+    const questionText = input;
+    const sentNodes = [...attachedNodes];
     setInput("");
+    setAttachedNodes([]);
     setLoading(true);
 
     try {
       const res = await api.post("/query/ask", {
         repoId,
-        question: input,
+        question: questionText,
+        attachedNodes: sentNodes.length > 0 ? sentNodes : undefined,
       });
 
       const aiMsg = {
@@ -252,6 +261,8 @@ export default function ChatPage() {
                   streamingIndex={streamingIndex}
                   onStreamComplete={() => setStreamingIndex(null)}
                   onDeleteChat={handleDeleteChat}
+                  attachedNodes={attachedNodes}
+                  setAttachedNodes={setAttachedNodes}
                 />
               </div>
             </Panel>

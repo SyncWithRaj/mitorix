@@ -3,6 +3,8 @@
 import React from "react";
 import { useCodeflow } from "../../../context/CodeflowContext";
 import { Shield, ShieldCheck } from "lucide-react";
+import { useDragStore } from "../../../lib/dragStore";
+import type { DraggedContextNode } from "../../../lib/dragdrop.types";
 
 export default function SecurityPanel() {
   const { analysisData, setDrillDown } = useCodeflow();
@@ -68,6 +70,21 @@ export default function SecurityPanel() {
                         : "border-blue-500/30"
                 }`}
                 onClick={() => setDrillDown({ type: "security", data: issue })}
+                draggable
+                onDragStart={(e) => {
+                  const payload: DraggedContextNode = {
+                    id: `security-${i}-${issue.title}`,
+                    type: "SECURITY_ISSUE",
+                    name: issue.title,
+                    path: issue.file,
+                    source: "RIGHT_PANEL",
+                    metadata: { severity: issue.severity, desc: issue.desc, code: issue.code || "" },
+                  };
+                  e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+                  e.dataTransfer.effectAllowed = "copy";
+                  useDragStore.getState().startDrag(payload);
+                }}
+                onDragEnd={() => useDragStore.getState().stopDrag()}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <div

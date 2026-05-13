@@ -56,7 +56,7 @@ export default function ExportModal() {
     const h = analysisData.health;
 
     if (format === "md") {
-      let md = `# CodeFlow Analysis Report\n\n`;
+      let md = `# RepoLens Analysis Report\n\n`;
       md += `**Repository:** ${repo}\n`;
       md += `**Analyzed:** ${new Date().toLocaleString()}\n\n`;
       md += `## Summary\n\n`;

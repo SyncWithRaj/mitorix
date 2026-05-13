@@ -3,6 +3,8 @@
 import React from "react";
 import { useCodeflow } from "../../../context/CodeflowContext";
 import { Search, Sparkles } from "lucide-react";
+import { useDragStore } from "../../../lib/dragStore";
+import type { DraggedContextNode } from "../../../lib/dragdrop.types";
 
 export default function IssuesPanel() {
   const { analysisData, setDrillDown, setShowUnusedModal } = useCodeflow();
@@ -43,6 +45,20 @@ export default function IssuesPanel() {
                     setDrillDown({ type: "issue", data: issue });
                   }
                 }}
+                draggable
+                onDragStart={(e) => {
+                  const payload: DraggedContextNode = {
+                    id: `issue-${i}-${issue.title}`,
+                    type: "ARCHITECTURE_ISSUE",
+                    name: issue.title,
+                    source: "RIGHT_PANEL",
+                    metadata: { issueType: issue.type, desc: issue.desc, itemCount: issue.items?.length || 0 },
+                  };
+                  e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+                  e.dataTransfer.effectAllowed = "copy";
+                  useDragStore.getState().startDrag(payload);
+                }}
+                onDragEnd={() => useDragStore.getState().stopDrag()}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <div

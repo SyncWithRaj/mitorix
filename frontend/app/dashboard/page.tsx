@@ -9,7 +9,6 @@ import {
   Play,
   Trash2,
   Github,
-  MessageSquare,
   Plus,
   Info,
   Activity,
@@ -76,7 +75,6 @@ export default function Dashboard() {
   const [repos, setRepos] = useState<any[]>([]);
   const [githubUrl, setGithubUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [embeddingRepo, setEmbeddingRepo] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
 
@@ -191,21 +189,7 @@ export default function Dashboard() {
     setLoading(false);
   };
 
-  const embedRepo = async (repoId: string) => {
-    try {
-      setEmbeddingRepo(repoId);
-      toast.loading("Preparing AI agent for chat...");
-      await api.post("/vector/init");
-      await api.post(`/embed/${repoId}`);
-      toast.success("AI agent ready! Redirecting to chat...");
-      router.push(`/chat/${repoId}`);
-    } catch (err) {
-      console.error("Embed repo error:", err);
-      toast.error("Failed to prepare AI agent. Try again.");
-    } finally {
-      setEmbeddingRepo(null);
-    }
-  };
+
 
   const deleteRepo = async (repoId: string) => {
     const confirmDelete = confirm(
@@ -411,23 +395,7 @@ export default function Dashboard() {
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/codeflow:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
                         <span className="relative z-10 flex items-center gap-2">
                           <Activity size={16} />
-                          CodeFlow Intelligence
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => embedRepo(repo._id)}
-                        disabled={embeddingRepo === repo._id}
-                        className="group/chat cursor-pointer relative flex items-center gap-2 text-sm text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_0_15px_rgba(88,166,255,0.2)] hover:shadow-[0_0_20px_rgba(88,166,255,0.5)] border border-[rgba(255,255,255,0.1)] overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#58a6ff] to-[#1f6feb] transition-opacity duration-300 group-hover/chat:opacity-90"></div>
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/chat:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
-                        <span className="relative z-10 flex items-center gap-2">
-                          {embeddingRepo === repo._id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <MessageSquare size={16} />
-                          )}
-                          {embeddingRepo === repo._id ? "Preparing Agent..." : "Chat with Codebase"}
+                          RepoLens Intelligence
                         </span>
                       </button>
                     </>

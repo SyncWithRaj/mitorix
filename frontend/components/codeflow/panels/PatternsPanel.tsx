@@ -3,6 +3,8 @@
 import React from "react";
 import { useCodeflow } from "../../../context/CodeflowContext";
 import { Puzzle, Sparkles } from "lucide-react";
+import { useDragStore } from "../../../lib/dragStore";
+import type { DraggedContextNode } from "../../../lib/dragdrop.types";
 
 // Helper to render icon by name
 const IconByName = ({
@@ -48,6 +50,20 @@ export default function PatternsPanel() {
                 p.isAnti ? "border-red-500/30" : "border-blue-500/30"
               }`}
               onClick={() => setDrillDown({ type: "pattern", data: p })}
+              draggable
+              onDragStart={(e) => {
+                const payload: DraggedContextNode = {
+                  id: `pattern-${i}-${p.name}`,
+                  type: "PATTERN",
+                  name: p.name,
+                  source: "RIGHT_PANEL",
+                  metadata: { isAnti: p.isAnti, desc: p.desc, fileCount: p.files?.length || 0 },
+                };
+                e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+                e.dataTransfer.effectAllowed = "copy";
+                useDragStore.getState().startDrag(payload);
+              }}
+              onDragEnd={() => useDragStore.getState().stopDrag()}
             >
               <div className="flex items-center gap-2 mb-2">
                 <IconByName
