@@ -5,7 +5,18 @@ import { AppError } from "../middlewares/error.middleware.js";
 
 export const ask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { repoId, question } = req.body as { repoId: string; question: string };
+    const { repoId, question, attachedNodes } = req.body as {
+      repoId: string;
+      question: string;
+      attachedNodes?: Array<{
+        id: string;
+        type: string;
+        name: string;
+        path?: string;
+        source?: string;
+        metadata?: Record<string, any>;
+      }>;
+    };
 
     const user = req.user;
     if (!user) throw new AppError("Unauthorized", 401);
@@ -21,7 +32,7 @@ export const ask = async (req: Request, res: Response, next: NextFunction): Prom
       historyMessages = historyDoc.messages;
     }
 
-    const result = await askQuestion(repoId, question, historyMessages);
+    const result = await askQuestion(repoId, question, historyMessages, attachedNodes);
 
     await ChatHistory.findOneAndUpdate(
       { userId, repoId, type: "chat" },
@@ -29,8 +40,16 @@ export const ask = async (req: Request, res: Response, next: NextFunction): Prom
         $push: {
           messages: {
             $each: [
-              { role: "user", content: question },
-              { role: "assistant", content: result.answer, references: result.references || [] },
+              { 
+                role: "user", 
+                content: question, 
+                attachments: attachedNodes || [] 
+              },
+              { 
+                role: "assistant", 
+                content: result.answer, 
+                references: result.references || [] 
+              },
             ],
           },
         },

@@ -1,9 +1,18 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+export interface IAttachment {
+  id: string;
+  type: string;
+  name: string;
+  path?: string;
+  source?: string;
+}
+
 export interface IMessage {
   role: "user" | "assistant";
   content: string;
   references?: any[];
+  attachments?: IAttachment[];
   timestamp: Date;
 }
 
@@ -20,6 +29,7 @@ const MessageSchema = new Schema<IMessage>({
   role: { type: String, enum: ["user", "assistant"], required: true },
   content: { type: String, required: true },
   references: { type: [Schema.Types.Mixed], default: [] },
+  attachments: { type: [Schema.Types.Mixed], default: [] },
   timestamp: { type: Date, default: Date.now },
 });
 
