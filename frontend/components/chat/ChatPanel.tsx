@@ -1,6 +1,8 @@
 "use client";
 
-import { useEditor } from "@/context/EditorContext";
+import { EditorContext, useEditor } from "@/context/EditorContext";
+import { CodeflowContext } from "@/context/CodeflowContext";
+import { useContext } from "react";
 import api from "@/lib/axios";
 import { getLanguage } from "@/utils/getLanguage";
 import { useRef, useEffect, useState } from "react";
@@ -16,9 +18,14 @@ import {
   PhoneOff,
   Trash2,
   Flame,
+  X,
+  GripVertical,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { useDragStore } from "@/lib/dragStore";
+import { entityIcons } from "@/lib/dragdrop.types";
+import type { DraggedContextNode } from "@/lib/dragdrop.types";
 
 // Typewriter hook for streaming effect
 function useTypewriter(text: string, isActive: boolean, speed: number = 12) {
@@ -77,9 +84,13 @@ export default function ChatPanel({
   streamingIndex,
   onStreamComplete,
   onDeleteChat,
+  attachedNodes = [],
+  setAttachedNodes,
 }: any) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"chat" | "call">("chat");
+  const { isDragging } = useDragStore();
+  const [dropHighlight, setDropHighlight] = useState(false);
+  const chatInputAreaRef = useRef<HTMLDivElement>(null);
   const [callState, setCallState] = useState<"idle" | "listening" | "processing" | "speaking">(
     "idle"
   );
@@ -103,8 +114,68 @@ export default function ChatPanel({
   const SILENCE_DURATION = 1500; // ms of continuous silence before auto-send
   const hasSpokenRef = useRef(false); // Track if user has spoken at all
 
-  const { setEditorState } = useEditor();
+  const editorContext = useContext(EditorContext);
+  const setEditorState = editorContext?.setEditorState || null;
+  const codeflowContext = useContext(CodeflowContext);
+  const setFilePreview = codeflowContext?.setFilePreview || null;
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<"chat" | "call">("chat");
+
+  // ── Handle drops from HTML5 drag (DOM elements like file tree, panels) ──
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDropHighlight(false);
+    const raw = e.dataTransfer.getData("application/repolens-node");
+    if (raw) {
+      try {
+        const node: DraggedContextNode = JSON.parse(raw);
+        if (setAttachedNodes) {
+          setAttachedNodes((prev: DraggedContextNode[]) =>
+            prev.some((n) => n.id === node.id) ? prev : [...prev, node]
+          );
+        }
+      } catch {}
+    }
+    useDragStore.getState().stopDrag();
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    setDropHighlight(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only deactivate if truly leaving the drop zone (not entering a child)
+    if (chatInputAreaRef.current && !chatInputAreaRef.current.contains(e.relatedTarget as Node)) {
+      setDropHighlight(false);
+    }
+  };
+
+  // ── Handle drops from canvas-based drags (ForceGraph) via Zustand mouseup ──
+  useEffect(() => {
+    const handleGlobalMouseUp = (e: MouseEvent) => {
+      const { isDragging: dragging, draggedItem } = useDragStore.getState();
+      if (dragging && draggedItem && chatInputAreaRef.current) {
+        const rect = chatInputAreaRef.current.getBoundingClientRect();
+        if (
+          e.clientX >= rect.left &&
+          e.clientX <= rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY <= rect.bottom
+        ) {
+          if (setAttachedNodes) {
+            setAttachedNodes((prev: DraggedContextNode[]) =>
+              prev.some((n) => n.id === draggedItem.id) ? prev : [...prev, draggedItem]
+            );
+          }
+        }
+        setDropHighlight(false);
+      }
+    };
+    window.addEventListener("mouseup", handleGlobalMouseUp, true);
+    return () => window.removeEventListener("mouseup", handleGlobalMouseUp, true);
+  }, [setAttachedNodes]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -130,13 +201,21 @@ export default function ChatPanel({
         params: { repoId, path: ref.file },
       });
 
-      setEditorState({
-        filePath: ref.file,
-        content: res.data.content,
-        language: getLanguage(ref.file),
-        startLine: ref.startLine,
-        endLine: ref.endLine,
-      });
+      if (setEditorState) {
+        setEditorState({
+          filePath: ref.file,
+          content: res.data.content,
+          language: getLanguage(ref.file),
+          startLine: ref.startLine,
+          endLine: ref.endLine,
+        });
+      } else if (setFilePreview) {
+        setFilePreview({
+          path: ref.file,
+          content: res.data.content,
+          language: getLanguage(ref.file),
+        });
+      }
     } catch (err) {
       console.error("Open reference error:", err);
     }
@@ -538,6 +617,20 @@ export default function ChatPanel({
                         })()
                       : msg.content}
                   </div>
+
+                  {/* Show attached context chips on user messages */}
+                  {msg.role === "user" && ((msg.attachedNodes && msg.attachedNodes.length > 0) || (msg.attachments && msg.attachments.length > 0)) && (
+                    <div className="flex flex-wrap gap-1 px-4 pb-3 border-t border-[#30363d]/30 pt-2">
+                      {(msg.attachedNodes || msg.attachments).map((n: any) => (
+                        <span
+                          key={n.id}
+                          className="text-[10px] bg-[#58a6ff]/10 border border-[#58a6ff]/20 rounded px-2 py-0.5 text-[#58a6ff] font-mono inline-flex items-center gap-1"
+                        >
+                          {entityIcons[n.type] || "📎"} {n.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {msg.references && msg.references.length > 0 && (
@@ -588,24 +681,73 @@ export default function ChatPanel({
       </div>
 
       {activeTab === "chat" ? (
-        <div className="px-4 py-4 bg-gradient-to-t from-[#0d1117] via-[#0d1117] to-[#0d1117]/10 relative z-10 w-full pt-10 mt-auto">
-          <div className="glass-panel border border-[#30363d]/80 rounded-2xl focus-within:border-[#58a6ff]/50 focus-within:shadow-[0_0_15px_rgba(88,166,255,0.1)] transition-all duration-300 flex items-end relative shadow-inner p-1">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask anything about this repo..."
-              className="flex-1 bg-transparent px-4 py-3 text-[13px] text-[#c9d1d9] focus:outline-none resize-none min-h-[44px] max-h-[150px] overflow-y-auto placeholder:text-[#8b949e] custom-scrollbar"
-              disabled={loading}
-              rows={1}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={loading || !input.trim()}
-              className="mb-1 mr-1 p-2.5 rounded-xl bg-[#2ea043] hover:bg-[#3fb950] active:scale-95 text-white disabled:opacity-50 disabled:bg-[#30363d]/50 disabled:text-[#8b949e] transition-all flex items-center justify-center cursor-pointer disabled:cursor-not-allowed shadow-sm border border-[rgba(255,255,255,0.1)] disabled:border-transparent shrink-0"
-            >
-              <Send size={16} className={loading || !input.trim() ? "" : "translate-x-[-1px]"} />
-            </button>
+        <div
+          ref={chatInputAreaRef}
+          className="px-4 py-4 bg-gradient-to-t from-[#0d1117] via-[#0d1117] to-[#0d1117]/10 relative z-10 w-full pt-10 mt-auto"
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragOver}
+          onDragLeave={handleDragLeave}
+        >
+          <div
+            className={`glass-panel border rounded-2xl focus-within:border-[#58a6ff]/50 focus-within:shadow-[0_0_15px_rgba(88,166,255,0.1)] transition-all duration-300 flex flex-col relative shadow-inner p-1 ${
+              dropHighlight || isDragging
+                ? "border-[#58a6ff] shadow-[0_0_20px_rgba(88,166,255,0.2)] ring-2 ring-[#58a6ff]/20"
+                : "border-[#30363d]/80"
+            }`}
+          >
+            {/* Context Chips */}
+            {attachedNodes && attachedNodes.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 px-3 pt-3 pb-1">
+                {attachedNodes.map((node: DraggedContextNode) => (
+                  <div
+                    key={node.id}
+                    className="inline-flex items-center gap-1.5 text-[11px] bg-[#58a6ff]/10 border border-[#58a6ff]/30 rounded-lg px-2.5 py-1.5 text-[#58a6ff] font-medium animate-fadeInUp group/chip"
+                  >
+                    <span className="text-[#8b949e]">{entityIcons[node.type] || "📎"}</span>
+                    <span className="font-mono truncate max-w-[120px]">{node.name}</span>
+                    <button
+                      onClick={() =>
+                        setAttachedNodes &&
+                        setAttachedNodes((prev: DraggedContextNode[]) =>
+                          prev.filter((n) => n.id !== node.id)
+                        )
+                      }
+                      className="ml-0.5 p-0.5 rounded-full hover:bg-[#f85149]/20 text-[#8b949e] hover:text-[#f85149] transition cursor-pointer opacity-0 group-hover/chip:opacity-100"
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Drop zone indicator */}
+            {(dropHighlight || isDragging) && attachedNodes?.length === 0 && (
+              <div className="px-3 pt-3 pb-1 flex items-center gap-2 text-[11px] text-[#58a6ff] font-medium animate-pulse">
+                <GripVertical size={12} />
+                Drop here to attach context
+              </div>
+            )}
+
+            <div className="flex items-end">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={attachedNodes?.length > 0 ? "Ask about the attached items..." : "Ask anything about this repo..."}
+                className="flex-1 bg-transparent px-4 py-3 text-[13px] text-[#c9d1d9] focus:outline-none resize-none min-h-[44px] max-h-[150px] overflow-y-auto placeholder:text-[#8b949e] custom-scrollbar"
+                disabled={loading}
+                rows={1}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={loading || (!input.trim() && (!attachedNodes || attachedNodes.length === 0))}
+                className="mb-1 mr-1 p-2.5 rounded-xl bg-[#2ea043] hover:bg-[#3fb950] active:scale-95 text-white disabled:opacity-50 disabled:bg-[#30363d]/50 disabled:text-[#8b949e] transition-all flex items-center justify-center cursor-pointer disabled:cursor-not-allowed shadow-sm border border-[rgba(255,255,255,0.1)] disabled:border-transparent shrink-0"
+              >
+                <Send size={16} className={loading || (!input.trim() && (!attachedNodes || attachedNodes.length === 0)) ? "" : "translate-x-[-1px]"} />
+              </button>
+            </div>
           </div>
           <div className="w-full mt-3 flex justify-center">
             <span className="text-[10px] text-[#8b949e] font-medium tracking-wide opacity-80 flex items-center gap-1.5">

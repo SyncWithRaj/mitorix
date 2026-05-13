@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { useCodeflow } from "../../../context/CodeflowContext";
 import { File, Folder, ChevronRight, ChevronDown, Filter, X } from "lucide-react";
 import { FolderTree } from "../../../lib/codeflow.types";
+import { useDragStore } from "../../../lib/dragStore";
+import type { DraggedContextNode } from "../../../lib/dragdrop.types";
 
 interface TreeNodeProps {
   node: FolderTree;
@@ -38,7 +40,25 @@ const TreeNode = ({
       {node.path !== "" && (
         <div
           className="flex items-center gap-1.5 py-1 px-1 rounded-md cursor-pointer transition-colors text-xs text-[#c9d1d9] hover:bg-[#21262d] group"
-          onClick={() => togglePath(node.path)}
+          onClick={(e) => {
+            e.stopPropagation();
+            togglePath(node.path);
+          }}
+          draggable
+          onDragStart={(e) => {
+            e.stopPropagation();
+            const payload: DraggedContextNode = {
+              id: node.path,
+              type: "FOLDER",
+              name: node.name,
+              path: node.path,
+              source: "LEFT_PANEL",
+            };
+            e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+            e.dataTransfer.effectAllowed = "copy";
+            useDragStore.getState().startDrag(payload);
+          }}
+          onDragEnd={() => useDragStore.getState().stopDrag()}
         >
           <span className="shrink-0 w-4 h-4 flex items-center justify-center text-[#8b949e]">
             {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -96,7 +116,25 @@ const TreeNode = ({
                       ? "bg-[#58a6ff]/10 text-[#58a6ff]"
                       : "text-[#c9d1d9] hover:bg-[#30363d] hover:text-white"
                   }`}
-                  onClick={() => onSelect(file.path)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(file.path);
+                  }}
+                  draggable
+                  onDragStart={(e) => {
+                    e.stopPropagation();
+                    const payload: DraggedContextNode = {
+                      id: file.path,
+                      type: "FILE",
+                      name: file.name,
+                      path: file.path,
+                      source: "LEFT_PANEL",
+                    };
+                    e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+                    e.dataTransfer.effectAllowed = "copy";
+                    useDragStore.getState().startDrag(payload);
+                  }}
+                  onDragEnd={() => useDragStore.getState().stopDrag()}
                 >
                   <File size={14} className="shrink-0 opacity-70" />
                   <span className="truncate">{file.name}</span>

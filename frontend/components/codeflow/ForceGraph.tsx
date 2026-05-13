@@ -5,6 +5,8 @@ import { useCodeflow } from "../../context/CodeflowContext";
 import { COLORS, LAYER_COLORS } from "../../lib/codeflow.constants";
 import { measurePerformance } from "../../lib/performance.utils";
 import * as d3 from "d3";
+import { useDragStore } from "../../lib/dragStore";
+import type { DraggedContextNode } from "../../lib/dragdrop.types";
 
 export default function ForceGraph() {
   const {
@@ -346,11 +348,25 @@ export default function ForceGraph() {
         .on("drag", (e, d) => {
           d.fx = e.x;
           d.fy = e.y;
+
+          const { isDragging } = useDragStore.getState();
+          if (!isDragging) {
+            const payload: DraggedContextNode = {
+              id: d.id,
+              type: "FILE",
+              name: d.name,
+              path: d.id,
+              source: "FORCE_GRAPH",
+            };
+            useDragStore.getState().startDrag(payload);
+          }
         })
         .on("end", (e, d) => {
           if (!e.active) sim.alphaTarget(0);
           d.fx = null;
           d.fy = null;
+
+          setTimeout(() => useDragStore.getState().stopDrag(), 50);
         }) as any
     );
 

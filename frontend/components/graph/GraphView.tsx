@@ -6,6 +6,9 @@ import { useCodeflow } from "../../context/CodeflowContext";
 import api from "@/lib/axios";
 import { Flame, XCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { useDragStore } from "@/lib/dragStore";
+import { getEntityType } from "@/lib/dragdrop.types";
+import type { DraggedContextNode, EntityType } from "@/lib/dragdrop.types";
 
 import toast from "react-hot-toast";
 
@@ -636,6 +639,24 @@ export default function GraphView({ repoId }: { repoId: string }) {
           return `rgba(139, 148, 158, ${opacity})`;
         }}
         onNodeClick={handleNodeClick}
+        onNodeDrag={(node: any) => {
+          const { isDragging } = useDragStore.getState();
+          if (!isDragging) {
+            const entityType: EntityType = getEntityType(node.type);
+            const payload: DraggedContextNode = {
+              id: node.id,
+              type: entityType,
+              name: node.name,
+              path: node.path || (typeof node.id === "string" && node.id.includes("::") ? node.id.split("::")[0] : node.id),
+              source: "GRAPH_VIEW",
+            };
+            useDragStore.getState().startDrag(payload);
+          }
+        }}
+        onNodeDragEnd={() => {
+          // Delay stopDrag slightly to allow the global mouseup event to process the drop
+          setTimeout(() => useDragStore.getState().stopDrag(), 50);
+        }}
       />
     </div>
   );

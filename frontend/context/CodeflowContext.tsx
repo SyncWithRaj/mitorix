@@ -164,7 +164,7 @@ function buildTreeFromFiles(files: any[]) {
   return root;
 }
 
-const CodeflowContext = createContext<CodeflowState | undefined>(undefined);
+export const CodeflowContext = createContext<CodeflowState | undefined>(undefined);
 
 export function CodeflowProvider({ children }: { children: ReactNode }) {
   const [analysisData, setRawAnalysisData] = useState<AnalysisData | null>(null);

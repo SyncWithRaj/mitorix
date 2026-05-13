@@ -10,7 +10,7 @@ export interface EditorTab {
   endLine?: number;
 }
 
-const EditorContext = createContext<any>(null);
+export const EditorContext = createContext<any>(null);
 
 export const EditorProvider = ({ children }: any) => {
   const [tabs, setTabs] = useState<EditorTab[]>([]);
