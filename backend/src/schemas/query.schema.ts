@@ -3,16 +3,41 @@
  */
 import { z } from "zod";
 
-export const querySchema = z.object({
-  body: z.object({
-    repoId: z
-      .string({ required_error: "repoId is required" })
-      .min(1, { message: "repoId cannot be empty" }),
+const attachedNodeSchema = z.object({
+  id: z.string().min(1, { message: "attachedNodes.id is required" }),
+  type: z.string().min(1, { message: "attachedNodes.type is required" }),
+  name: z.string().min(1, { message: "attachedNodes.name is required" }),
+  path: z.string().optional(),
+  source: z.string().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+const queryBodySchema = z
+  .object({
+    repoId: z.string().min(1, { message: "repoId cannot be empty" }),
     question: z
-      .string({ required_error: "question is required" })
-      .min(1, { message: "question cannot be empty" })
-      .max(2000, { message: "question must be under 2000 characters" }),
-  }),
+      .string()
+      .trim()
+      .max(2000, { message: "question must be under 2000 characters" })
+      .optional()
+      .default(""),
+    attachedNodes: z.array(attachedNodeSchema).optional().default([]),
+  })
+  .superRefine((data, ctx) => {
+    const hasQuestion = data.question.trim().length > 0;
+    const hasAttachments = data.attachedNodes.length > 0;
+
+    if (!hasQuestion && !hasAttachments) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["question"],
+        message: "Provide a question or attach at least one context node",
+      });
+    }
+  });
+
+export const querySchema = z.object({
+  body: queryBodySchema,
 });
 
 export type QueryInput = z.infer<typeof querySchema>["body"];

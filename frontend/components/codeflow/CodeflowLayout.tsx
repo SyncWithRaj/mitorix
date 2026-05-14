@@ -132,14 +132,17 @@ export default function CodeflowLayout({
   const sendMessage = useCallback(async () => {
     if (!chatInput.trim() && attachedNodes.length === 0) return;
 
-    const userMsg: any = { role: "user", content: chatInput };
-    if (attachedNodes.length > 0) {
-      userMsg.attachedNodes = [...attachedNodes];
-    }
-    setChatMessages((prev) => [...prev, userMsg]);
-    const questionText = chatInput;
-    setChatInput("");
+    const questionText = chatInput.trim();
     const sentNodes = [...attachedNodes];
+
+    const userMsg: any = { role: "user", content: questionText };
+    if (sentNodes.length > 0) {
+      userMsg.attachedNodes = sentNodes;
+      userMsg.attachments = sentNodes;
+    }
+
+    setChatMessages((prev) => [...prev, userMsg]);
+    setChatInput("");
     setAttachedNodes([]);
     setChatLoading(true);
 
@@ -172,17 +175,20 @@ export default function CodeflowLayout({
     setChatLoading(false);
   }, [chatInput, attachedNodes, repoId]);
 
-  const handleDeleteChat = useCallback(async (type: "chat" | "call") => {
-    try {
-      await api.delete(`/history/${repoId}?type=${type}`);
-      if (type === "chat") setChatMessages([]);
-      else setCallMessages([]);
-      setStreamingIndex(null);
-    } catch (err) {
-      console.error("Delete chat error:", err);
-      toast.error("Failed to delete chat history");
-    }
-  }, [repoId]);
+  const handleDeleteChat = useCallback(
+    async (type: "chat" | "call") => {
+      try {
+        await api.delete(`/history/${repoId}?type=${type}`);
+        if (type === "chat") setChatMessages([]);
+        else setCallMessages([]);
+        setStreamingIndex(null);
+      } catch (err) {
+        console.error("Delete chat error:", err);
+        toast.error("Failed to delete chat history");
+      }
+    },
+    [repoId]
+  );
 
   useEffect(() => {
     const fetchAnalysis = async () => {
@@ -379,11 +385,15 @@ export default function CodeflowLayout({
                     <div className="flex items-center gap-2 overflow-hidden">
                       <Folder size={14} className="text-[#58a6ff] shrink-0" />
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] text-[#8b949e] uppercase font-bold tracking-tight">Active Filter</span>
-                        <span className="text-xs text-[#c9d1d9] font-medium truncate">{folderFilter}</span>
+                        <span className="text-[10px] text-[#8b949e] uppercase font-bold tracking-tight">
+                          Active Filter
+                        </span>
+                        <span className="text-xs text-[#c9d1d9] font-medium truncate">
+                          {folderFilter}
+                        </span>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setFolderFilter(null)}
                       className="p-1.5 hover:bg-[#21262d] rounded-md text-[#8b949e] hover:text-[#f85149] transition-colors"
                       title="Clear Filter"

@@ -85,13 +85,16 @@ export default function ChatPage() {
   const sendMessage = async () => {
     if (!input.trim() && attachedNodes.length === 0) return;
 
-    const userMsg: any = { role: "user", content: input };
-    if (attachedNodes.length > 0) {
-      userMsg.attachedNodes = [...attachedNodes];
-    }
-    setChatMessages((prev) => [...prev, userMsg]);
-    const questionText = input;
+    const questionText = input.trim();
     const sentNodes = [...attachedNodes];
+
+    const userMsg: any = { role: "user", content: questionText };
+    if (sentNodes.length > 0) {
+      userMsg.attachedNodes = sentNodes;
+      userMsg.attachments = sentNodes;
+    }
+
+    setChatMessages((prev) => [...prev, userMsg]);
     setInput("");
     setAttachedNodes([]);
     setLoading(true);

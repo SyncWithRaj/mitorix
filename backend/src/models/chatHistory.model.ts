@@ -6,6 +6,7 @@ export interface IAttachment {
   name: string;
   path?: string;
   source?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface IMessage {
@@ -25,11 +26,23 @@ export interface IChatHistory extends Document {
   updatedAt: Date;
 }
 
+const AttachmentSchema = new Schema<IAttachment>(
+  {
+    id: { type: String, required: true },
+    type: { type: String, required: true },
+    name: { type: String, required: true },
+    path: { type: String },
+    source: { type: String },
+    metadata: { type: Schema.Types.Mixed },
+  },
+  { _id: false }
+);
+
 const MessageSchema = new Schema<IMessage>({
   role: { type: String, enum: ["user", "assistant"], required: true },
   content: { type: String, required: true },
   references: { type: [Schema.Types.Mixed], default: [] },
-  attachments: { type: [Schema.Types.Mixed], default: [] },
+  attachments: { type: [AttachmentSchema], default: [] },
   timestamp: { type: Date, default: Date.now },
 });
 

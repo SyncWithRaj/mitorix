@@ -1,4 +1,5 @@
 import { CodeEntity } from "../models/codeEntity.model.js";
+import { FileContent } from "../models/fileContent.model.js";
 import { Repository } from "../models/repo.model.js";
 import { generateChatAnswer, type ChatMessage } from "./llm.service.js";
 import { searchVectors } from "./vector.service.js";
@@ -48,11 +49,17 @@ interface AttachedNode {
   metadata?: Record<string, any>;
 }
 
+interface ContextRef {
+  file: string;
+  startLine: number;
+  endLine: number;
+}
+
 export const askQuestion = async (
   repoId: string,
   question: string,
   history: any[] = [],
-  attachedNodes: AttachedNode[] = [],
+  attachedNodes: AttachedNode[] = []
 ) => {
   const repo = await Repository.findById(repoId);
   if (!repo) throw new Error("Repository not found");
@@ -69,6 +76,52 @@ export const askQuestion = async (
 
   // ── 1.5. Build EXPLICIT context from drag-dropped items ──
   let explicitContextStr = "";
+  const explicitRefs: ContextRef[] = [];
+  const explicitRefSet = new Set<string>();
+
+  const pushExplicitRef = (file: string, startLine: number, endLine: number) => {
+    const key = `${file}:${startLine}-${endLine}`;
+    if (explicitRefSet.has(key)) return;
+    explicitRefSet.add(key);
+    explicitRefs.push({ file, startLine, endLine });
+  };
+
+  const toRelativePath = (inputPath: string): string => {
+    const normalized = inputPath.replace(/\\/g, "/");
+    if (path.isAbsolute(normalized)) {
+      return path.relative(repo.localPath, normalized).replace(/\\/g, "/");
+    }
+    return normalized.replace(/^\/+/, "");
+  };
+
+  const attachedPathHints = new Set<string>();
+  const addAttachedPathHint = (inputPath: string) => {
+    const rel = toRelativePath(inputPath);
+    if (rel) attachedPathHints.add(rel);
+  };
+
+  const appendFileContentForPath = async (inputPath: string) => {
+    const rel = toRelativePath(inputPath);
+    if (!rel) return;
+
+    const fileDoc = await FileContent.findOne({
+      repoId: repo._id,
+      relativePath: rel,
+      isDirectory: false,
+      content: { $ne: null },
+    })
+      .select("relativePath content")
+      .lean();
+
+    if (!fileDoc || !fileDoc.content) return;
+
+    const contentStr = String(fileDoc.content);
+    if (!contentStr.trim()) return;
+
+    explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: FILE] ${path.basename(rel)}\nFile: ${rel}\nLines: 1-${contentStr.split(/\\r?\\n/).length}\n\n${contentStr}\n`;
+    pushExplicitRef(rel, 1, contentStr.split(/\r?\n/).length || 1);
+    addAttachedPathHint(rel);
+  };
 
   if (attachedNodes && attachedNodes.length > 0) {
     logger.info(
@@ -82,23 +135,31 @@ export const askQuestion = async (
 
         // Graph entity IDs follow the pattern "filePath::entityName"
         if (typeof node.id === "string" && node.id.includes("::")) {
-          const [filePath, entityName] = node.id.split("::");
+          const parts = node.id.split("::");
+          const filePathPart = parts[0];
+          const entityNamePart = parts[1];
+          if (!filePathPart || !entityNamePart) continue;
+
+          const filePathForQuery: string = filePathPart;
+          const entityNameForQuery: string = entityNamePart;
+
           const entities = await CodeEntity.find({
             repoId,
-            filePath,
-            name: entityName,
+            filePath: filePathForQuery,
+            name: entityNameForQuery,
           }).limit(5);
 
           for (const e of entities) {
-            const relativePath = path
-              .relative(repo.localPath, e.filePath)
-              .replace(/\\/g, "/");
+            const relativePath = path.relative(repo.localPath, e.filePath).replace(/\\/g, "/");
             explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${e.type}] ${e.name}\nFile: ${relativePath}\nLines: ${e.startLine}-${e.endLine}\n\n${e.content}\n`;
+            pushExplicitRef(relativePath, e.startLine, e.endLine);
+            addAttachedPathHint(relativePath);
           }
         } else if (node.type === "FILE" || node.type === "FOLDER") {
           // File or folder from left panel — node.id is the relative path
           // Try finding entities by file path match
           const searchPath = node.path || node.id;
+          addAttachedPathHint(searchPath);
 
           // Try absolute path first
           const fullPath = path.join(repo.localPath, searchPath);
@@ -117,36 +178,45 @@ export const askQuestion = async (
 
           if (entities.length > 0) {
             for (const e of entities) {
-              const relativePath = path
-                .relative(repo.localPath, e.filePath)
-                .replace(/\\/g, "/");
+              const relativePath = path.relative(repo.localPath, e.filePath).replace(/\\/g, "/");
               explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${e.type}] ${e.name}\nFile: ${relativePath}\nLines: ${e.startLine}-${e.endLine}\n\n${e.content}\n`;
+              pushExplicitRef(relativePath, e.startLine, e.endLine);
+              addAttachedPathHint(relativePath);
 
               // Respect token budget for explicit context too
               if (explicitContextStr.length > MAX_CONTEXT_CHARS * 0.4) break;
             }
           } else {
-            // No entities found — still mention the path for awareness
-            explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${node.type}] ${node.name}\nPath: ${searchPath}\n(No parsed entities found for this file)\n`;
+            const beforeLen = explicitContextStr.length;
+            await appendFileContentForPath(searchPath);
+
+            if (explicitContextStr.length === beforeLen) {
+              // No entities/file content found — still mention the path for awareness
+              explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${node.type}] ${node.name}\nPath: ${searchPath}\n(No parsed entities found for this file)\n`;
+            }
           }
         } else {
           // Other graph entity nodes — try to find by exact filePath path
           const searchPath = node.path || node.id;
+          addAttachedPathHint(searchPath);
           const fullPath = path.join(repo.localPath, searchPath);
-          const entities = await CodeEntity.find({
+          const entityQuery: { repoId: string; filePath: string; name?: string } = {
             repoId,
             filePath: fullPath,
-            name: node.name,
-          }).limit(5);
+          };
+          if (node.name) entityQuery.name = node.name;
+
+          const entities = await CodeEntity.find(entityQuery).limit(5);
 
           for (const e of entities) {
-            const relativePath = path
-              .relative(repo.localPath, e.filePath)
-              .replace(/\\/g, "/");
+            const relativePath = path.relative(repo.localPath, e.filePath).replace(/\\/g, "/");
             explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${e.type}] ${e.name}\nFile: ${relativePath}\nLines: ${e.startLine}-${e.endLine}\n\n${e.content}\n`;
+            pushExplicitRef(relativePath, e.startLine, e.endLine);
+            addAttachedPathHint(relativePath);
           }
         }
       } else if (METADATA_ENTITY_TYPES.has(node.type)) {
+        if (node.path) addAttachedPathHint(node.path);
         // Right-panel items — use metadata directly (no DB lookup needed)
         explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${node.type}] ${node.name}\n`;
         if (node.path) explicitContextStr += `File: ${node.path}\n`;
@@ -173,12 +243,25 @@ export const askQuestion = async (
     );
   }
 
+  const fallbackQuery =
+    attachedNodes.length > 0
+      ? attachedNodes.map((n) => `${n.type}:${n.name}`).join(" ")
+      : "repository code context";
+  const searchQuery = question.trim() || fallbackQuery;
+  const userQuestion = question.trim() || "Please explain the attached context.";
+
+  const hasCurrentExplicitContext = explicitContextStr.trim().length > 0;
+
   // ── 2. Vector search for relevant code entities ──
-  const results = await searchVectors(repoId, question);
+  const results = hasCurrentExplicitContext ? [] : await searchVectors(repoId, searchQuery);
 
   logger.debug({ repoId, matchCount: results.length }, "Vector search completed");
 
   const entityIds = results.map((r: any) => r[0].metadata.mongoId);
+  const explicitPathList = Array.from(attachedPathHints);
+  const explicitPathRegexes = explicitPathList.map(
+    (p) => new RegExp(`${p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i")
+  );
 
   const entities = await CodeEntity.find({
     _id: { $in: entityIds },
@@ -191,6 +274,9 @@ export const askQuestion = async (
       const entity = entityMap.get(id);
       if (!entity) return null;
 
+      const resultAtIndex = results[index];
+      if (!resultAtIndex) return null;
+
       const relativePath = path.relative(repo.localPath, entity.filePath).replace(/\\/g, "/");
 
       return {
@@ -198,14 +284,43 @@ export const askQuestion = async (
         code: entity.content,
         startLine: entity.startLine,
         endLine: entity.endLine,
-        score: results[index][1],
+        score: resultAtIndex[1],
       };
     })
-    .filter((c: any) => c !== null);
+    .filter(
+      (
+        c
+      ): c is {
+        filePath: string;
+        code: string;
+        startLine: number;
+        endLine: number;
+        score: number;
+      } => c !== null
+    );
+
+  const filteredContext =
+    hasCurrentExplicitContext && explicitPathRegexes.length > 0
+      ? context.filter((c) => explicitPathRegexes.some((rx) => rx.test(c.filePath)))
+      : context;
+
+  const referencesFromContext = (hasCurrentExplicitContext ? filteredContext : context)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((c) => ({
+      file: c.filePath,
+      startLine: c.startLine,
+      endLine: c.endLine,
+    }));
+
+  const finalReferences =
+    explicitRefs.length > 0
+      ? [...explicitRefs.slice(0, 3), ...referencesFromContext].slice(0, 3)
+      : referencesFromContext;
 
   // ── 2b. Build AST context string (explicit context goes FIRST — highest priority) ──
   let astContextStr = explicitContextStr;
-  for (const c of context) {
+  for (const c of filteredContext) {
     const block = `\nFile: ${c.filePath}\nLines: ${c.startLine}-${c.endLine}\n\n${c.code}\n`;
     if (astContextStr.length + block.length > MAX_CONTEXT_CHARS) break;
     astContextStr += block;
@@ -226,7 +341,9 @@ Rules:
   - Mention which file the code belongs to and line numbers when relevant.
   - If the code relates to another component, explain that relationship.
   - IMPACT ANALYSIS: If the user asks about the impact, blast radius, consequences, or what breaks if a specific function or file is modified, include this exact tag at the very end of your response: <blast_radius file="exactFilePath" name="exactFunctionName" />. If asking about a file generally, leave name empty: <blast_radius file="exactFilePath" name="" />.
-- You have access to conversation history. Use it to maintain context across messages. If the user refers to "it", "that function", "the previous code", etc., look at your conversation history to understand what they mean.
+- CRITICAL CONTEXT PRIORITY: The CURRENT message attachments are authoritative for this turn. If there are [EXPLICITLY ATTACHED BY USER] items in the current prompt, answer using those first, even if older conversation discussed different files.
+- Use conversation history only as secondary context. Never let old attached files override currently attached files for the current turn.
+- If user asks "this file" or "attached file", interpret it as the files attached in the CURRENT message.
 
 Response format (when the question IS related to the codebase):
 1. Short direct answer
@@ -259,34 +376,33 @@ Response format (when the question IS related to the codebase):
   }
 
   // Append real chat history (capped to MAX_HISTORY_PAIRS)
-  const recentHistory = history.slice(-(MAX_HISTORY_PAIRS * 2));
-  for (const msg of recentHistory) {
-    let content = msg.content;
-    if (msg.role === "user" && msg.attachments && msg.attachments.length > 0) {
-      const attachmentsList = msg.attachments.map((a: any) => `${a.type}: ${a.name}`).join(", ");
-      content = `[User attached: ${attachmentsList}]\n${content}`;
-    }
+  // If current turn has explicit attachments, avoid older history dominance.
+  if (attachedNodes.length === 0) {
+    const recentHistory = history.slice(-(MAX_HISTORY_PAIRS * 2));
+    for (const msg of recentHistory) {
+      let content = msg.content;
+      if (msg.role === "user" && msg.attachments && msg.attachments.length > 0) {
+        const attachmentsList = msg.attachments.map((a: any) => `${a.type}: ${a.name}`).join(", ");
+        content = `[User attached: ${attachmentsList}]\n${content}`;
+      }
 
-    geminiHistory.push({
-      role: msg.role === "user" ? "user" : "model",
-      parts: [{ text: content }],
-    });
+      geminiHistory.push({
+        role: msg.role === "user" ? "user" : "model",
+        parts: [{ text: content }],
+      });
+    }
+  } else {
+    logger.info(
+      { repoId, attachedCount: attachedNodes.length },
+      "Skipping prior chat history for this turn to prioritize current attachments"
+    );
   }
 
   // ── 5. Call Gemini with native multi-turn ──
-  const answer = await generateChatAnswer(systemInstruction, geminiHistory, question);
-
-  const references = context
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
-    .map((c) => ({
-      file: c.filePath,
-      startLine: c.startLine,
-      endLine: c.endLine,
-    }));
+  const answer = await generateChatAnswer(systemInstruction, geminiHistory, userQuestion);
 
   return {
     answer,
-    references,
+    references: finalReferences,
   };
 };
