@@ -33,7 +33,7 @@ export default function VizSelector() {
   ];
 
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex bg-[rgba(22,27,34,0.85)] backdrop-blur-md border border-[#30363d] rounded-lg p-1 shadow-lg">
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex bg-[rgba(22,27,34,0.85)] backdrop-blur-md border border-[#30363d] rounded-lg p-1 shadow-lg">
       {tabs.map((tab) => {
         const isActive = graphConfig.vizType === tab.id;
         const Icon = tab.icon;

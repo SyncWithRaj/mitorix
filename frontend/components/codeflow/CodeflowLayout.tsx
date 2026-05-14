@@ -5,7 +5,6 @@ import api from "../../lib/axios";
 import toast from "react-hot-toast";
 import ResizablePanel from "./ResizablePanel";
 import {
-  ArrowLeft,
   Menu,
   Settings,
   Ban,
@@ -92,7 +91,6 @@ export default function CodeflowLayout({
     setShowExcludeModal,
     excludePatterns,
     triggerAnalysis,
-    // @ts-ignore - we'll add refreshKey to context too to make it easy
     refreshKey,
     useWebWorker,
     setUseWebWorker,
@@ -101,8 +99,10 @@ export default function CodeflowLayout({
     folderFilter,
     setFolderFilter,
   } = useCodeflow();
-  const [leftOpen, setLeftOpen] = useState(false);
-  const [rightOpen, setRightOpen] = useState(false);
+  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
+  const [explorerOpen, setExplorerOpen] = useState(false);
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [leftPanelWidth, setLeftPanelWidth] = useState(260);
   const [isDesignDocOpen, setIsDesignDocOpen] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
@@ -114,7 +114,31 @@ export default function CodeflowLayout({
   const [chatLoading, setChatLoading] = useState(false);
   const [streamingIndex, setStreamingIndex] = useState<number | null>(null);
   const [attachedNodes, setAttachedNodes] = useState<DraggedContextNode[]>([]);
-  const [embeddingInProgress, setEmbeddingInProgress] = useState(false);
+
+  // Keyboard shortcuts: Ctrl+B (left panel), Ctrl+D (explorer drawer), Ctrl+K (AI chat), Ctrl+J (right panel)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!e.ctrlKey) return;
+      const key = e.key.toLowerCase();
+
+      if (key === "b") {
+        e.preventDefault();
+        setLeftPanelOpen((prev) => !prev);
+      } else if (key === "d") {
+        e.preventDefault();
+        setExplorerOpen((prev) => !prev);
+      } else if (key === "k") {
+        e.preventDefault();
+        setChatOpen((prev) => !prev);
+      } else if (key === "j") {
+        e.preventDefault();
+        setRightPanelOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   // ── Fetch chat history when chat opens ──
   useEffect(() => {
@@ -279,35 +303,50 @@ export default function CodeflowLayout({
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-gh-bg text-gh-text overflow-hidden font-mono">
       {/* Topbar */}
-      <div className="h-14 border-b border-gh-border bg-gh-panel flex items-center px-4 shrink-0 z-50 justify-between">
-        <div className="flex items-center gap-3">
+      <div className="h-14 border-b border-gh-border bg-gh-panel flex items-center px-4 shrink-0 sticky top-0 z-[120] justify-between">
+        <div className="flex items-center gap-2 min-w-0">
           <Link
             href={`/dashboard`}
-            className="p-1.5 hover:bg-gh-btn-secondary-hover rounded-md transition text-gh-text-muted hover:text-gh-text"
+            className="flex items-center gap-2 px-2 py-1.5 rounded-md border border-gh-border bg-gh-btn-secondary hover:bg-gh-btn-secondary-hover transition"
+            title="RepoLens"
           >
-            <ArrowLeft size={16} />
-          </Link>
-          <div className="flex items-center gap-2">
-            <button
-              className="p-1.5 hover:bg-gh-btn-secondary-hover rounded-md transition text-[#8b949e] hover:text-[#c9d1d9] flex items-center gap-2 border border-[#30363d] px-2.5 bg-[#161b22] font-mono"
-              onClick={() => setLeftOpen(!leftOpen)}
-              title="Toggle File Explorer"
-            >
-              <Folder size={14} className="text-[#58a6ff]" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">
-                {leftOpen ? "Hide Explorer" : "Show Explorer"}
-              </span>
-            </button>
-            <div className="w-6 h-6 rounded bg-gh-btn-secondary flex items-center justify-center text-gh-text border border-gh-border ml-1 hidden md:flex">
-              <span className="font-bold text-xs">RL</span>
+            <div className="w-5 h-5 rounded bg-gh-btn-secondary flex items-center justify-center text-gh-text border border-gh-border">
+              <span className="font-bold text-[10px]">RL</span>
             </div>
-            <span className="font-bold text-gh-text tracking-wide text-sm hidden lg:block">
+            <span className="font-bold text-gh-text tracking-wide text-xs sm:text-sm">
               REPOLENS
             </span>
-          </div>
+          </Link>
+
+          <button
+            className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${
+              leftPanelOpen
+                ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
+                : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
+            }`}
+            onClick={() => setLeftPanelOpen((prev) => !prev)}
+            title="Toggle Left Panel (Ctrl+B)"
+          >
+            <Menu size={15} />
+            <span className="text-[10px] uppercase font-bold hidden xl:inline">Left</span>
+          </button>
+
+          <button
+            className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${
+              explorerOpen
+                ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
+                : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
+            }`}
+            onClick={() => setExplorerOpen((prev) => !prev)}
+            title="Toggle Explorer Drawer (Ctrl+D)"
+          >
+            <Folder size={15} />
+            <span className="text-[10px] uppercase font-bold hidden xl:inline">Explorer</span>
+          </button>
         </div>
 
-        <div className="flex items-center gap-2 flex-1 max-w-2xl px-2 sm:px-6">
+        <div className="flex items-cen
+        -2 flex-1 max-w-2xl px-2 sm:px-6">
           <input
             type="text"
             className="flex-1 bg-gh-input border border-gh-border rounded-md px-3 py-1.5 text-xs text-gh-text focus:outline-none focus:border-gh-accent hidden sm:block"
@@ -368,103 +407,143 @@ export default function CodeflowLayout({
           </button>
           <div className="hidden sm:block">{/* <ThemeToggle /> */}</div>
           <button
-            className={`p-1.5 rounded-md transition flex items-center gap-1.5 ${
+            className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${
               chatOpen
-                ? "text-[#58a6ff] bg-[#58a6ff]/10 border border-[#58a6ff]/30"
-                : "text-gh-text-muted hover:text-[#58a6ff] hover:bg-gh-btn-secondary-hover"
+                ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
+                : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
             }`}
-            title="AI Chat"
-            onClick={() => setChatOpen(!chatOpen)}
+            title="AI Chat (Ctrl+K)"
+            onClick={() => setChatOpen((prev) => !prev)}
           >
             <MessageSquare size={16} />
             <span className="text-[10px] uppercase font-bold hidden xl:inline">AI Chat</span>
           </button>
+
           <button
-            className="lg:hidden p-1.5 text-gh-text-muted hover:text-gh-text"
-            onClick={() => setRightOpen(!rightOpen)}
+            className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${
+              rightPanelOpen
+                ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
+                : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
+            }`}
+            title="Toggle Right Panel (Ctrl+J)"
+            onClick={() => setRightPanelOpen((prev) => !prev)}
           >
-            <Settings size={18} />
+            <Settings size={16} />
+            <span className="text-[10px] uppercase font-bold hidden xl:inline">Right</span>
           </button>
         </div>
       </div>
 
       {/* Main 3-Panel Area */}
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 overflow-hidden relative min-h-0">
         {/* Left Sidebar */}
-        <ResizablePanel
-          side="left"
-          initialWidth={260}
-          minWidth={180}
-          maxWidth={400}
-          className="flex md:relative inset-y-0 left-0 z-40 h-full bg-gh-panel border-r border-gh-border relative overflow-hidden"
-        >
-          {analysisData ? (
-            <div className="flex flex-col h-full bg-gh-bg w-full relative">
-              {/* Upper Section */}
-              <div className="flex-1 p-4 space-y-5 overflow-y-auto custom-scrollbar">
-                {folderFilter && (
-                  <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-2 flex items-center justify-between gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <Folder size={14} className="text-[#58a6ff] shrink-0" />
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] text-[#8b949e] uppercase font-bold tracking-tight">
-                          Active Filter
-                        </span>
-                        <span className="text-xs text-[#c9d1d9] font-medium truncate">
-                          {folderFilter}
-                        </span>
+        {leftPanelOpen && (
+          <ResizablePanel
+            side="left"
+            initialWidth={260}
+            minWidth={180}
+            maxWidth={400}
+            className="relative z-20 h-full bg-gh-panel border-r border-gh-border overflow-hidden"
+            onWidthChange={setLeftPanelWidth}
+          >
+            {analysisData ? (
+              <div className="flex flex-col h-full bg-gh-bg w-full relative">
+                {/* Upper Section */}
+                <div className="flex-1 p-4 space-y-5 overflow-y-auto custom-scrollbar">
+                  {folderFilter && (
+                    <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-2 flex items-center justify-between gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <Folder size={14} className="text-[#58a6ff] shrink-0" />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-[10px] text-[#8b949e] uppercase font-bold tracking-tight">
+                            Active Filter
+                          </span>
+                          <span className="text-xs text-[#c9d1d9] font-medium truncate">
+                            {folderFilter}
+                          </span>
+                        </div>
                       </div>
+                      <button
+                        onClick={() => setFolderFilter(null)}
+                        className="p-1.5 hover:bg-[#21262d] rounded-md text-[#8b949e] hover:text-[#f85149] transition-colors"
+                        title="Clear Filter"
+                      >
+                        <X size={14} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setFolderFilter(null)}
-                      className="p-1.5 hover:bg-[#21262d] rounded-md text-[#8b949e] hover:text-[#f85149] transition-colors"
-                      title="Clear Filter"
-                    >
-                      <X size={14} />
-                    </button>
+                  )}
+                  <HealthRing
+                    score={analysisData.health?.score || 0}
+                    grade={analysisData.health?.grade || "F"}
+                  />
+                  <ColorModeSelector />
+                  <StatsGrid />
+                  <LanguageBar />
+                </div>
+
+                {/* Sliding File Explorer Drawer Overlapping Wholly */}
+                {explorerOpen && (
+                  <div className="absolute inset-0 z-50 bg-[#0d1117] flex flex-col animate-in slide-in-from-left duration-200">
+                    <div className="flex items-center justify-between p-3 border-b border-[#30363d] bg-[#161b22]">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#c9d1d9] uppercase tracking-wider">
+                        <Folder size={14} className="text-[#58a6ff]" />
+                        <span>File Tree Explorer</span>
+                      </div>
+                      <button
+                        onClick={() => setExplorerOpen(false)}
+                        className="p-1 hover:bg-[#21262d] rounded text-[#8b949e] hover:text-[#c9d1d9]"
+                        title="Close Explorer"
+                      >
+                        <Ban size={14} />
+                      </button>
+                    </div>
+                    <div className="flex-1 overflow-auto p-3 custom-scrollbar">
+                      <TreeExplorer />
+                    </div>
                   </div>
                 )}
-                <HealthRing
-                  score={analysisData.health?.score || 0}
-                  grade={analysisData.health?.grade || "F"}
-                />
-                <ColorModeSelector />
-                <StatsGrid />
-                <LanguageBar />
               </div>
-
-              {/* Sliding File Explorer Drawer Overlapping Wholly */}
-              {leftOpen && (
-                <div className="absolute inset-0 z-50 bg-[#0d1117] flex flex-col animate-in slide-in-from-left duration-200">
-                  <div className="flex items-center justify-between p-3 border-b border-[#30363d] bg-[#161b22]">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#c9d1d9] uppercase tracking-wider">
-                      <Folder size={14} className="text-[#58a6ff]" />
-                      <span>File Tree Explorer</span>
-                    </div>
-                    <button
-                      onClick={() => setLeftOpen(false)}
-                      className="p-1 hover:bg-[#21262d] rounded text-[#8b949e] hover:text-[#c9d1d9]"
-                      title="Close Explorer"
-                    >
-                      <Ban size={14} />
-                    </button>
-                  </div>
-                  <div className="flex-1 overflow-auto p-3 custom-scrollbar">
-                    <TreeExplorer />
-                  </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-gh-text-muted">
+                <div className="w-12 h-12 mb-4 opacity-50 flex items-center justify-center rounded-full bg-gh-btn-secondary">
+                  <Menu size={24} />
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-gh-text-muted">
-              <div className="w-12 h-12 mb-4 opacity-50 flex items-center justify-center rounded-full bg-gh-btn-secondary">
-                <Menu size={24} />
+                <h3 className="text-gh-text font-bold text-sm mb-1">No Repository</h3>
+                <p className="text-xs">Analyzing architecture and calculating metrics...</p>
               </div>
-              <h3 className="text-gh-text font-bold text-sm mb-1">No Repository</h3>
-              <p className="text-xs">Analyzing architecture and calculating metrics...</p>
+            )}
+          </ResizablePanel>
+        )}
+
+        {/* Explorer Overlay (independent of left panel) */}
+        {explorerOpen && (
+          <div
+            className="absolute z-60 bg-[#0d1117] border-r border-gh-border shadow-2xl flex flex-col min-h-0"
+            style={{
+              top: 0,
+              bottom: 0,
+              left: 0,
+              width: `${leftPanelOpen ? leftPanelWidth : 320}px`,
+            }}
+          >
+            <div className="flex items-center justify-between p-3 border-b border-[#30363d] bg-[#161b22]">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#c9d1d9] uppercase tracking-wider">
+                <Folder size={14} className="text-[#58a6ff]" />
+                <span>File Tree Explorer</span>
+              </div>
+              <button
+                onClick={() => setExplorerOpen(false)}
+                className="p-1 hover:bg-[#21262d] rounded text-[#8b949e] hover:text-[#c9d1d9]"
+                title="Close Explorer"
+              >
+                <Ban size={14} />
+              </button>
             </div>
-          )}
-        </ResizablePanel>
+            <div className="flex-1 overflow-auto p-3 custom-scrollbar">
+              <TreeExplorer />
+            </div>
+          </div>
+        )}
 
         {/* Center Canvas */}
         <div className="flex-1 flex flex-col min-w-0 bg-gh-bg relative overflow-hidden">
@@ -485,61 +564,63 @@ export default function CodeflowLayout({
         </div>
 
         {/* Right Panel */}
-        <ResizablePanel
-          side="right"
-          initialWidth={360}
-          minWidth={280}
-          maxWidth={500}
-          className={`${rightOpen ? "flex absolute inset-y-0 right-0 z-40" : "hidden"} lg:relative lg:flex`}
-        >
-          {/* Tab Bar */}
-          <div className="flex border-b border-gh-border bg-gh-panel shrink-0">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                className={`flex-1 py-2 text-[10px] font-bold transition flex items-center justify-center gap-1 ${
-                  rightTab === tab.key
-                    ? "text-gh-accent border-b-2 border-gh-accent"
-                    : "text-gh-text-muted hover:text-gh-text border-b-2 border-transparent hover:border-gh-border"
-                }`}
-                onClick={() => {
-                  setRightTab(tab.key as RightTab);
-                  setDrillDown(null);
-                }}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Panel Content */}
-          <div
-            className={`flex-1 overflow-y-auto bg-gh-bg custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}
+        {rightPanelOpen && (
+          <ResizablePanel
+            side="right"
+            initialWidth={360}
+            minWidth={280}
+            maxWidth={500}
+            className="relative z-20 h-full"
           >
-            {analysisData ? (
-              <div className="flex-1 flex flex-col relative bg-gh-bg">
-                {rightTab === "details" && (selectedFile ? <FileInspector /> : <IssuesPanel />)}
-                {rightTab === "patterns" && <PatternsPanel />}
-                {rightTab === "security" && <SecurityPanel />}
-                {rightTab === "suggestions" && <SuggestionsPanel />}
-                {rightTab === "code" && <CodePanel repoId={repoId} />}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-gh-text-muted">
-                <div className="text-3xl mb-3 opacity-30">📊</div>
-                <div className="text-xs font-semibold mb-1">Analysis</div>
-                <div className="text-[10px] text-center opacity-60">
-                  Analyze a repo to see insights
+            {/* Tab Bar */}
+            <div className="flex border-b border-gh-border bg-gh-panel shrink-0">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  className={`flex-1 py-2 text-[10px] font-bold transition flex items-center justify-center gap-1 ${
+                    rightTab === tab.key
+                      ? "text-gh-accent border-b-2 border-gh-accent"
+                      : "text-gh-text-muted hover:text-gh-text border-b-2 border-transparent hover:border-gh-border"
+                  }`}
+                  onClick={() => {
+                    setRightTab(tab.key as RightTab);
+                    setDrillDown(null);
+                  }}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Content */}
+            <div
+              className={`flex-1 overflow-y-auto bg-gh-bg custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}
+            >
+              {analysisData ? (
+                <div className="flex-1 flex flex-col relative bg-gh-bg">
+                  {rightTab === "details" && (selectedFile ? <FileInspector /> : <IssuesPanel />)}
+                  {rightTab === "patterns" && <PatternsPanel />}
+                  {rightTab === "security" && <SecurityPanel />}
+                  {rightTab === "suggestions" && <SuggestionsPanel />}
+                  {rightTab === "code" && <CodePanel repoId={repoId} />}
                 </div>
-              </div>
-            )}
-          </div>
-        </ResizablePanel>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-gh-text-muted">
+                  <div className="text-3xl mb-3 opacity-30">📊</div>
+                  <div className="text-xs font-semibold mb-1">Analysis</div>
+                  <div className="text-[10px] text-center opacity-60">
+                    Analyze a repo to see insights
+                  </div>
+                </div>
+              )}
+            </div>
+          </ResizablePanel>
+        )}
 
         {/* ── Chat Slide-Out Panel ── */}
         {chatOpen && (
-          <div className="w-[380px] shrink-0 z-[60] border-l border-gh-border bg-[#0d1117] shadow-[-10px_0_20px_rgba(0,0,0,0.2)] flex flex-col animate-in slide-in-from-right duration-300 relative">
+          <div className="w-[380px] shrink-0 z-20 border-l border-gh-border bg-[#0d1117] shadow-[-10px_0_20px_rgba(0,0,0,0.2)] flex flex-col animate-in slide-in-from-right duration-300 relative min-h-0">
             <ChatPanel
               repoId={repoId}
               chatMessages={chatMessages}

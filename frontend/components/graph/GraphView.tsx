@@ -130,7 +130,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
     collapsedNodes.forEach((nodeId) => findDescendants(nodeId));
 
     const nodes = graphData.nodes.filter((n: any) => !hiddenNodes.has(n.id));
-    
+
     // Elevate links to nearest visible ancestors
     const elevatedLinksMap = new Map<string, any>();
 
@@ -144,7 +144,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
         }
         return;
       }
-      
+
       // Non-hierarchy links are always passed to simulation to keep physics stable
       // Visually, they will be hidden using linkColor if highlightLinks is off
 
@@ -156,11 +156,11 @@ export default function GraphView({ repoId }: { repoId: string }) {
         if (elevatedLinksMap.has(key)) {
           elevatedLinksMap.get(key).value = (elevatedLinksMap.get(key).value || 1) + 1;
         } else {
-          elevatedLinksMap.set(key, { 
-            ...l, 
-            source: visibleSrc, 
+          elevatedLinksMap.set(key, {
+            ...l,
+            source: visibleSrc,
             target: visibleTgt,
-            value: 1 
+            value: 1,
           });
         }
       }
@@ -255,8 +255,8 @@ export default function GraphView({ repoId }: { repoId: string }) {
   useEffect(() => {
     if (fgRef.current) {
       fgRef.current.d3Force("charge").strength(-1200); // push nodes apart strongly
-      fgRef.current.d3Force("link").distance((link: any) => link.label === "contains" ? 80 : 360); 
-      fgRef.current.d3Force("link").strength((link: any) => link.label === "contains" ? 1 : 0.01);
+      fgRef.current.d3Force("link").distance((link: any) => (link.label === "contains" ? 80 : 360));
+      fgRef.current.d3Force("link").strength((link: any) => (link.label === "contains" ? 1 : 0.01));
     }
   }, [visibleGraphData]);
 
@@ -327,14 +327,14 @@ export default function GraphView({ repoId }: { repoId: string }) {
       className="w-full h-full bg-[#0d1117] overflow-hidden relative group border-2 border-[#30363d] rounded-xl flex-grow"
       onPointerMove={handlePointerMove}
     >
-      <div className="absolute top-4 left-4 z-10 bg-[#161b22] border border-[#30363d] px-4 py-2 rounded-lg shadow-lg">
+      <div className="absolute top-20 left-4 z-30 bg-[#161b22] border border-[#30363d] px-4 py-2 rounded-lg shadow-lg">
         <h3 className="text-white text-sm font-semibold">Codebase Visualizer</h3>
         <p className="text-xs text-[#8b949e]">Click a folder to toggle collapse</p>
         <p className="text-xs text-[#8b949e]">Click a file to view code</p>
       </div>
 
       {blastRadius && (
-        <div className="absolute top-4 right-4 z-10 bg-[#ff5858]/10 border border-[#ff5858]/50 px-4 py-2 rounded-lg shadow-[0_0_15px_rgba(255,88,88,0.2)] flex items-center gap-3 backdrop-blur-md animate-fadeInUp">
+        <div className="absolute top-20 right-4 z-30 bg-[#ff5858]/10 border border-[#ff5858]/50 px-4 py-2 rounded-lg shadow-[0_0_15px_rgba(255,88,88,0.2)] flex items-center gap-3 backdrop-blur-md animate-fadeInUp">
           <div className="flex items-center gap-2">
             <Flame className="text-[#ff5858] animate-pulse" size={18} />
             <div>
@@ -594,11 +594,12 @@ export default function GraphView({ repoId }: { repoId: string }) {
             return 0;
           if (link.label === "contains") return 0;
           if (!highlightLinks) return 0; // Hide arrow head if disabled
-          
+
           const type = link.label?.toLowerCase() || "";
           if (type.includes("call") && !relationFilters.calls) return 0;
           if (type.includes("access") && !relationFilters.accesses) return 0;
-          if ((type.includes("import") || type.includes("export")) && !relationFilters.imports) return 0;
+          if ((type.includes("import") || type.includes("export")) && !relationFilters.imports)
+            return 0;
           if (type.includes("handle") && !relationFilters.handles) return 0;
 
           return 6;
@@ -611,31 +612,33 @@ export default function GraphView({ repoId }: { repoId: string }) {
             if (blastRadius.affectedNodeIds.has(sId) && blastRadius.affectedNodeIds.has(tId)) {
               return "rgba(255, 88, 88, 0.8)";
             }
-            return "rgba(255, 255, 255, 0.02)"; 
+            return "rgba(255, 255, 255, 0.02)";
           }
-          
+
           if (link.label === "contains") {
             return highlightLinks ? "rgba(139, 148, 158, 0.05)" : "rgba(139, 148, 158, 0.15)";
           }
-          
+
           // If links are globally disabled, hide completely
           if (!highlightLinks) return "rgba(0, 0, 0, 0)";
 
           // Color code by relationship type (access: red, calls: blue, imports: green, handles: yellow)
           const type = link.label?.toLowerCase() || "";
-          
+
           if (type.includes("call") && !relationFilters.calls) return "rgba(0, 0, 0, 0)";
           if (type.includes("access") && !relationFilters.accesses) return "rgba(0, 0, 0, 0)";
-          if ((type.includes("import") || type.includes("export")) && !relationFilters.imports) return "rgba(0, 0, 0, 0)";
+          if ((type.includes("import") || type.includes("export")) && !relationFilters.imports)
+            return "rgba(0, 0, 0, 0)";
           if (type.includes("handle") && !relationFilters.handles) return "rgba(0, 0, 0, 0)";
 
           const opacity = 0.55; // Slightly dimmed
 
-          if (type.includes("access")) return `rgba(239, 68, 68, ${opacity})`;   // Red
-          if (type.includes("call")) return `rgba(59, 130, 246, ${opacity})`;    // Blue
-          if (type.includes("import") || type.includes("export")) return `rgba(34, 197, 94, ${opacity})`; // Green
-          if (type.includes("handle")) return `rgba(234, 179, 8, ${opacity})`;   // Yellow
-          
+          if (type.includes("access")) return `rgba(239, 68, 68, ${opacity})`; // Red
+          if (type.includes("call")) return `rgba(59, 130, 246, ${opacity})`; // Blue
+          if (type.includes("import") || type.includes("export"))
+            return `rgba(34, 197, 94, ${opacity})`; // Green
+          if (type.includes("handle")) return `rgba(234, 179, 8, ${opacity})`; // Yellow
+
           return `rgba(139, 148, 158, ${opacity})`;
         }}
         onNodeClick={handleNodeClick}
@@ -647,7 +650,11 @@ export default function GraphView({ repoId }: { repoId: string }) {
               id: node.id,
               type: entityType,
               name: node.name,
-              path: node.path || (typeof node.id === "string" && node.id.includes("::") ? node.id.split("::")[0] : node.id),
+              path:
+                node.path ||
+                (typeof node.id === "string" && node.id.includes("::")
+                  ? node.id.split("::")[0]
+                  : node.id),
               source: "GRAPH_VIEW",
             };
             useDragStore.getState().startDrag(payload);

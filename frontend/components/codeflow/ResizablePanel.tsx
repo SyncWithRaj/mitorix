@@ -9,6 +9,7 @@ interface ResizablePanelProps {
   maxWidth: number;
   side: "left" | "right";
   className?: string;
+  onWidthChange?: (width: number) => void;
 }
 
 export default function ResizablePanel({
@@ -18,10 +19,15 @@ export default function ResizablePanel({
   maxWidth,
   side,
   className = "",
+  onWidthChange,
 }: ResizablePanelProps) {
   const [width, setWidth] = useState(initialWidth);
   const [isDragging, setIsDragging] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    onWidthChange?.(width);
+  }, [width, onWidthChange]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
