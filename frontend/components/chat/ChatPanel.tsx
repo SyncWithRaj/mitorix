@@ -1,6 +1,6 @@
 "use client";
 
-import { EditorContext, useEditor } from "@/context/EditorContext";
+import { EditorContext } from "@/context/EditorContext";
 import { CodeflowContext } from "@/context/CodeflowContext";
 import { useContext } from "react";
 import api from "@/lib/axios";
@@ -29,35 +29,32 @@ import type { DraggedContextNode } from "@/lib/dragdrop.types";
 
 // Typewriter hook for streaming effect
 function useTypewriter(text: string, isActive: boolean, speed: number = 12) {
-  const [displayed, setDisplayed] = useState("");
-  const [isDone, setIsDone] = useState(false);
+  const [step, setStep] = useState(0);
 
   useEffect(() => {
-    if (!isActive) {
-      setDisplayed(text);
-      setIsDone(true);
-      return;
-    }
+    if (!isActive) return;
 
-    setDisplayed("");
-    setIsDone(false);
     let i = 0;
 
     const interval = setInterval(() => {
-      i += 3; // 3 chars per tick for natural speed
+      i += 3;
       if (i >= text.length) {
-        setDisplayed(text);
-        setIsDone(true);
+        setStep(text.length);
         clearInterval(interval);
       } else {
-        setDisplayed(text.slice(0, i));
+        setStep(i);
       }
     }, speed);
 
     return () => clearInterval(interval);
   }, [text, isActive, speed]);
 
-  return { displayed, isDone };
+  if (!isActive) {
+    return { displayed: text, isDone: true };
+  }
+
+  const displayed = text.slice(0, step);
+  return { displayed, isDone: step >= text.length };
 }
 
 // Individual message component with typewriter support
@@ -72,6 +69,30 @@ function AssistantMessage({ content, shouldStream }: { content: string; shouldSt
   );
 }
 
+type ChatRef = { file: string; startLine?: number; endLine?: number };
+type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+  references?: ChatRef[];
+  attachedNodes?: DraggedContextNode[];
+  attachments?: DraggedContextNode[];
+};
+
+type ChatPanelProps = {
+  repoId: string;
+  chatMessages: ChatMessage[];
+  callMessages: ChatMessage[];
+  input: string;
+  setInput: React.Dispatch<React.SetStateAction<string>>;
+  sendMessage: () => void;
+  addCallMessages: (messages: ChatMessage[]) => void;
+  loading: boolean;
+  streamingIndex: number | null;
+  onDeleteChat: (type: "chat" | "call") => void;
+  attachedNodes?: DraggedContextNode[];
+  setAttachedNodes?: React.Dispatch<React.SetStateAction<DraggedContextNode[]>>;
+};
+
 export default function ChatPanel({
   repoId,
   chatMessages,
@@ -82,11 +103,10 @@ export default function ChatPanel({
   addCallMessages,
   loading,
   streamingIndex,
-  onStreamComplete,
   onDeleteChat,
   attachedNodes = [],
   setAttachedNodes,
-}: any) {
+}: ChatPanelProps) {
   const router = useRouter();
   const { isDragging } = useDragStore();
   const [dropHighlight, setDropHighlight] = useState(false);
@@ -198,7 +218,7 @@ export default function ChatPanel({
     }
   }, [streamingIndex]);
 
-  const openReference = async (ref: any) => {
+  const openReference = async (ref: ChatRef) => {
     try {
       if (setCodeflowSelectedFile && setCodeflowRightTab && setCodeflowHighlightRange) {
         setCodeflowSelectedFile(ref.file);
@@ -236,7 +256,7 @@ export default function ChatPanel({
 
   const handleBlastRadiusClick = (file: string, name: string) => {
     const nodeId = name ? `${file}::${name}` : file;
-    router.push(`/graph/${repoId}?blastRadius=${encodeURIComponent(nodeId)}`);
+    router.push(`/codeflow/${repoId}?blastRadius=${encodeURIComponent(nodeId)}`);
   };
 
   const stopSilenceDetection = () => {
@@ -565,7 +585,7 @@ export default function ChatPanel({
             </p>
           </div>
         ) : (
-          activeMessages.map((msg: any, i: number) => {
+          activeMessages.map((msg: ChatMessage, i: number) => {
             const isStreamingThis =
               activeTab === "chat" && msg.role === "assistant" && i === streamingIndex;
 
@@ -636,14 +656,16 @@ export default function ChatPanel({
                     ((msg.attachedNodes && msg.attachedNodes.length > 0) ||
                       (msg.attachments && msg.attachments.length > 0)) && (
                       <div className="flex flex-wrap gap-1 px-4 pb-3 border-t border-[#30363d]/30 pt-2">
-                        {(msg.attachedNodes || msg.attachments).map((n: any) => (
-                          <span
-                            key={n.id}
-                            className="text-[10px] bg-[#58a6ff]/10 border border-[#58a6ff]/20 rounded px-2 py-0.5 text-[#58a6ff] font-mono inline-flex items-center gap-1"
-                          >
-                            {entityIcons[n.type] || "📎"} {n.name}
-                          </span>
-                        ))}
+                        {((msg.attachedNodes || msg.attachments) ?? []).map(
+                          (n: DraggedContextNode) => (
+                            <span
+                              key={n.id}
+                              className="text-[10px] bg-[#58a6ff]/10 border border-[#58a6ff]/20 rounded px-2 py-0.5 text-[#58a6ff] font-mono inline-flex items-center gap-1"
+                            >
+                              {entityIcons[n.type] || "📎"} {n.name}
+                            </span>
+                          )
+                        )}
                       </div>
                     )}
                 </div>
@@ -654,7 +676,7 @@ export default function ChatPanel({
                       References
                     </span>
                     <div className="flex flex-wrap gap-2">
-                      {msg.references.map((ref: any, idx: number) => (
+                      {msg.references.map((ref: ChatRef, idx: number) => (
                         <div
                           key={idx}
                           onClick={() => openReference(ref)}

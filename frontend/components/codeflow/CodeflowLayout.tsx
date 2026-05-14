@@ -62,9 +62,18 @@ import ExportModal from "./modals/ExportModal";
 import UnusedFunctionsModal from "./modals/UnusedFunctionsModal";
 import ExcludePatternsModal from "./modals/ExcludePatternsModal";
 import ConfirmDialog from "./modals/ConfirmDialog";
-import ThemeToggle from "./ThemeToggle";
+
 import AnalysisProgress from "./AnalysisProgress";
 import { getWorkerManager } from "../../lib/worker.utils";
+
+export type ChatRef = { file: string; startLine?: number; endLine?: number };
+export type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+  references?: ChatRef[];
+  attachedNodes?: DraggedContextNode[];
+  attachments?: DraggedContextNode[];
+};
 
 export default function CodeflowLayout({
   repoId,
@@ -108,8 +117,9 @@ export default function CodeflowLayout({
 
   // ── Chat Slide-Out State ──
   const [chatOpen, setChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<any[]>([]);
-  const [callMessages, setCallMessages] = useState<any[]>([]);
+
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [callMessages, setCallMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [streamingIndex, setStreamingIndex] = useState<number | null>(null);
@@ -162,7 +172,7 @@ export default function CodeflowLayout({
     const questionText = chatInput.trim();
     const sentNodes = [...attachedNodes];
 
-    const userMsg: any = { role: "user", content: questionText };
+    const userMsg: ChatMessage = { role: "user", content: questionText };
     if (sentNodes.length > 0) {
       userMsg.attachedNodes = sentNodes;
       userMsg.attachments = sentNodes;
@@ -180,7 +190,7 @@ export default function CodeflowLayout({
         attachedNodes: sentNodes.length > 0 ? sentNodes : undefined,
       });
 
-      const aiMsg = {
+      const aiMsg: ChatMessage = {
         role: "assistant",
         content: res.data.answer,
         references: res.data.references || [],
@@ -345,8 +355,7 @@ export default function CodeflowLayout({
           </button>
         </div>
 
-        <div className="flex items-cen
-        -2 flex-1 max-w-2xl px-2 sm:px-6">
+        <div className="flex items-center gap-2 flex-1 max-w-2xl px-2 sm:px-6">
           <input
             type="text"
             className="flex-1 bg-gh-input border border-gh-border rounded-md px-3 py-1.5 text-xs text-gh-text focus:outline-none focus:border-gh-accent hidden sm:block"
@@ -628,10 +637,11 @@ export default function CodeflowLayout({
               input={chatInput}
               setInput={setChatInput}
               sendMessage={sendMessage}
-              addCallMessages={(newMsgs: any[]) => setCallMessages((prev) => [...prev, ...newMsgs])}
+              addCallMessages={(newMsgs: ChatMessage[]) =>
+                setCallMessages((prev) => [...prev, ...newMsgs])
+              }
               loading={chatLoading}
               streamingIndex={streamingIndex}
-              onStreamComplete={() => setStreamingIndex(null)}
               onDeleteChat={handleDeleteChat}
               attachedNodes={attachedNodes}
               setAttachedNodes={setAttachedNodes}

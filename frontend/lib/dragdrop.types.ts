@@ -26,11 +26,7 @@ export type EntityType =
   | "SUGGESTION"
   | "DUPLICATE";
 
-export type DragSource =
-  | "LEFT_PANEL"
-  | "FORCE_GRAPH"
-  | "GRAPH_VIEW"
-  | "RIGHT_PANEL";
+export type DragSource = "LEFT_PANEL" | "FORCE_GRAPH" | "GRAPH_VIEW" | "RIGHT_PANEL";
 
 export interface DraggedContextNode {
   id: string; // MongoDB _id, file path, graph node id, or synthetic id
@@ -40,11 +36,11 @@ export interface DraggedContextNode {
   source: DragSource;
   // Extra context for right-panel items that don't have vector embeddings.
   // (severity, description, code snippet, etc.)
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // Maps a CodeEntity type string to our EntityType union
-const _typeMapBase = new Map<string, EntityType>([
+const typeMapBase = new Map<string, EntityType>([
   ["folder", "FOLDER"],
   ["file", "FILE"],
   ["function", "FUNCTION"],
@@ -64,7 +60,7 @@ const _typeMapBase = new Map<string, EntityType>([
 ]);
 
 export function getEntityType(typeStr: string): EntityType {
-  return _typeMapBase.get(typeStr) || "FILE";
+  return typeMapBase.get(typeStr) || "FILE";
 }
 
 // Emoji icon for each entity type used in context chips
