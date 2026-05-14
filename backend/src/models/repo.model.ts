@@ -9,6 +9,8 @@ export interface IRepository extends Document {
   localPath: string;
   status: "cloning" | "cloned" | "indexing" | "indexed" | "failed";
   jobId?: string;
+  commitHash?: string;
+  fingerprint?: string;
   createdAt: Date;
   updatedAt: Date;
   lastAccessedAt: Date;
@@ -128,5 +130,3 @@ export const touchRepository = async (repoId: string) => {
     logger.error({ err: error, repoId }, "Failed to update repository access timer");
   }
 };
-
-
