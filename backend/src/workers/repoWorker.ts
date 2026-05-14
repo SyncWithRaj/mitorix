@@ -1,6 +1,6 @@
 import { Worker, Job } from "bullmq";
-import Redis from "ioredis";
-import simpleGit from "simple-git";
+import { Redis } from "ioredis";
+import { simpleGit } from "simple-git";
 import fs from "fs";
 import { Repository } from "../models/repo.model.js";
 import type { JobData, JobResult } from "../queue/jobQueue.js";
@@ -10,6 +10,7 @@ import { processRepositoryParsing } from "../services/parser.service.js";
 import { embedRepository } from "../services/embedRepository.service.js";
 import logger from "../lib/logger.js";
 
+// @ts-ignore - ioredis constructor typing interop in this tsconfig (NodeNext) is noisy here
 const redisConnection = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
   maxRetriesPerRequest: null,
 });
@@ -57,13 +58,18 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
           const parts = safeUrl.split("/");
           const owner = parts[parts.length - 2];
           const repoName = parts[parts.length - 1];
+          if (!owner || !repoName) {
+            throw new Error("Invalid GitHub repository URL for app token negotiation");
+          }
+          const ownerName: string = owner;
+          const repositoryName: string = repoName;
 
           // Find if the user installed the app on this specific repo
           const { data: installation } = await app.octokit.request(
             "GET /repos/{owner}/{repo}/installation",
             {
-              owner,
-              repo: repoName,
+              owner: ownerName,
+              repo: repositoryName,
             }
           );
 
@@ -74,9 +80,9 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
             installation_id: installation.id,
           });
 
-          cloneUrl = `https://x-access-token:${token}@github.com/${owner}/${repoName}.git`;
+          cloneUrl = `https://x-access-token:${token}@github.com/${ownerName}/${repositoryName}.git`;
           logger.info(
-            { owner, repoName, repoId },
+            { owner: ownerName, repoName: repositoryName, repoId },
             "Installation token generated — cloning private repository"
           );
         } catch (e: any) {
@@ -170,7 +176,7 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
       // logger.info({ repoId }, "Uploading semantics to Qdrant");
       // await job.updateProgress(80);
       // await embedRepository(repoId);
-      
+
       // === SUCCESS ===
       await Repository.findByIdAndUpdate(repoId, { status: "indexed" });
       await job.updateProgress(100);
@@ -191,7 +197,10 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
           logger.info({ repoPath, repoId }, "Temporary directory cleaned up");
         }
       } catch (cleanupError) {
-        logger.error({ err: cleanupError, repoPath }, "FATAL: Failed to clean up temporary directory");
+        logger.error(
+          { err: cleanupError, repoPath },
+          "FATAL: Failed to clean up temporary directory"
+        );
       }
     }
   },
