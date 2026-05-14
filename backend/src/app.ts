@@ -1,4 +1,6 @@
 import express from "express";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - type resolution for cors is unavailable in this environment
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import passport from "./config/passport.js";
