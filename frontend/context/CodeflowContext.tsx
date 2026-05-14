@@ -20,7 +20,9 @@ interface CodeflowState {
   highlightLinks: boolean;
   setHighlightLinks: (highlight: boolean) => void;
   relationFilters: { calls: boolean; accesses: boolean; imports: boolean; handles: boolean };
-  setRelationFilters: React.Dispatch<React.SetStateAction<{ calls: boolean; accesses: boolean; imports: boolean; handles: boolean }>>;
+  setRelationFilters: React.Dispatch<
+    React.SetStateAction<{ calls: boolean; accesses: boolean; imports: boolean; handles: boolean }>
+  >;
 
   // Data from backend
   analysisData: AnalysisData | null;
@@ -37,6 +39,10 @@ interface CodeflowState {
   // Interaction State
   selectedFile: string | null;
   setSelectedFile: (fileId: string | null) => void;
+  codeHighlightRange: { startLine: number; endLine: number } | null;
+  setCodeHighlightRange: (range: { startLine: number; endLine: number } | null) => void;
+  codeOpenTabs: string[];
+  setCodeOpenTabs: React.Dispatch<React.SetStateAction<string[]>>;
   hoveredNode: any | null;
   setHoveredNode: (node: any | null) => void;
   folderFilter: string | null;
@@ -223,6 +229,11 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
   const [graphConfig, setGraphConfig] = useState<GraphConfig>(DEFAULT_GRAPH_CONFIG);
 
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [codeHighlightRange, setCodeHighlightRange] = useState<{
+    startLine: number;
+    endLine: number;
+  } | null>(null);
+  const [codeOpenTabs, setCodeOpenTabs] = useState<string[]>([]);
   const [hoveredNode, setHoveredNode] = useState<any | null>(null);
   const [folderFilter, setFolderFilter] = useState<string | null>(null);
 
@@ -300,6 +311,8 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
         console.log("[CodeFlow] Selecting file:", path);
         console.log("[CodeFlow] Connections sample:", analysisData.connections.slice(0, 2));
         setSelectedFile(path);
+        setCodeOpenTabs((prev) => (prev.includes(path) ? prev : [...prev, path]));
+        setCodeHighlightRange(null);
         setRightTab("details");
         setExpandedFns(new Set());
         const blast = calcBlast(path, analysisData.connections, analysisData.files);
@@ -312,6 +325,7 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
 
   const deselectFile = useCallback(() => {
     setSelectedFile(null);
+    setCodeHighlightRange(null);
     setBlastRadius(null);
   }, []);
 
@@ -337,6 +351,10 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
         setGraphConfig,
         selectedFile,
         setSelectedFile,
+        codeHighlightRange,
+        setCodeHighlightRange,
+        codeOpenTabs,
+        setCodeOpenTabs,
         hoveredNode,
         setHoveredNode,
         folderFilter,

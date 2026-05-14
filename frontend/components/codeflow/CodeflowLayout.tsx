@@ -81,6 +81,9 @@ export default function CodeflowLayout({
     setIsLoading,
     graphConfig,
     selectedFile,
+    setSelectedFile,
+    setCodeHighlightRange,
+    setCodeOpenTabs,
     rightTab,
     setRightTab,
     setDrillDown,
@@ -164,6 +167,17 @@ export default function CodeflowLayout({
         setStreamingIndex(newMessages.length - 1);
         return newMessages;
       });
+
+      if (res.data.references?.length > 0) {
+        const topRef = res.data.references[0];
+        setSelectedFile(topRef.file);
+        setCodeOpenTabs((prev) => (prev.includes(topRef.file) ? prev : [...prev, topRef.file]));
+        setCodeHighlightRange({
+          startLine: topRef.startLine || 1,
+          endLine: topRef.endLine || topRef.startLine || 1,
+        });
+        setRightTab("code");
+      }
     } catch {
       setChatMessages((prev) => [
         ...prev,
@@ -173,7 +187,15 @@ export default function CodeflowLayout({
     }
 
     setChatLoading(false);
-  }, [chatInput, attachedNodes, repoId]);
+  }, [
+    chatInput,
+    attachedNodes,
+    repoId,
+    setSelectedFile,
+    setCodeHighlightRange,
+    setCodeOpenTabs,
+    setRightTab,
+  ]);
 
   const handleDeleteChat = useCallback(
     async (type: "chat" | "call") => {

@@ -118,6 +118,9 @@ export default function ChatPanel({
   const setEditorState = editorContext?.setEditorState || null;
   const codeflowContext = useContext(CodeflowContext);
   const setFilePreview = codeflowContext?.setFilePreview || null;
+  const setCodeflowSelectedFile = codeflowContext?.setSelectedFile || null;
+  const setCodeflowRightTab = codeflowContext?.setRightTab || null;
+  const setCodeflowHighlightRange = codeflowContext?.setCodeHighlightRange || null;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<"chat" | "call">("chat");
 
@@ -197,6 +200,16 @@ export default function ChatPanel({
 
   const openReference = async (ref: any) => {
     try {
+      if (setCodeflowSelectedFile && setCodeflowRightTab && setCodeflowHighlightRange) {
+        setCodeflowSelectedFile(ref.file);
+        setCodeflowHighlightRange({
+          startLine: ref.startLine || 1,
+          endLine: ref.endLine || ref.startLine || 1,
+        });
+        setCodeflowRightTab("code");
+        return;
+      }
+
       const res = await api.get("/files/content", {
         params: { repoId, path: ref.file },
       });
@@ -619,18 +632,20 @@ export default function ChatPanel({
                   </div>
 
                   {/* Show attached context chips on user messages */}
-                  {msg.role === "user" && ((msg.attachedNodes && msg.attachedNodes.length > 0) || (msg.attachments && msg.attachments.length > 0)) && (
-                    <div className="flex flex-wrap gap-1 px-4 pb-3 border-t border-[#30363d]/30 pt-2">
-                      {(msg.attachedNodes || msg.attachments).map((n: any) => (
-                        <span
-                          key={n.id}
-                          className="text-[10px] bg-[#58a6ff]/10 border border-[#58a6ff]/20 rounded px-2 py-0.5 text-[#58a6ff] font-mono inline-flex items-center gap-1"
-                        >
-                          {entityIcons[n.type] || "📎"} {n.name}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  {msg.role === "user" &&
+                    ((msg.attachedNodes && msg.attachedNodes.length > 0) ||
+                      (msg.attachments && msg.attachments.length > 0)) && (
+                      <div className="flex flex-wrap gap-1 px-4 pb-3 border-t border-[#30363d]/30 pt-2">
+                        {(msg.attachedNodes || msg.attachments).map((n: any) => (
+                          <span
+                            key={n.id}
+                            className="text-[10px] bg-[#58a6ff]/10 border border-[#58a6ff]/20 rounded px-2 py-0.5 text-[#58a6ff] font-mono inline-flex items-center gap-1"
+                          >
+                            {entityIcons[n.type] || "📎"} {n.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 {msg.references && msg.references.length > 0 && (
@@ -735,17 +750,30 @@ export default function ChatPanel({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={attachedNodes?.length > 0 ? "Ask about the attached items..." : "Ask anything about this repo..."}
+                placeholder={
+                  attachedNodes?.length > 0
+                    ? "Ask about the attached items..."
+                    : "Ask anything about this repo..."
+                }
                 className="flex-1 bg-transparent px-4 py-3 text-[13px] text-[#c9d1d9] focus:outline-none resize-none min-h-[44px] max-h-[150px] overflow-y-auto placeholder:text-[#8b949e] custom-scrollbar"
                 disabled={loading}
                 rows={1}
               />
               <button
                 onClick={sendMessage}
-                disabled={loading || (!input.trim() && (!attachedNodes || attachedNodes.length === 0))}
+                disabled={
+                  loading || (!input.trim() && (!attachedNodes || attachedNodes.length === 0))
+                }
                 className="mb-1 mr-1 p-2.5 rounded-xl bg-[#2ea043] hover:bg-[#3fb950] active:scale-95 text-white disabled:opacity-50 disabled:bg-[#30363d]/50 disabled:text-[#8b949e] transition-all flex items-center justify-center cursor-pointer disabled:cursor-not-allowed shadow-sm border border-[rgba(255,255,255,0.1)] disabled:border-transparent shrink-0"
               >
-                <Send size={16} className={loading || (!input.trim() && (!attachedNodes || attachedNodes.length === 0)) ? "" : "translate-x-[-1px]"} />
+                <Send
+                  size={16}
+                  className={
+                    loading || (!input.trim() && (!attachedNodes || attachedNodes.length === 0))
+                      ? ""
+                      : "translate-x-[-1px]"
+                  }
+                />
               </button>
             </div>
           </div>
