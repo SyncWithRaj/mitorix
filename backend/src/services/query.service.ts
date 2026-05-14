@@ -5,6 +5,8 @@ import { generateChatAnswer, type ChatMessage } from "./llm.service.js";
 import { searchVectors } from "./vector.service.js";
 import path from "path";
 import logger from "../lib/logger.js";
+import { AppError } from "../middlewares/error.middleware.js";
+import { getRepositoryForUserOrThrow } from "../utils/repositoryAccess.util.js";
 
 // Approximate token count (1 token ≈ 4 chars). Gemini 2.5 Flash has ~1M tokens,
 // but we cap context to leave room for the model's response.
@@ -57,12 +59,12 @@ interface ContextRef {
 
 export const askQuestion = async (
   repoId: string,
+  requesterUserId: string,
   question: string,
   history: any[] = [],
   attachedNodes: AttachedNode[] = []
 ) => {
-  const repo = await Repository.findById(repoId);
-  if (!repo) throw new Error("Repository not found");
+  const repo = await getRepositoryForUserOrThrow(repoId, requesterUserId);
 
   // ── 1. On-demand Vector Embedding if not already done ──
   if (!repo.isEmbedded) {

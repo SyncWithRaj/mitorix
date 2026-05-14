@@ -1,31 +1,17 @@
 import type { Request, Response, NextFunction } from "express";
-import mongoose from "mongoose";
+
 import { CodeRelationship } from "../models/relationship.model.js";
-import { Repository } from "../models/repo.model.js";
+import { getOwnedRepositoryOrThrow, ensureValidRepoId } from "../utils/repositoryAccess.util.js";
 import logger from "../lib/logger.js";
 
 export async function getRepositoryoRelations(req: Request, res: Response, next: NextFunction) {
   try {
-    const { id } = req.params;
+    const repoId = ensureValidRepoId(req.params.id);
     const { from, to, type, file } = req.query;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid repository id",
-      });
-    }
+    await getOwnedRepositoryOrThrow(repoId, req.user);
 
-    // Optional: ensure repo exists
-    const repoExists = await Repository.exists({ _id: id });
-    if (!repoExists) {
-      return res.status(404).json({
-        success: false,
-        message: "Repository not found",
-      });
-    }
-
-    const filter: any = { repoId: id };
+    const filter: any = { repoId };
 
     if (from) filter.fromName = from;
     if (to) filter.toName = to;

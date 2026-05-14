@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import simpleGit from "simple-git";
+import { simpleGit } from "simple-git";
+import type { JobProgress } from "bullmq";
 import fs from "fs";
 import path from "path";
 import { scanCodeFiles } from "../modules/indexer/fileScanner.js";
@@ -17,6 +18,11 @@ import { QueueEvents } from "bullmq";
 import { purgeRepository } from "../utils/purge.util.js";
 import logger from "../lib/logger.js";
 import { AppError } from "../middlewares/error.middleware.js";
+import {
+  getOwnedRepositoryOrThrow,
+  requireAuthUser,
+  ensureValidRepoId,
+} from "../utils/repositoryAccess.util.js";
 
 // Prevent Git from trying to prompt for credentials in server environments (Render, Docker, etc.)
 // GIT_TERMINAL_PROMPT=0 disables interactive prompts without injecting fake credentials
@@ -29,11 +35,7 @@ const git = simpleGit();
 export const addRepository = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { githubUrl } = req.body;
-    const user = req.user;
-
-    if (!user) {
-      throw new AppError("Not authorized", 401);
-    }
+    const user = requireAuthUser(req.user);
 
     if (!githubUrl) {
       throw new AppError("GitHub URL is required", 400);
@@ -118,10 +120,9 @@ export const addRepository = async (req: Request, res: Response, next: NextFunct
 
 export const getUserRepositories = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = req.user;
-    if (!user) throw new AppError("Unauthorized", 401);
+    const user = requireAuthUser(req.user);
 
-    const repos = await Repository.find({ user: user._id }).sort({ createdAt: -1 });
+    const repos = await Repository.find({ user: String(user._id) }).sort({ createdAt: -1 });
     res.json({
       success: true,
       repos,
@@ -133,8 +134,7 @@ export const getUserRepositories = async (req: Request, res: Response, next: Nex
 
 export const getRepositoryById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const repo = await Repository.findById(req.params.id);
-    if (!repo) throw new AppError("Repository not found", 404);
+    const repo = await getOwnedRepositoryOrThrow(req.params.id, req.user);
 
     await touchRepository(repo._id.toString());
 
@@ -149,8 +149,7 @@ export const getRepositoryById = async (req: Request, res: Response, next: NextF
 
 export const deleteRepository = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const repo = await Repository.findById(req.params.id);
-    if (!repo) throw new AppError("Repository not found", 404);
+    const repo = await getOwnedRepositoryOrThrow(req.params.id, req.user);
 
     await purgeRepository(repo._id.toString());
     await Repository.findByIdAndDelete(req.params.id);
@@ -166,12 +165,12 @@ export const deleteRepository = async (req: Request, res: Response, next: NextFu
 
 export const scanRepository = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = req.user;
-    if (!user) throw new AppError("Unauthorized", 401);
+    const user = requireAuthUser(req.user);
+    const repoId = ensureValidRepoId(req.params.id);
 
     const repo = await Repository.findOne({
-      _id: req.params.id,
-      user: user._id,
+      _id: repoId,
+      user: String(user._id),
     });
 
     if (!repo) throw new AppError("Repository not found", 404);
@@ -192,9 +191,7 @@ export const scanRepository = async (req: Request, res: Response, next: NextFunc
 export const processRepoController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { githubUrl } = req.body;
-    const user = req.user;
-
-    if (!user) throw new AppError("Unauthorized", 401);
+    const user = requireAuthUser(req.user);
 
     if (!githubUrl || !githubUrl.startsWith("https://github.com/")) {
       throw new AppError("Invalid GitHub URL", 400);
@@ -221,7 +218,7 @@ export const processRepoController = async (req: Request, res: Response, next: N
       repoId: repo._id.toString(),
     });
 
-    repo.jobId = job.id;
+    repo.jobId = String(job.id);
     await repo.save();
 
     return res.status(202).json({
@@ -236,7 +233,7 @@ export const processRepoController = async (req: Request, res: Response, next: N
 };
 
 export const jobStatusController = async (req: Request, res: Response, next: NextFunction) => {
-  const { id: jobId } = req.params;
+  const jobId = ensureValidRepoId(req.params.id);
 
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
@@ -253,9 +250,10 @@ export const jobStatusController = async (req: Request, res: Response, next: Nex
     },
   });
 
-  const onProgress = (args: { jobId: string; data: string | number }) => {
+  const onProgress = (args: { jobId: string; data: JobProgress }) => {
     if (args.jobId === jobId) {
-      res.write(`data: ${JSON.stringify({ status: "processing", progress: args.data })}\n\n`);
+      const progressValue = typeof args.data === "number" ? args.data : 0;
+      res.write(`data: ${JSON.stringify({ status: "processing", progress: progressValue })}\n\n`);
     }
   };
 
@@ -293,6 +291,8 @@ export const jobStatusController = async (req: Request, res: Response, next: Nex
 
 // --- Local Zip / Folder Upload Support ---
 import multer from "multer";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - package has no bundled types in this project setup
 import AdmZip from "adm-zip";
 
 const storage = multer.diskStorage({
@@ -312,10 +312,7 @@ export const upload = multer({ storage });
 
 export const uploadLocalRepository = async (req: Request, res: Response): Promise<any> => {
   try {
-    const user = req.user;
-    if (!user) {
-      return res.status(401).json({ success: false, message: "Not authorized" });
-    }
+    const user = requireAuthUser(req.user);
 
     if (!req.file) {
       return res.status(400).json({ success: false, message: "Zip file is required" });
@@ -356,7 +353,7 @@ export const uploadLocalRepository = async (req: Request, res: Response): Promis
         repoId: repo._id.toString(),
       });
 
-      repo.jobId = job.id;
+      repo.jobId = String(job.id);
       await repo.save();
 
       queuedSuccessfully = true;
@@ -375,7 +372,10 @@ export const uploadLocalRepository = async (req: Request, res: Response): Promis
         message: "Repository uploaded and queued for processing successfully.",
       });
     } catch (innerError: any) {
-      logger.error({ err: innerError, repoId: repo._id }, "Local upload extraction or queuing failed");
+      logger.error(
+        { err: innerError, repoId: repo._id },
+        "Local upload extraction or queuing failed"
+      );
       repo.status = "failed";
       await repo.save();
 
@@ -404,14 +404,13 @@ export const uploadLocalRepository = async (req: Request, res: Response): Promis
 
 export const getRepoSecurityIssues = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = req.user;
-    const repoId = req.params.id;
-
-    const repo = await Repository.findOne({ _id: repoId, user: user._id });
-    if (!repo) throw new AppError("Repository not found or unauthorized", 404);
+    const repoId = ensureValidRepoId(req.params.id);
+    const repo = await getOwnedRepositoryOrThrow(repoId, req.user);
 
     const { SecurityIssue } = await import("../models/securityIssue.model.js");
-    const issues = await SecurityIssue.find({ repoId }).sort({ severity: 1, path: 1 }).lean();
+    const issues = await SecurityIssue.find({ repoId: repo._id })
+      .sort({ severity: 1, path: 1 })
+      .lean();
 
     return res.json({
       success: true,
@@ -423,16 +422,17 @@ export const getRepoSecurityIssues = async (req: Request, res: Response, next: N
   }
 };
 
-export const getRepoArchitectureViolations = async (req: Request, res: Response, next: NextFunction) => {
+export const getRepoArchitectureViolations = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const user = req.user;
-    const repoId = req.params.id;
-
-    const repo = await Repository.findOne({ _id: repoId, user: user._id });
-    if (!repo) throw new AppError("Repository not found or unauthorized", 404);
+    const repoId = ensureValidRepoId(req.params.id);
+    const repo = await getOwnedRepositoryOrThrow(repoId, req.user);
 
     const { ArchitectureViolation } = await import("../models/architectureViolation.model.js");
-    const violations = await ArchitectureViolation.find({ repoId })
+    const violations = await ArchitectureViolation.find({ repoId: repo._id })
       .sort({ severity: 1, path: 1 })
       .lean();
 
@@ -448,9 +448,8 @@ export const getRepoArchitectureViolations = async (req: Request, res: Response,
 
 export const triggerEmbedding = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id: repoId } = req.params;
-    const repo = await Repository.findById(repoId);
-    if (!repo) throw new AppError("Repository not found", 404);
+    const repoId = ensureValidRepoId(req.params.id);
+    const repo = await getOwnedRepositoryOrThrow(repoId, req.user);
 
     if (repo.isEmbedded) {
       return res.json({ success: true, message: "Repository already embedded" });
@@ -469,4 +468,3 @@ export const triggerEmbedding = async (req: Request, res: Response, next: NextFu
     next(error);
   }
 };
-

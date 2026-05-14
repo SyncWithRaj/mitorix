@@ -6,6 +6,7 @@ import { Repository, touchRepository } from "../models/repo.model.js";
 import { generateAnswer } from "../services/llm.service.js";
 import logger from "../lib/logger.js";
 import { AppError } from "../middlewares/error.middleware.js";
+import { getOwnedRepositoryOrThrow, ensureValidRepoId } from "../utils/repositoryAccess.util.js";
 
 export const generateSystemDesignDoc = async (
   req: Request,
@@ -13,12 +14,8 @@ export const generateSystemDesignDoc = async (
   next: NextFunction
 ): Promise<any> => {
   try {
-    const repoId = req.params.id;
-
-    if (!repoId) throw new AppError("Repository ID is required", 400);
-
-    const repo = await Repository.findById(repoId);
-    if (!repo) throw new AppError("Repository not found", 404);
+    const repoId = ensureValidRepoId(req.params.id);
+    const repo = await getOwnedRepositoryOrThrow(repoId, req.user);
 
     await touchRepository(repoId);
 
@@ -61,7 +58,7 @@ IMPORTANT MERMAID FLOWCHART RULES:
 1. Node IDs and Subgraph IDs MUST NOT contain spaces or special characters (e.g., use \`subgraph FrontendApp\` instead of \`subgraph Frontend (React Application)\`).
 2. Use labels for nodes with spaces like this: \`NodeID["My Node Label"]\`.
 3. Use labels for subgraphs like this: \`subgraph SubgraphID ["My Subgraph Label"]\`.
-4. FOR LINK LABELS: Use the syntax: \`A -- "Label" --> B\`. 
+4. FOR LINK LABELS: Use the syntax: \`A -- "Label" --> B\`.
 5. CRITICAL: DO NOT use the colon syntax for flowchart labels (e.g., NEVER do \`A --> B: Label\`).
 6. Ensure all parentheses, brackets, and quotes are properly balanced.`;
 

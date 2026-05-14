@@ -1,29 +1,15 @@
 import type { NextFunction, Request, Response } from "express";
-import mongoose from "mongoose";
-import { Repository } from "../models/repo.model.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
+import { getOwnedRepositoryOrThrow, ensureValidRepoId } from "../utils/repositoryAccess.util.js";
 
 export async function getRepositoryEntities(req: Request, res: Response, next: NextFunction) {
   try {
-    const { id } = req.params;
+    const repoId = ensureValidRepoId(req.params.id);
     const { type, page = "1", limit = "500" } = req.query;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "InValid repo id",
-      });
-    }
+    await getOwnedRepositoryOrThrow(repoId, req.user);
 
-    const repo = await Repository.findById(id);
-    if (!repo) {
-      return res.status(404).json({
-        success: false,
-        message: "Repo not found",
-      });
-    }
-
-    const query: any = { repoId: id };
+    const query: any = { repoId };
 
     if (type) {
       query.type = type;
@@ -35,6 +21,7 @@ export async function getRepositoryEntities(req: Request, res: Response, next: N
 
     const [entities, total] = await Promise.all([
       CodeEntity.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNumber).lean(),
+      CodeEntity.countDocuments(query),
     ]);
 
     return res.status(200).json({

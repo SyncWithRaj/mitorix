@@ -5,13 +5,18 @@ import { askQuestion } from "../services/query.service.js";
 import ChatHistory from "../models/chatHistory.model.js";
 import logger from "../lib/logger.js";
 import { AppError } from "../middlewares/error.middleware.js";
+import { requireAuthUser } from "../utils/repositoryAccess.util.js";
 
 const getAaiClient = () =>
   new AssemblyAI({
     apiKey: process.env.ASSEMBLYAI_API_KEY as string,
   });
 
-export const processCall = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+export const processCall = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
   try {
     const { repoId, audioBase64 } = req.body as { repoId: string; audioBase64: string };
 
@@ -37,8 +42,8 @@ export const processCall = async (req: Request, res: Response, next: NextFunctio
     logger.info({ repoId, transcription: text.substring(0, 100) }, "Transcription received");
 
     // 2. Query the LLM
-    const userId = req.user?._id;
-    if (!userId) throw new AppError("Unauthorized", 401);
+    const user = requireAuthUser(req.user);
+    const userId = user._id;
 
     let historyMessages: any[] = [];
     const historyDoc = await ChatHistory.findOne({ userId, repoId, type: "call" });
@@ -46,7 +51,7 @@ export const processCall = async (req: Request, res: Response, next: NextFunctio
       historyMessages = historyDoc.messages;
     }
 
-    const result = await askQuestion(repoId, text, historyMessages);
+    const result = await askQuestion(repoId, userId.toString(), text, historyMessages);
     const answer = result.answer;
 
     await ChatHistory.findOneAndUpdate(

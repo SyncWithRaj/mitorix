@@ -1,20 +1,16 @@
 import type { Request, Response, NextFunction } from "express";
-import mongoose from "mongoose";
+
 import { FileMetadata } from "../models/fileMetadata.model.js";
 import logger from "../lib/logger.js";
+import { getOwnedRepositoryOrThrow, ensureValidRepoId } from "../utils/repositoryAccess.util.js";
 
 export async function getRepoFilesController(req: Request, res: Response, next: NextFunction) {
   try {
-    const { id } = req.params;
+    const repoId = ensureValidRepoId(req.params.id);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid repository id",
-      });
-    }
+    await getOwnedRepositoryOrThrow(repoId, req.user);
 
-    const files = await FileMetadata.find({ repoId: id }).sort({ filePath: 1 }).lean();
+    const files = await FileMetadata.find({ repoId }).sort({ filePath: 1 }).lean();
 
     return res.status(200).json({
       success: true,

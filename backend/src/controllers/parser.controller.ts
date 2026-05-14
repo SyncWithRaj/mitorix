@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import fs from "fs";
 import path from "path";
-import simpleGit from "simple-git";
+import { simpleGit } from "simple-git";
 
 import { Repository } from "../models/repo.model.js";
 import { scanCodeFiles } from "../modules/indexer/fileScanner.js";
@@ -14,6 +14,7 @@ import { FileMetadata } from "../models/fileMetadata.model.js";
 import { FileContent } from "../models/fileContent.model.js";
 import { cleanupTempRepo, getTempRepoPath } from "../utils/cleanup.util.js";
 import logger from "../lib/logger.js";
+import { getOwnedRepositoryOrThrow, ensureValidRepoId } from "../utils/repositoryAccess.util.js";
 
 // Directories/files to skip when saving to DB
 const IGNORED_DIRS = new Set([".git", "node_modules", "dist", "build", ".next", "coverage"]);
@@ -152,7 +153,7 @@ export async function saveRepoFilesToDB(repoId: string, basePath: string): Promi
 }
 
 export async function parseRepoController(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
+  const id = ensureValidRepoId(req.params.id);
   try {
     logger.info({ repoId: id }, "Parse request received for repo");
 
@@ -164,15 +165,7 @@ export async function parseRepoController(req: Request, res: Response, next: Nex
       });
     }
 
-    const repo = await Repository.findById(id);
-
-    if (!repo) {
-      logger.warn({ repoId: id }, "Repo not found in DB");
-      return res.status(404).json({
-        success: false,
-        message: "Repository not found",
-      });
-    }
+    const repo = await getOwnedRepositoryOrThrow(id, req.user);
 
     logger.info(
       {
@@ -253,9 +246,9 @@ export async function parseRepoController(req: Request, res: Response, next: Nex
     await repo.save();
     logger.info({ repoId: id }, "Status set to indexing");
 
-    await CodeEntity.deleteMany({ repoId: id });
-    await CodeRelationship.deleteMany({ repoId: id });
-    await FileMetadata.deleteMany({ repoId: id });
+    await CodeEntity.deleteMany({ repoId: repo._id });
+    await CodeRelationship.deleteMany({ repoId: repo._id });
+    await FileMetadata.deleteMany({ repoId: repo._id });
     logger.debug({ repoId: id }, "Old data cleared from MongoDB");
 
     const scannedFiles = scanCodeFiles(repoPath);
@@ -277,12 +270,12 @@ export async function parseRepoController(req: Request, res: Response, next: Nex
     const filePaths = scannedFiles.map((file) => file.absolutePath);
     logger.info({ repoId: id, fileCount: filePaths.length }, "Starting AST parsing");
 
-    const result = await processRepositoryParsing(id, filePaths);
+    const result = await processRepositoryParsing(repo._id.toString(), filePaths);
     logger.info({ repoId: id, result }, "AST parsing complete");
 
     // 📁 Save all file tree + contents to MongoDB before cleanup
     logger.info({ repoId: id }, "Saving file tree and contents to MongoDB");
-    const savedFilesCount = await saveRepoFilesToDB(id, repoPath);
+    const savedFilesCount = await saveRepoFilesToDB(repo._id.toString(), repoPath);
     logger.info({ repoId: id, savedFilesCount }, "File tree saved to MongoDB");
 
     // 🧹 Cleanup temp clone from /tmp — MongoDB data is safe

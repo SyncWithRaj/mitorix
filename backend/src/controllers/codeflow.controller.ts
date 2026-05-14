@@ -8,8 +8,9 @@ import type { Request, Response } from "express";
 import axios from "axios";
 import { runAnalysisPipeline } from "../services/codeflow/analysis.pipeline.js";
 import { calcBlast } from "../services/codeflow/dependency.service.js";
-import { Repository, touchRepository } from "../models/repo.model.js";
+import { touchRepository } from "../models/repo.model.js";
 import logger from "../lib/logger.js";
+import { getOwnedRepositoryOrThrow, requireString } from "../utils/repositoryAccess.util.js";
 
 /**
  * POST /api/v1/codeflow/analyze
@@ -18,16 +19,8 @@ import logger from "../lib/logger.js";
  */
 export const analyzeRepository = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { repoId } = req.body;
-
-    if (!repoId) {
-      return res.status(400).json({ success: false, message: "repoId is required" });
-    }
-
-    const repo = await Repository.findById(repoId);
-    if (!repo) {
-      return res.status(404).json({ success: false, message: "Repository not found" });
-    }
+    const repoId = requireString(req.body?.repoId, "repoId");
+    await getOwnedRepositoryOrThrow(repoId, req.user);
 
     logger.info({ repoId }, "CodeFlow: starting analysis pipeline");
     const startTime = Date.now();
@@ -66,16 +59,8 @@ export const analyzeRepository = async (req: Request, res: Response): Promise<an
  */
 export const getAnalysis = async (req: Request, res: Response): Promise<any> => {
   try {
-    const repoId = req.params.repoId;
-
-    if (!repoId) {
-      return res.status(400).json({ success: false, message: "repoId is required" });
-    }
-
-    const repo = await Repository.findById(repoId);
-    if (!repo) {
-      return res.status(404).json({ success: false, message: "Repository not found" });
-    }
+    const repoId = requireString(req.params.repoId, "repoId");
+    await getOwnedRepositoryOrThrow(repoId, req.user);
 
     const excludes = ((req.query.excludes as string) || "").split(",").filter(Boolean);
     const analysisData = await runAnalysisPipeline(repoId, excludes);
@@ -100,7 +85,8 @@ export const getAnalysis = async (req: Request, res: Response): Promise<any> => 
  */
 export const getHealthScore = async (req: Request, res: Response): Promise<any> => {
   try {
-    const repoId = req.params.repoId;
+    const repoId = requireString(req.params.repoId, "repoId");
+    await getOwnedRepositoryOrThrow(repoId, req.user);
 
     const analysisData = await runAnalysisPipeline(repoId);
 
@@ -124,7 +110,8 @@ export const getHealthScore = async (req: Request, res: Response): Promise<any> 
  */
 export const getSecurityFindings = async (req: Request, res: Response): Promise<any> => {
   try {
-    const repoId = req.params.repoId;
+    const repoId = requireString(req.params.repoId, "repoId");
+    await getOwnedRepositoryOrThrow(repoId, req.user);
 
     const analysisData = await runAnalysisPipeline(repoId);
 
@@ -149,7 +136,8 @@ export const getSecurityFindings = async (req: Request, res: Response): Promise<
  */
 export const getPatterns = async (req: Request, res: Response): Promise<any> => {
   try {
-    const repoId = req.params.repoId;
+    const repoId = requireString(req.params.repoId, "repoId");
+    await getOwnedRepositoryOrThrow(repoId, req.user);
 
     const analysisData = await runAnalysisPipeline(repoId);
 
@@ -175,14 +163,11 @@ export const getPatterns = async (req: Request, res: Response): Promise<any> => 
  */
 export const getBlastRadius = async (req: Request, res: Response): Promise<any> => {
   try {
-    const repoId = req.params.repoId;
-    const filePath = decodeURIComponent(
-      req.params.filePath || (req.query.filePath as string) || ""
-    );
+    const repoId = requireString(req.params.repoId, "repoId");
+    await getOwnedRepositoryOrThrow(repoId, req.user);
 
-    if (!filePath) {
-      return res.status(400).json({ success: false, message: "filePath is required" });
-    }
+    const rawFilePath = req.params.filePath ?? req.query.filePath;
+    const filePath = decodeURIComponent(requireString(rawFilePath, "filePath"));
 
     const analysisData = await runAnalysisPipeline(repoId);
     const blast = calcBlast(filePath, analysisData.connections, analysisData.files);
@@ -207,7 +192,8 @@ export const getBlastRadius = async (req: Request, res: Response): Promise<any> 
  */
 export const getSuggestions = async (req: Request, res: Response): Promise<any> => {
   try {
-    const repoId = req.params.repoId;
+    const repoId = requireString(req.params.repoId, "repoId");
+    await getOwnedRepositoryOrThrow(repoId, req.user);
 
     const analysisData = await runAnalysisPipeline(repoId);
 
@@ -231,21 +217,15 @@ export const getSuggestions = async (req: Request, res: Response): Promise<any> 
  */
 export const getPRAnalysis = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { repoId, prNumber } = req.params;
+    const repoId = requireString(req.params.repoId, "repoId");
+    const prNumber = requireString(req.params.prNumber, "prNumber");
 
-    if (!repoId || !prNumber) {
-      return res.status(400).json({ success: false, message: "repoId and prNumber are required" });
-    }
-
-    const repo = await Repository.findById(repoId);
-    if (!repo) {
-      return res.status(404).json({ success: false, message: "Repository not found" });
-    }
+    const repo = await getOwnedRepositoryOrThrow(repoId, req.user);
 
     // Extract owner and repo name from githubUrl
     const urlParts = repo.githubUrl.replace("https://github.com/", "").split("/");
-    const owner = urlParts[0];
-    const repoName = urlParts[1].replace(".git", "");
+    const owner = requireString(urlParts[0], "owner");
+    const repoName = requireString(urlParts[1], "repoName").replace(".git", "");
 
     logger.info({ repoId, owner, repoName, prNumber }, "CodeFlow: fetching PR files");
 

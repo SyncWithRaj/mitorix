@@ -6,6 +6,7 @@ import { Repository, touchRepository } from "../models/repo.model.js";
 import path from "path";
 import logger from "../lib/logger.js";
 import { AppError } from "../middlewares/error.middleware.js";
+import { getOwnedRepositoryOrThrow, requireString } from "../utils/repositoryAccess.util.js";
 
 export const getRepositoryGraph = async (
   req: Request,
@@ -13,12 +14,9 @@ export const getRepositoryGraph = async (
   next: NextFunction
 ): Promise<any> => {
   try {
-    const repoId = req.params.id;
+    const repoId = requireString(req.params.id, "Repository ID");
 
-    if (!repoId) throw new AppError("Repository ID is required", 400);
-
-    const repo = await Repository.findById(repoId);
-    if (!repo) throw new AppError("Repository not found", 404);
+    const repo = await getOwnedRepositoryOrThrow(repoId, req.user);
 
     await touchRepository(repoId);
 
@@ -158,7 +156,10 @@ export const getRepositoryGraph = async (
     for (const rel of relationships) {
       if (rel.relationType === "imports" && rel.fromFilePath && rel.toFilePath) {
         if (!importsMap[rel.fromFilePath]) importsMap[rel.fromFilePath] = Object.create(null);
-        if (rel.toName) importsMap[rel.fromFilePath][rel.toName] = rel.toFilePath;
+        const fromImports = importsMap[rel.fromFilePath];
+        if (rel.toName && fromImports) {
+          fromImports[rel.toName] = rel.toFilePath;
+        }
       }
     }
 
@@ -166,7 +167,7 @@ export const getRepositoryGraph = async (
       if (!rel.fromFilePath) continue;
 
       let defFile = rel.toFilePath;
-      const targetName = rel.toName;
+      const targetName = rel.toName || "";
       const sourceFile = rel.fromFilePath;
 
       // Dynamic Resolution if toFilePath is missing
@@ -182,7 +183,9 @@ export const getRepositoryGraph = async (
       if (defFile) {
         // Normalize defFile to absolute path if it is a relative import path
         if (!defFile.startsWith("/")) {
-          const match = files.find((f: any) => f.filePath.endsWith("/" + defFile) || f.filePath === defFile);
+          const match = files.find(
+            (f: any) => f.filePath.endsWith("/" + defFile) || f.filePath === defFile
+          );
           if (match) {
             defFile = match.filePath;
           }

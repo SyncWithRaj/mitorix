@@ -4,6 +4,7 @@ import { Repository, touchRepository } from "../models/repo.model.js";
 import { FileContent } from "../models/fileContent.model.js";
 import logger from "../lib/logger.js";
 import { AppError } from "../middlewares/error.middleware.js";
+import { getOwnedRepositoryOrThrow } from "../utils/repositoryAccess.util.js";
 
 /**
  * Build a nested tree structure from flat FileContent documents.
@@ -49,8 +50,7 @@ export const getFileTree = async (req: Request, res: Response, next: NextFunctio
   try {
     const repoId = req.params.repoId as string;
 
-    const repo = await Repository.findById(repoId);
-    if (!repo) throw new AppError("Repository not found", 404);
+    const repo = await getOwnedRepositoryOrThrow(repoId, req.user);
 
     await touchRepository(repoId);
 
@@ -74,8 +74,7 @@ export const getFileContent = async (req: Request, res: Response, next: NextFunc
     const repoId = req.query.repoId as string;
     const filePath = req.query.path as string;
 
-    const repo = await Repository.findById(repoId);
-    if (!repo) throw new AppError("Repository not found", 404);
+    const repo = await getOwnedRepositoryOrThrow(repoId, req.user);
 
     await touchRepository(repoId);
 

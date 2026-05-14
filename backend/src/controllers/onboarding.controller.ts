@@ -5,6 +5,7 @@ import { CodeEntity } from "../models/codeEntity.model.js";
 import { generateAnswer } from "../services/llm.service.js";
 import logger from "../lib/logger.js";
 import { AppError } from "../middlewares/error.middleware.js";
+import { getOwnedRepositoryOrThrow, ensureValidRepoId } from "../utils/repositoryAccess.util.js";
 
 // ── Icon mapping for each section type ──
 const SECTION_CONFIG: Record<string, { title: string; icon: string }> = {
@@ -23,12 +24,9 @@ export const generateOnboardingGuide = async (
   next: NextFunction
 ): Promise<any> => {
   try {
-    const repoId = req.params.id;
+    const repoId = ensureValidRepoId(req.params.id);
 
-    if (!repoId) throw new AppError("Repository ID is required", 400);
-
-    const repo = await Repository.findById(repoId);
-    if (!repo) throw new AppError("Repository not found", 404);
+    const repo = await getOwnedRepositoryOrThrow(repoId, req.user);
 
     await touchRepository(repoId);
 
@@ -142,11 +140,14 @@ export const generateOnboardingGuide = async (
 
     // Build section instructions dynamically
     const sectionSchemas = sectionsToRequest.map((key) => {
-      const config = SECTION_CONFIG[key];
+      const config = SECTION_CONFIG[key as keyof typeof SECTION_CONFIG];
+      if (!config) return "";
+
+      const { title, icon } = config;
       return `    {
       "key": "${key}",
-      "title": "${config.title}",
-      "icon": "${config.icon}",
+      "title": "${title}",
+      "icon": "${icon}",
       "items": [
         { "name": "string", "file": "string (relative path)", "description": "string (1-2 sentences)" }
       ]

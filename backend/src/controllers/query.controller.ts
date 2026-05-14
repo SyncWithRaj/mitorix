@@ -43,6 +43,7 @@ export const ask = async (req: Request, res: Response, next: NextFunction): Prom
 
     const result = await askQuestion(
       repoId,
+      userId.toString(),
       normalizedQuestion,
       historyMessages,
       normalizedAttachments
