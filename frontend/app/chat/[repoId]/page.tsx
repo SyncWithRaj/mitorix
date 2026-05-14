@@ -12,6 +12,7 @@ import { Files, MessageSquare, Settings } from "lucide-react";
 import { useEditor } from "@/context/EditorContext";
 import toast from "react-hot-toast";
 import type { DraggedContextNode } from "@/lib/dragdrop.types";
+import type { ChatMessage } from "@/components/codeflow/CodeflowLayout";
 
 const getLanguage = (filename: string) => {
   const ext = filename.split(".").pop()?.toLowerCase();
@@ -36,12 +37,13 @@ const getLanguage = (filename: string) => {
 };
 
 export default function ChatPage() {
-  const { repoId } = useParams();
+  const params = useParams<{ repoId: string }>();
+  const repoId = params.repoId;
   const router = useRouter();
   const { setEditorState } = useEditor();
 
-  const [chatMessages, setChatMessages] = useState<any[]>([]);
-  const [callMessages, setCallMessages] = useState<any[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [callMessages, setCallMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [repoValid, setRepoValid] = useState<boolean | null>(null);
@@ -60,7 +62,7 @@ export default function ChatPage() {
     };
 
     if (repoId) checkRepo();
-  }, [repoId]);
+  }, [repoId, router]);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -73,14 +75,14 @@ export default function ChatPage() {
         if (callRes.data.success) {
           setCallMessages(callRes.data.messages || []);
         }
-      } catch (err) {
-        console.error("Failed to load history", err);
+      } catch {
+        console.error("Failed to load history");
       }
     };
     if (repoValid) {
       fetchHistory();
     }
-  }, [repoValid, repoId]);
+  }, [repoValid, repoId, router]);
 
   const sendMessage = async () => {
     if (!input.trim() && attachedNodes.length === 0) return;
@@ -88,7 +90,7 @@ export default function ChatPage() {
     const questionText = input.trim();
     const sentNodes = [...attachedNodes];
 
-    const userMsg: any = { role: "user", content: questionText };
+    const userMsg: ChatMessage = { role: "user", content: questionText };
     if (sentNodes.length > 0) {
       userMsg.attachedNodes = sentNodes;
       userMsg.attachments = sentNodes;
@@ -106,7 +108,7 @@ export default function ChatPage() {
         attachedNodes: sentNodes.length > 0 ? sentNodes : undefined,
       });
 
-      const aiMsg = {
+      const aiMsg: ChatMessage = {
         role: "assistant",
         content: res.data.answer,
         references: res.data.references || [],
@@ -127,7 +129,7 @@ export default function ChatPage() {
             startLine: ref.startLine,
             endLine: ref.endLine,
           });
-        } catch (err) {
+        } catch {
           console.warn(`Failed to auto-open reference file (${ref.file}) - it might not exist.`);
         }
       }
@@ -257,12 +259,11 @@ export default function ChatPage() {
                   input={input}
                   setInput={setInput}
                   sendMessage={sendMessage}
-                  addCallMessages={(newMsgs: any[]) =>
+                  addCallMessages={(newMsgs: ChatMessage[]) =>
                     setCallMessages((prev) => [...prev, ...newMsgs])
                   }
                   loading={loading}
                   streamingIndex={streamingIndex}
-                  onStreamComplete={() => setStreamingIndex(null)}
                   onDeleteChat={handleDeleteChat}
                   attachedNodes={attachedNodes}
                   setAttachedNodes={setAttachedNodes}
