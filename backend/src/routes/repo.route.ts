@@ -37,7 +37,7 @@ router.get("/:id/scan", protect, scanRepository);
 router.post("/:id/parse", protect, parseRepoController);
 router.get("/:id/entities", protect, getRepositoryEntities);
 router.get("/:id/relations", protect, getRepositoryoRelations);
-router.get("/:id/files", getRepoFilesController);
+router.get("/:id/files", protect, getRepoFilesController);
 router.get("/:id/graph", protect, getRepositoryGraph);
 router.get("/:id/design-doc", protect, generateSystemDesignDoc);
 router.get("/:id/onboarding", protect, generateOnboardingGuide);
