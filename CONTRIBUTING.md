@@ -1,4 +1,4 @@
-# Contributing to RepoLens
+w# Contributing to RepoLens
 
 Thank you for your interest in contributing to RepoLens! This document provides guidelines and instructions to help you get started.
 
