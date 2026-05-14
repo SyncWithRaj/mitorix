@@ -9,16 +9,13 @@ function AuthCallbackHandler() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const token = searchParams.get("token");
-
-    if (token) {
-      // Store token in cookie on the frontend's own domain
-      document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax; Secure`;
-      router.replace("/dashboard");
-    } else {
-      // No token means auth failed
+    const error = searchParams.get("error");
+    if (error) {
       router.replace("/login");
+      return;
     }
+
+    router.replace("/dashboard");
   }, [searchParams, router]);
 
   return (

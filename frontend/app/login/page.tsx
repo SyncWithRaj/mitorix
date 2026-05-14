@@ -18,8 +18,7 @@ export default function LoginPage() {
     setDevLoading(true);
     try {
       const res = await api.post("/auth/dev-login");
-      if (res.data.success && res.data.token) {
-        document.cookie = `token=${res.data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+      if (res.data.success) {
         router.replace("/dashboard");
       }
     } catch (err) {

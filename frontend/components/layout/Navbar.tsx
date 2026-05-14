@@ -37,8 +37,6 @@ export default function Navbar() {
   const handleLogout = async () => {
     try {
       await api.post("/auth/logout");
-      // Clear the frontend-side token cookie
-      document.cookie = "token=; path=/; max-age=0; SameSite=Lax; Secure";
       setIsAuthenticated(false);
       toast.success("Logged out successfully");
       router.push("/login");
@@ -48,7 +46,7 @@ export default function Navbar() {
     }
   };
 
-  const inWorkspace = pathname.startsWith("/graph") || pathname.startsWith("/chat");
+  const inWorkspace = pathname.startsWith("/chat") || pathname.startsWith("/codeflow");
 
   if (pathname.startsWith("/codeflow")) return null;
 

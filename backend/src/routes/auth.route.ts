@@ -12,9 +12,12 @@ router.get("/github", passport.authenticate("github", { scope: ["user:email"] })
 
 // GitHub OAuth Callback
 router.get("/github/callback", passport.authenticate("github", { session: false }), (req, res) => {
-  const user = req.user;
+  const user = req.user as Express.IUser | undefined;
+  if (!user) {
+    return res.redirect("/login?error=oauth_failed");
+  }
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, { expiresIn: "7d" });
 
   // Set cookie on backend domain for direct API calls
   res.cookie("token", token, {
@@ -24,12 +27,10 @@ router.get("/github/callback", passport.authenticate("github", { session: false 
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  // Pass token via URL parameters for frontend consumption
-  // This is the reliable fix for cross-origin cookie issues
   const frontendUrl =
     process.env.FRONTEND_URL ||
     (process.env.NODE_ENV === "production" ? "http://localhost" : "http://localhost:3000");
-  res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+  res.redirect(`${frontendUrl}/dashboard`);
 });
 
 // Retrieve current authenticated user
@@ -70,9 +71,15 @@ if (process.env.NODE_ENV !== "production") {
 
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, { expiresIn: "7d" });
 
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
       res.json({
         success: true,
-        token,
         user: {
           id: user._id,
           username: user.username,
