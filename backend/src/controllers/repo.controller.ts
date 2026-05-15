@@ -304,11 +304,26 @@ const storage = multer.diskStorage({
     cb(null, dest);
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`);
+    // Sanitize filename to prevent path traversal or malicious names
+    const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    cb(null, `${Date.now()}_${sanitizedName}`);
   },
 });
 
-export const upload = multer({ storage });
+export const upload = multer({
+  storage,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Only allow .zip files
+    if (file.mimetype === "application/zip" || file.originalname.endsWith(".zip")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only .zip files are allowed") as any, false);
+    }
+  },
+});
 
 export const uploadLocalRepository = async (req: Request, res: Response): Promise<any> => {
   try {
