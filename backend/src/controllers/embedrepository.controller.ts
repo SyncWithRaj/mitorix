@@ -1,19 +1,20 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { embedRepository } from "../services/embedRepository.service.js";
 import logger from "../lib/logger.js";
+import { getOwnedRepositoryOrThrow } from "../utils/repositoryAccess.util.js";
 
-export const embedRepositoryController = async (req: Request, res: Response) => {
+export const embedRepositoryController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "repoId required",
-      });
-    }
+    // Verify ownership and existence before proceeding
+    const repo = await getOwnedRepositoryOrThrow(id, req.user);
 
-    const result = await embedRepository(id);
+    const result = await embedRepository(repo._id.toString());
 
     return res.json({
       success: true,
@@ -21,12 +22,6 @@ export const embedRepositoryController = async (req: Request, res: Response) => 
       data: result,
     });
   } catch (error: any) {
-    logger.error({ err: error }, "Repository embedding failed");
-
-    return res.status(500).json({
-      success: false,
-      message: "embedding Failed",
-      error: error.message || error.toString(),
-    });
+    next(error);
   }
 };
