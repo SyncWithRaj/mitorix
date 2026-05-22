@@ -21,12 +21,42 @@ RepoLens is an enterprise-grade AI-powered architectural copilot that leverages 
 
 The platform is structured into two main workspaces:
 
-### 🖥️ RepoSpace (RepoBase)
-The interactive core workspace dashboard where you explore repository structures visually and textually.
-* **Interactive 2D Force-Graph:** Maps file-level and function-level caller-callee bindings.
-* **Integrated Monaco Editor:** Read, browse, and jump directly to AST-defined nodes.
-* **AI Copilot Chat:** Engage with your codebase via a unified RAG chatbot interface.
-* **Architecture Compliance Checks:** Validate boundary layering and identify model-controller leak vulnerabilities.
+### 🖥️ RepoSpace
+The interactive core workspace dashboard structured to explore, map, and analyze repository frameworks visually and textually.
+
+#### 1. Interactive Visualization Canvas (Center Viewport)
+Provides 8 distinct visualization modes to layout, filter, and trace directory hierarchy and dependency flow:
+* **Force-Directed Graph (`force`):** Standard interactive node-edge viewport mapping function-level caller-callee bindings.
+* **Visual Relation Graph (`visual`):** Maps entities and direct architectural dependencies.
+* **Treemap Mosaic View (`treemap`):** Renders nested directories as segmented mosaic rectangles sized relative to Lines of Code (LOC).
+* **Adjacency Coupling Matrix (`matrix`):** Traces file import overlap matrices, highlighting dense coupling hotspots.
+* **Hierarchical Dendrogram (`dendro`):** Organizes file namespace coordinates as horizontal cluster trees.
+* **Sankey Flow Diagram (`sankey`):** Renders path volumes mapping inter-folder function call streams.
+* **Disjoint Clusters View (`disjoint`):** Encloses folder nodes within bounding hulls to visualize inter-module boundaries.
+* **Circular Edge Bundling (`bundle`):** Groups file paths radially, utilizing quadratic bezier curves to link caller-callee loops.
+
+#### 2. Left Explorer & Status Sidebar
+* **Health Check Score Ring:** Visualizes the dynamically calculated codebase health rating (0-100 score and letter grade A-F) deducting points for circular dependencies, God files, dead code, and security issues.
+* **Stats Grid Telemetry:** Real-time counters indexing total file count, lines of code, characters, imports, functions, and classes.
+* **Language Bar Explorer:** Stacked bar graph of language distributions by Lines of Code (LOC). Supports interactive filters to toggle workspace views between *Programming Code* and *All Files*.
+* **Directory Tree Explorer:** Slide-out drawer panel compiling the repository directory hierarchy.
+
+#### 3. Right Resizable Inspector Panel
+* **Details Tab:** Displays path metadata, line counts, imports, exports, and caller connections for any selected file/node.
+* **Patterns Tab:** Automatically lists identified design patterns (Singleton, Factory, Observer, Repository, MVC) and design anti-patterns (God Objects, Long Files).
+* **Security Tab:** Collects static analysis scans (exposed keys, SQLi, XSS, dangerous system actions).
+* **Action Items Tab:** Recommends refactoring improvements (e.g. decoupling circular chains, clean-up tasks).
+* **Source Code Tab:** Side-by-side Monaco editor displaying raw code logic with context-targeted highlighting.
+
+#### 4. Header Control Bar Actions
+* **Design Doc Generator:** Compiles repository design walkthroughs and Mermaid.js flowcharts on-demand.
+* **Onboarding Guide Generator:** Automates codebase entry point indexing and step-by-step reading guides.
+* **Pull Request Risk Analyzer:** Estimates branch merge risks based on lines changed, file types, and coupling dependencies.
+* **Excludes Manager:** Restricts file/folder parsing using custom glob pattern exclusion lists.
+
+#### 5. Contextual AI Chat Panel (Slide-out)
+* **Drag-and-Drop Context Assembly:** Assemble queries by dragging and dropping file nodes, folders, security alerts, and pattern classes directly into the chat container.
+* **Hands-Free Speech Pipeline:** Integrated voice exploration executing real-time AssemblyAI speech-to-text (STT) parsing, Gemini vector-reasoning, and Murf AI text-to-speech (TTS) voice streams.
 
 ### 🧪 RepoLabs
 The vector-powered advanced analytics suite running under the hood to perform deep mathematical codebase interrogation.
