@@ -585,7 +585,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
           }
         }}
         linkWidth={(link: any) => {
-          if (link.label === "contains") return 0.5;
+          if (link.label === "contains") return 0.8;
           return Math.sqrt(link.value || 1) * 0.6 + 0.4; // Scale thickness by relationship strength
         }}
         linkCurvature={0.25}
@@ -616,7 +616,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
           }
 
           if (link.label === "contains") {
-            return highlightLinks ? "rgba(139, 148, 158, 0.05)" : "rgba(139, 148, 158, 0.15)";
+            return highlightLinks ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.4)";
           }
 
           // If links are globally disabled, hide completely
