@@ -17,7 +17,27 @@ RepoLens is an enterprise-grade AI-powered architectural copilot that leverages 
 
 ---
 
+## 🌌 Core Spaces & Modules
+
+The platform is structured into two main workspaces:
+
+### 🖥️ RepoSpace (RepoBase)
+The interactive core workspace dashboard where you explore repository structures visually and textually.
+* **Interactive 2D Force-Graph:** Maps file-level and function-level caller-callee bindings.
+* **Integrated Monaco Editor:** Read, browse, and jump directly to AST-defined nodes.
+* **AI Copilot Chat:** Engage with your codebase via a unified RAG chatbot interface.
+* **Architecture Compliance Checks:** Validate boundary layering and identify model-controller leak vulnerabilities.
+
+### 🧪 RepoLabs
+The vector-powered advanced analytics suite running under the hood to perform deep mathematical codebase interrogation.
+* **Semantic Search:** Find variables, features, and abstractions using plain-text queries instead of exact keyword/regex searches.
+* **Version Drift Detector:** Computes Cosine vector distances across commits/versions to trace semantic logic churn.
+* **Clone/Duplicate Finder:** Uncovers duplicate logic paths across files, clustering semantically identical blocks.
+
+---
+
 ## 🚀 Key Features
+
 
 ### 🧠 Contextual AI Chat & Drag-and-Drop RAG
 Ask natural language questions like *"Where is the database connection managed?"* or *"Walk me through the user registration lifecycle."* 
