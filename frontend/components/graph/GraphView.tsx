@@ -286,9 +286,9 @@ export default function GraphView({ repoId }: { repoId: string }) {
 
   if (loading) {
     return (
-      <div className="flex w-full h-full items-center justify-center text-[#c9d1d9]">
+      <div className="flex w-full h-full items-center justify-center text-[#e5e5e5]">
         <svg
-          className="animate-spin h-8 w-8 text-[#58a6ff]"
+          className="animate-spin h-8 w-8 text-[#ff6b00]"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -324,31 +324,31 @@ export default function GraphView({ repoId }: { repoId: string }) {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full bg-[#0d1117] overflow-hidden relative group border-2 border-[#30363d] rounded-xl flex-grow"
+      className="w-full h-full bg-[#000000] overflow-hidden relative group border border-[#1a1a1a] rounded-none flex-grow"
       onPointerMove={handlePointerMove}
     >
-      <div className="absolute top-20 left-4 z-30 bg-[#161b22] border border-[#30363d] px-4 py-2 rounded-lg shadow-lg">
+      <div className="absolute top-20 left-4 z-30 bg-[#050505] border border-[#1a1a1a] px-4 py-2 rounded-none shadow-lg">
         <h3 className="text-white text-sm font-semibold">Codebase Visualizer</h3>
-        <p className="text-xs text-[#8b949e]">Click a folder to toggle collapse</p>
-        <p className="text-xs text-[#8b949e]">Click a file to view code</p>
+        <p className="text-xs text-[#737373]">Click a folder to toggle collapse</p>
+        <p className="text-xs text-[#737373]">Click a file to view code</p>
       </div>
 
       {blastRadius && (
-        <div className="absolute top-20 right-4 z-30 bg-[#ff5858]/10 border border-[#ff5858]/50 px-4 py-2 rounded-lg shadow-[0_0_15px_rgba(255,88,88,0.2)] flex items-center gap-3 backdrop-blur-md animate-fadeInUp">
+        <div className="absolute top-20 right-4 z-30 bg-[#ff5858]/10 border border-[#ff5858]/50 px-4 py-2 rounded-none shadow-[0_0_15px_rgba(255,88,88,0.2)] flex items-center gap-3 backdrop-blur-md animate-fadeInUp">
           <div className="flex items-center gap-2">
             <Flame className="text-[#ff5858] animate-pulse" size={18} />
             <div>
               <div className="text-[#ff5858] text-sm font-bold tracking-wide">
                 BLAST RADIUS ACTIVE
               </div>
-              <div className="text-xs text-[#c9d1d9] font-medium">
+              <div className="text-xs text-[#e5e5e5] font-medium">
                 {blastRadius.affectedNodeIds.size - 1} dependent entities affected
               </div>
             </div>
           </div>
           <button
             onClick={() => setBlastRadius(null)}
-            className="p-1.5 ml-2 hover:bg-[#ff5858]/20 rounded-md transition text-[#ff5858] active:scale-95 cursor-pointer"
+            className="p-1.5 ml-2 hover:bg-[#ff5858]/20 rounded-none transition text-[#ff5858] active:scale-95 cursor-pointer"
             title="Clear Analysis"
           >
             <XCircle size={18} />
@@ -358,7 +358,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
 
       {hoverNode && (
         <div
-          className="absolute z-50 bg-[#161b22] border border-[#30363d] px-4 py-3 rounded-xl shadow-2xl pointer-events-auto transition-opacity duration-150"
+          className="absolute z-50 bg-[#050505] border border-[#1a1a1a] px-4 py-3 rounded-none shadow-2xl pointer-events-auto transition-opacity duration-150"
           style={{ left: mousePos.x + 15, top: mousePos.y + 15, minWidth: "220px" }}
           onMouseEnter={() => {
             isHoveringTooltipRef.current = true;
@@ -369,70 +369,70 @@ export default function GraphView({ repoId }: { repoId: string }) {
           }}
         >
           <div className="font-semibold text-white mb-1 break-all">{hoverNode.name}</div>
-          <div className="text-xs text-[#8b949e] mb-2 font-mono break-all pb-2 border-b border-[#30363d]">
+          <div className="text-xs text-[#737373] mb-2 font-mono break-all pb-2 border-b border-[#1a1a1a]">
             {hoverNode.id}
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="text-[#8b949e]">Type</div>
-            <div className="text-right text-[#c9d1d9] capitalize font-medium">{hoverNode.type}</div>
+            <div className="text-[#737373]">Type</div>
+            <div className="text-right text-[#e5e5e5] capitalize font-medium">{hoverNode.type}</div>
 
             {hoverNode.type === "folder" ? (
               <>
-                <div className="text-[#8b949e]">Descendants</div>
-                <div className="text-right text-[#c9d1d9]">
+                <div className="text-[#737373]">Descendants</div>
+                <div className="text-right text-[#e5e5e5]">
                   {hoverNode.metadata?.descendentCount || 0}
                 </div>
-                <div className="text-[#8b949e]">Status</div>
-                <div className="text-right text-[#c9d1d9]">
+                <div className="text-[#737373]">Status</div>
+                <div className="text-right text-[#e5e5e5]">
                   {collapsedNodes.has(hoverNode.id) ? "Collapsed" : "Expanded"}
                 </div>
               </>
             ) : hoverNode.type === "file" ? (
               <>
-                <div className="text-[#8b949e]">Lines</div>
-                <div className="text-right text-[#c9d1d9]">
+                <div className="text-[#737373]">Lines</div>
+                <div className="text-right text-[#e5e5e5]">
                   {hoverNode.metadata?.totalLines || 0}
                 </div>
-                <div className="text-[#8b949e]">Size</div>
-                <div className="text-right text-[#c9d1d9]">
+                <div className="text-[#737373]">Size</div>
+                <div className="text-right text-[#e5e5e5]">
                   {((hoverNode.metadata?.fileSize || 0) / 1024).toFixed(1)} KB
                 </div>
                 {hoverNode.metadata?.hasReactComponent && (
-                  <div className="col-span-2 text-[#58a6ff] text-right font-semibold">
+                  <div className="col-span-2 text-[#ff6b00] text-right font-semibold">
                     React Component
                   </div>
                 )}
                 {hoverNode.metadata?.isBackendFile && (
-                  <div className="col-span-2 text-[#2ea043] text-right font-semibold">
+                  <div className="col-span-2 text-[#ff8c00] text-right font-semibold">
                     Backend API
                   </div>
                 )}
                 {hoverNode.metadata?.isTestFile && (
-                  <div className="col-span-2 text-[#d2a8ff] text-right font-semibold">
+                  <div className="col-span-2 text-[#ffb700] text-right font-semibold">
                     Test File
                   </div>
                 )}
                 {hoverNode.metadata?.hasDefaultExport && (
-                  <div className="col-span-2 text-[#e3b341] text-right font-semibold">
+                  <div className="col-span-2 text-[#ffa200] text-right font-semibold">
                     Default Export
                   </div>
                 )}
 
-                <div className="text-[#8b949e] border-t border-[#30363d] pt-1 mt-1 col-span-2">
+                <div className="text-[#737373] border-t border-[#1a1a1a] pt-1 mt-1 col-span-2">
                   Entities
                 </div>
-                <div className="text-right text-[#c9d1d9] col-span-2">
+                <div className="text-right text-[#e5e5e5] col-span-2">
                   {collapsedNodes.has(hoverNode.id) ? "Hidden (Click to expand)" : "Visible"}
                 </div>
 
-                <div className="col-span-2 mt-2 pt-2 border-t border-[#30363d]">
+                <div className="col-span-2 mt-2 pt-2 border-t border-[#1a1a1a]">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       triggerBlastRadius(hoverNode);
                     }}
-                    className="cursor-pointer w-full py-1.5 flex items-center justify-center gap-2 bg-[#ff5858]/10 hover:bg-[#ff5858]/20 text-[#ff5858] border border-[#ff5858]/30 hover:border-[#ff5858] rounded text-xs font-bold uppercase tracking-wider transition-all"
+                    className="cursor-pointer w-full py-1.5 flex items-center justify-center gap-2 bg-[#ff5858]/10 hover:bg-[#ff5858]/20 text-[#ff5858] border border-[#ff5858]/30 hover:border-[#ff5858] rounded-none text-xs font-bold uppercase tracking-wider transition-all"
                   >
                     <Flame size={14} /> Analyze Impact
                   </button>
@@ -440,37 +440,37 @@ export default function GraphView({ repoId }: { repoId: string }) {
               </>
             ) : (
               <>
-                <div className="text-[#8b949e]">Path</div>
+                <div className="text-[#737373]">Path</div>
                 <div
-                  className="text-right text-[#c9d1d9] font-mono truncate"
+                  className="text-right text-[#e5e5e5] font-mono truncate"
                   title={hoverNode.path}
                 >
                   {hoverNode.path}
                 </div>
                 {hoverNode.metadata?.startLine !== undefined && (
                   <>
-                    <div className="text-[#8b949e]">Lines</div>
-                    <div className="text-right text-[#c9d1d9]">
+                    <div className="text-[#737373]">Lines</div>
+                    <div className="text-right text-[#e5e5e5]">
                       {hoverNode.metadata.startLine} - {hoverNode.metadata.endLine}
                     </div>
                   </>
                 )}
                 {hoverNode.metadata?.returnType && (
                   <>
-                    <div className="text-[#8b949e]">Returns</div>
-                    <div className="text-right text-[#c9d1d9] font-mono">
+                    <div className="text-[#737373]">Returns</div>
+                    <div className="text-right text-[#e5e5e5] font-mono">
                       {hoverNode.metadata.returnType}
                     </div>
                   </>
                 )}
 
-                <div className="col-span-2 mt-2 pt-2 border-t border-[#30363d]">
+                <div className="col-span-2 mt-2 pt-2 border-t border-[#1a1a1a]">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       triggerBlastRadius(hoverNode);
                     }}
-                    className="cursor-pointer w-full py-1.5 flex items-center justify-center gap-2 bg-[#ff5858]/10 hover:bg-[#ff5858]/20 text-[#ff5858] border border-[#ff5858]/30 hover:border-[#ff5858] rounded text-xs font-bold uppercase tracking-wider transition-all"
+                    className="cursor-pointer w-full py-1.5 flex items-center justify-center gap-2 bg-[#ff5858]/10 hover:bg-[#ff5858]/20 text-[#ff5858] border border-[#ff5858]/30 hover:border-[#ff5858] rounded-none text-xs font-bold uppercase tracking-wider transition-all"
                   >
                     <Flame size={14} /> Analyze Impact
                   </button>
