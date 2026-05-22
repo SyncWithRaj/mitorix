@@ -1,4 +1,4 @@
-# RepoLens — Architectural Copilot for Your Codebase
+# RepoLens — AI Architectural Copilot & Vector Intelligence Platform
 
 ![RepoLens AI Engine](https://img.shields.io/badge/RepoLens-AI_Engine-58a6ff?style=for-the-badge)
 ![Node.js](https://img.shields.io/badge/Node.js-22_LTS-339933?style=for-the-badge&logo=nodedotjs)
@@ -11,42 +11,42 @@
 
 **Understand your codebase. Faster than ever.**
 
-RepoLens is an AI-powered architectural copilot that uses vector embeddings, multi-language AST parsing, and Retrieval-Augmented Generation (RAG) to let you visually map, explore, and interrogate any codebase through natural language. Stop reading thousands of lines of code — start asking questions and get exact, contextual explanations instantly.
+RepoLens is an AI-powered architectural copilot that leverages **high-dimensional vector embeddings**, **multi-language AST parsing**, and **Retrieval-Augmented Generation (RAG)** to let you visually map, explore, and interrogate any codebase through natural language. Stop reading thousands of lines of code — start asking questions, detecting semantic drift, and visualizing structural dependencies instantly.
 
-> **Supported Languages:** JavaScript, TypeScript, Python, Go, Rust, Java, C, C++, C#, PHP, Ruby — powered by [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) for high-fidelity AST parsing.
-
----
-
-## Features
-
-### 🧠 Contextual AI Chat (RAG)
-Ask natural language questions like *"Where is the authentication logic?"* or *"How does the payment flow work?"* and get exact code snippets, file references, and architectural explanations — powered by **Google Gemini** with semantic vector search over your indexed codebase.
-
-### 🌐 Interactive Force-Graph Visualization
-Visualize your repository as an interconnected **2D Force-Graph** that maps real relationships and dependencies between files, functions, and modules. Click any node to navigate, highlight blast-radius impacts, and understand the architecture at a glance.
-
-### 💥 Blast Radius Analysis
-Before making a change, ask: *"If I modify `authenticateUser`, what else breaks?"* — the AI identifies affected files and renders an interactive blast-radius view on the graph, highlighting all dependent components in red.
-
-### 📊 Auto-Generated Architecture Diagrams
-One-click generation of **Mermaid.js** architecture diagrams from your codebase structure. The AI analyzes your AST relationships and produces system design diagrams you can embed in documentation.
-
-### 📖 Onboarding Guide Generation
-New to a codebase? Click "Generate Onboarding Guide" and RepoLens identifies entry points, core schemas, and key components, then creates a step-by-step walkthrough tailored to the repository's language and structure.
-
-### 🔍 Monaco Code Editor
-Integrated web-based code editor with syntax highlighting, file tree navigation, and resizable panels — browse and read code without leaving the browser.
-
-### 📞 Voice-Powered Code Exploration
-Call the AI agent directly in your browser for hands-free architectural queries.
-**Pipeline:** Speech-to-Text (AssemblyAI) → RAG/LLM Synthesis (Gemini) → Text-to-Speech (Murf AI)
-
-### 🔒 Ephemeral & Secure
-Repositories are cloned temporarily, parsed into ASTs, embedded into the vector database, and then deleted from disk. Zero persistent file storage on the server.
+> **Supported Languages:** JavaScript, TypeScript, Python, Go, Rust, Java, C, C++, C#, PHP, Ruby — powered by native [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) compilers for high-fidelity AST parsing.
 
 ---
 
-## 🏗 Architecture
+## 🚀 Core Features
+
+### 🔬 Vector RepoLabs Intelligence
+We repurpose Qdrant vector embeddings to unlock deep semantic codebase analytics that transcend traditional text-matching engines:
+- **Natural Language Search:** Find code by describing its logic. Qdrant’s Cosine similarity matching retrieves semantically relevant AST blocks even if exact keywords are absent.
+- **Semantic Clone Detection:** A high-performance clustering algorithm scans the vector space to identify hidden duplication where code logic is semantically identical (≥95% Near Identical, ≥85% Semantic boundary), regardless of variable renaming or syntax formatting.
+- **Version Drift Tracking:** Compute vector distances between indexed version fingerprints to trace actual code behavior deviation and semantic drift over time.
+
+### 🌐 7 Interactive D3.js Visual Layouts
+Visualize your repository as an interconnected dependency map. 
+1. **Force-Directed Graph** (Files and caller-callee bindings)
+2. **Treemap View** (Mosaic directory sizing based on Lines of Code)
+3. **Adjacency Matrix** (Import/function density grids)
+4. **Hierarchical Dendrogram** (Nested namespace mapping)
+5. **Sankey Flow Diagrams** (Function call volume paths)
+6. **Disjoint Clusters** (Bounded hulls revealing isolated modules)
+7. **Circular Edge Bundles** (Radial cyclic trace binding)
+
+### 💥 Blast Radius & Telemetry Simulation
+Before making a change, RepoLens simulates structural risk. Triggering a **Breadth-First Search (BFS) to Depth 3**, the engine flags transitive downstream impacts across the dependency graph. Includes automated **Cyclomatic Complexity**, **Security Vulnerability Regex Scans** (SQLi, XSS, Weak Crypto), and strict **Architectural Layer** validation (Controller, Service, Model boundaries).
+
+### 🧠 Contextual AI Chat (RAG) & Voice Calls
+Ask questions like *"Where is the authentication logic?"* and get exact code snippets via Google Gemini. Connect via the **Hands-Free Speech Pipeline** utilizing AssemblyAI (Speech-to-Text) -> Gemini -> Murf AI (Text-to-Speech) for complete hands-free exploration.
+
+### 🔒 Ephemeral & Secure Ingestion Pipeline
+Repositories are cloned asynchronously via a **BullMQ + Redis** job queue to a `/tmp` sandbox. The codebase is parsed into ASTs, embedded into the Qdrant vector database, and the physical disk directory is instantly wiped. **Zero persistent file storage on the server.**
+
+---
+
+## 🏗 Architecture & Engineering Pipeline
 
 ```
 User → GitHub OAuth → Paste Repo URL
@@ -60,7 +60,6 @@ User → GitHub OAuth → Paste Repo URL
               │  → AST Parse (Tree-  │
               │    sitter, 11 langs) │
               │  → Extract Entities  │
-              │    & Relationships   │
               │  → Vector Embed      │
               │  → Delete Clone      │
               └──────────┬───────────┘
@@ -76,44 +75,41 @@ User → GitHub OAuth → Paste Repo URL
          └───────┬───────┘
                  ↓
          ┌──────────────┐
-         │  RAG Engine  │ → Gemini LLM → Chat / Voice / Diagrams
+         │  RAG Engine  │ → Gemini LLM → Chat / RepoLabs / Voice
          └──────────────┘
 ```
 
 **Key Design Decisions:**
-- **Ephemeral Cloning** — Repos are cloned to `/tmp`, parsed, then wiped. No persistent file storage.
-- **Event-Driven Processing** — BullMQ + Redis workers handle repo parsing asynchronously. The API returns `202 Accepted` immediately.
-- **Multi-Language AST** — Tree-sitter replaces ts-morph for universal language support across 11 languages.
-- **MongoDB for Metadata** — File trees, code entities, relationships, and chat history are persisted in structured documents.
-- **Qdrant for Semantics** — Code chunks are embedded as vectors for semantic similarity search during RAG queries.
+- **Ephemeral Sandbox Clones** — Host file integrity is protected by immediate cleanup routines.
+- **Asynchronous Execution** — Parsing heavy repositories runs on isolated background workers, ensuring immediate `202 Accepted` API responses.
+- **MongoDB for Schema Metadata** — File trees, code entities, relationship edges, and chat history are persisted in structured BSON documents.
+- **Qdrant for Semantics** — 1536/768-dimensional coordinates representing semantic fragments are indexed using HNSW graphs for rapid retrieval.
 
 ---
 
-## 🛠 Tech Stack
+## 🛠 Technology Stack
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | Next.js 16, React 19, Tailwind CSS v4 |
-| **UI Components** | Monaco Editor, react-force-graph-2d, Mermaid.js, lucide-react, react-resizable-panels |
-| **Backend** | Node.js 22, Express 5, TypeScript 5 |
-| **AST Parsing** | Tree-sitter (JS, TS, Python, Go, Rust, Java, C, C++, C#, PHP, Ruby) |
-| **AI / LLM** | Google Gemini (`@google/generative-ai`, LangChain) |
-| **Vector DB** | Qdrant (semantic code search) |
-| **Database** | MongoDB 7 + Mongoose 9 |
-| **Queue** | BullMQ + Redis (async job processing) |
-| **Auth** | Passport.js (GitHub OAuth2), JWT |
-| **Voice Pipeline** | AssemblyAI (STT) → Gemini → Murf AI (TTS) |
-| **Infrastructure** | Docker Compose, Nginx reverse proxy |
+| **Frontend UI** | Next.js 16 (App Router), React 19, Tailwind CSS v4, Lucide React |
+| **Data Visualizations** | D3.js, react-force-graph-2d, Mermaid.js |
+| **Backend API** | Node.js 22 LTS, Express 5, TypeScript 5 |
+| **AST Parsers** | Tree-sitter (WASM/Native extensions for 11 architectures) |
+| **AI / LLM** | Google Gemini (`@google/generative-ai`) |
+| **Vector Database** | Qdrant (Semantic similarity search) |
+| **Document Store** | MongoDB 7 + Mongoose 9 |
+| **Job Queueing** | BullMQ + Redis |
+| **Voice Streaming** | AssemblyAI (STT) → Gemini → Murf AI (TTS) |
+| **Infrastructure** | Docker Compose, Nginx Reverse Proxy |
 
 ---
 
-## Getting Started
+## ⚡ Getting Started
 
 ### Prerequisites
-
-- **Node.js 22** (LTS) — [install via nvm](https://github.com/nvm-sh/nvm)
-- **Docker & Docker Compose** — for infrastructure services
-- **Git** — for repo cloning
+- **Node.js 22** (LTS)
+- **Docker & Docker Compose**
+- **Git**
 
 ### Quick Setup (Recommended)
 
@@ -122,157 +118,59 @@ User → GitHub OAuth → Paste Repo URL
 git clone https://github.com/your-org/repolens.git
 cd repolens
 
-# 2. Run the setup script (installs everything)
+# 2. Run the automated setup script
 chmod +x setup.sh
 ./setup.sh
 
-# 3. Configure your secrets
-nano backend/.env    # At minimum, set JWT_SECRET
+# 3. Configure your API secrets
+nano backend/.env    # Set JWT_SECRET, GOOGLE_API_KEY, etc.
 
-# 4. Start infrastructure services
+# 4. Spin up the infrastructure components
 docker compose up -d mongodb redis qdrant
 
-# 5. Seed demo data (creates a test user + parses a sample project)
-cd backend && npm run seed
-
-# 6. Start backend (terminal 1)
+# 5. Start the backend server (terminal 1)
 cd backend && npm run dev
 
-# 7. Start frontend (terminal 2)
+# 6. Start the frontend application (terminal 2)
 cd frontend && npm run dev
 ```
 
-Open **http://localhost:3000/login** → click **"Dev Login"** → you're in!
-
-> **What does `setup.sh` do?**
-> Validates Node 22, installs OS build tools for native addons (tree-sitter/node-gyp), runs `npm ci` in both backend and frontend, and scaffolds `backend/.env` from the example template. Smart caching skips reinstall if dependencies haven't changed.
-
-> **What does `npm run seed` do?**
-> Creates a demo user (bypasses GitHub OAuth) and runs the real parsing pipeline on a bundled Express todo app. The dashboard, graph, editor, and file browser work immediately — no API keys needed for basic testing.
+Open **http://localhost:3000/login** and utilize the **"Dev Login"** portal to bypass OAuth.
 
 ### Docker Production Deployment
 
 ```bash
-# Build and start everything (backend, frontend, MongoDB, Redis, Qdrant, Nginx)
+# Build and orchestrate the full stack (Nginx, Express, Next.js, Mongo, Redis, Qdrant)
 make build
 
-# Other commands
-make start     # Start without rebuilding
-make stop      # Stop all services
-make restart   # Stop + start
-make logs      # Tail live logs
-make clean     # Stop + delete database volumes
-make wipe      # Nuclear: stop + delete volumes + Qdrant storage
+# Production Lifecycle Commands
+make start     # Spin up containers
+make stop      # Halt containers gracefully
+make logs      # Tail live unified logs
+make clean     # Halt and strip standard database volumes
+make wipe      # Nuclear: Strips volumes and Qdrant storage arrays
 ```
 
-Once running, open **http://localhost** (port 80) — Nginx serves the frontend and proxies API requests to the backend.
-
-### Environment Variables
-
-Copy the example and fill in your secrets:
-
-```bash
-cp backend/.env.production.example backend/.env
-```
+### Required Environment Variables
+A `.env.production.example` template is provided in the `backend/` directory.
 
 | Variable | Required | Description |
 |---|---|---|
 | `GITHUB_CLIENT_ID` | Required | GitHub OAuth App client ID |
 | `GITHUB_CLIENT_SECRET` | Required | GitHub OAuth App client secret |
 | `JWT_SECRET` | Required | Random string for JWT signing (`openssl rand -hex 32`) |
-| `GOOGLE_API_KEY` | Required | Google Gemini API key |
-| `MONGO_URI` | Required | MongoDB connection string |
-| `QDRANT_URL` | Required | Qdrant vector DB URL |
-| `REDIS_HOST` / `REDIS_PORT` | Required | Redis connection for BullMQ |
-| `GITHUB_APP_ID` | Optional | GitHub App ID (private repo access) |
-| `GITHUB_APP_PRIVATE_KEY` | Optional | GitHub App private key |
-| `MURF_API_KEY` | Optional | Murf AI key (voice TTS) |
-| `ASSEMBLYAI_API_KEY` | Optional | AssemblyAI key (voice STT) |
-
----
-
-## 📂 Project Structure
-
-```
-repolens/
-├── setup.sh                     # One-command project setup
-├── docker-compose.yml           # Full-stack orchestration
-├── Makefile                     # Dev workflow shortcuts
-├── .nvmrc                       # Node 22 version pin
-│
-├── backend/
-│   ├── src/
-│   │   ├── server.ts            # Entry point
-│   │   ├── app.ts               # Express app configuration
-│   │   ├── config/              # Database & Passport config
-│   │   ├── controllers/         # Route handlers
-│   │   │   ├── repo.controller.ts         # Repository onboarding
-│   │   │   ├── parser.controller.ts       # AST parsing orchestration
-│   │   │   ├── query.controller.ts        # RAG chat queries
-│   │   │   ├── graph.controller.ts        # Force-graph data
-│   │   │   ├── call.controller.ts         # Voice call pipeline
-│   │   │   ├── designDoc.controller.ts    # Mermaid diagram generation
-│   │   │   └── onboarding.controller.ts   # Onboarding guide generation
-│   │   ├── models/              # MongoDB schemas
-│   │   │   ├── repo.model.ts              # Repository metadata
-│   │   │   ├── codeEntity.model.ts        # Functions, classes, exports
-│   │   │   ├── relationship.model.ts      # File/entity dependencies
-│   │   │   ├── fileContent.model.ts       # File tree & source code
-│   │   │   └── chatHistory.model.ts       # Conversation persistence
-│   │   ├── modules/
-│   │   │   ├── parser/          # Multi-language AST parsing
-│   │   │   │   ├── astParser.ts           # Tree-sitter orchestrator
-│   │   │   │   └── parsers/               # Per-language parsers (11 langs)
-│   │   │   ├── indexer/         # Code entity indexing
-│   │   │   └── repo/            # Repository management
-│   │   ├── services/            # Business logic
-│   │   │   ├── rag.service.ts             # RAG pipeline
-│   │   │   ├── llm.service.ts             # Gemini LLM integration
-│   │   │   ├── qdrant.service.ts          # Vector DB operations
-│   │   │   └── embedding.service.ts       # Vector embedding
-│   │   ├── queue/               # BullMQ job definitions
-│   │   ├── workers/             # Async job processors
-│   │   ├── middlewares/         # Auth, rate limiting, error handling
-│   │   ├── routes/              # Express route definitions
-│   │   └── utils/               # Helpers & formatters
-│   ├── Dockerfile               # Production multi-stage build
-│   └── package.json
-│
-├── frontend/
-│   ├── app/                     # Next.js 16 App Router
-│   │   ├── page.tsx             # Landing page
-│   │   ├── dashboard/           # Repository dashboard
-│   │   ├── chat/                # AI chat interface
-│   │   ├── graph/               # Force-graph visualization
-│   │   ├── auth/                # GitHub OAuth flow
-│   │   └── login/               # Login page
-│   ├── components/
-│   │   ├── chat/                # ChatPanel, message rendering
-│   │   ├── editor/              # Monaco editor integration
-│   │   ├── files/               # File tree browser
-│   │   ├── graph/               # Force-graph component
-│   │   └── layout/              # Navigation, sidebar
-│   ├── context/                 # React context (EditorContext)
-│   ├── lib/                     # Axios instance
-│   ├── Dockerfile               # Production multi-stage build
-│   └── package.json
-│
-└── nginx/
-    └── nginx.conf               # Reverse proxy config
-```
+| `GOOGLE_API_KEY` | Required | Google Gemini API Key |
+| `MONGO_URI` | Required | MongoDB instance URI string |
+| `QDRANT_URL` | Required | Qdrant vector DB host |
+| `REDIS_HOST` / `REDIS_PORT` | Required | Redis connection strings |
 
 ---
 
 ## 🤝 Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on getting started, coding standards, and the pull request process.
-
----
+Please see `CONTRIBUTING.md` for our strict styling guidelines, component architecture logic, and PR review workflow. We welcome additions to the Tree-sitter parsers and D3 visualization layouts.
 
 ## 📄 License
-
-This project is licensed under the ISC License.
+This codebase is released under the **ISC License**.
 
 ---
-
-*Built for developers who want to understand code, not just read it.*
+*Built for engineers who want to understand architecture, not just read text files.*
