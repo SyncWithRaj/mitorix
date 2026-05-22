@@ -22,41 +22,14 @@ RepoLens is an enterprise-grade AI-powered architectural copilot that leverages 
 The platform is structured into two main workspaces:
 
 ### 🖥️ RepoSpace
-The interactive core workspace dashboard structured to explore, map, and analyze repository frameworks visually and textually.
-
-#### 1. Interactive Visualization Canvas (Center Viewport)
-Provides 8 distinct visualization modes to layout, filter, and trace directory hierarchy and dependency flow:
-* **Force-Directed Graph (`force`):** Standard interactive node-edge viewport mapping function-level caller-callee bindings.
-* **Visual Relation Graph (`visual`):** Maps entities and direct architectural dependencies.
-* **Treemap Mosaic View (`treemap`):** Renders nested directories as segmented mosaic rectangles sized relative to Lines of Code (LOC).
-* **Adjacency Coupling Matrix (`matrix`):** Traces file import overlap matrices, highlighting dense coupling hotspots.
-* **Hierarchical Dendrogram (`dendro`):** Organizes file namespace coordinates as horizontal cluster trees.
-* **Sankey Flow Diagram (`sankey`):** Renders path volumes mapping inter-folder function call streams.
-* **Disjoint Clusters View (`disjoint`):** Encloses folder nodes within bounding hulls to visualize inter-module boundaries.
-* **Circular Edge Bundling (`bundle`):** Groups file paths radially, utilizing quadratic bezier curves to link caller-callee loops.
-
-#### 2. Left Explorer & Status Sidebar
-* **Health Check Score Ring:** Visualizes the dynamically calculated codebase health rating (0-100 score and letter grade A-F) deducting points for circular dependencies, God files, dead code, and security issues.
-* **Stats Grid Telemetry:** Real-time counters indexing total file count, lines of code, characters, imports, functions, and classes.
-* **Language Bar Explorer:** Stacked bar graph of language distributions by Lines of Code (LOC). Supports interactive filters to toggle workspace views between *Programming Code* and *All Files*.
-* **Directory Tree Explorer:** Slide-out drawer panel compiling the repository directory hierarchy.
-
-#### 3. Right Resizable Inspector Panel
-* **Details Tab:** Displays path metadata, line counts, imports, exports, and caller connections for any selected file/node.
-* **Patterns Tab:** Automatically lists identified design patterns (Singleton, Factory, Observer, Repository, MVC) and design anti-patterns (God Objects, Long Files).
-* **Security Tab:** Collects static analysis scans (exposed keys, SQLi, XSS, dangerous system actions).
-* **Action Items Tab:** Recommends refactoring improvements (e.g. decoupling circular chains, clean-up tasks).
-* **Source Code Tab:** Side-by-side Monaco editor displaying raw code logic with context-targeted highlighting.
-
-#### 4. Header Control Bar Actions
-* **Design Doc Generator:** Compiles repository design walkthroughs and Mermaid.js flowcharts on-demand.
-* **Onboarding Guide Generator:** Automates codebase entry point indexing and step-by-step reading guides.
-* **Pull Request Risk Analyzer:** Estimates branch merge risks based on lines changed, file types, and coupling dependencies.
-* **Excludes Manager:** Restricts file/folder parsing using custom glob pattern exclusion lists.
-
-#### 5. Contextual AI Chat Panel (Slide-out)
-* **Drag-and-Drop Context Assembly:** Assemble queries by dragging and dropping file nodes, folders, security alerts, and pattern classes directly into the chat container.
-* **Hands-Free Speech Pipeline:** Integrated voice exploration executing real-time AssemblyAI speech-to-text (STT) parsing, Gemini vector-reasoning, and Murf AI text-to-speech (TTS) voice streams.
+The interactive core workspace dashboard where you explore, map, and query repository structures visually and textually:
+* **8 Layout Viz Modes:** Toggle between Force-directed graph, Visual relation node-link maps, Treemaps (LOC profiles), Adjacency Matrix (import coupling), Dendrograms, Sankey flows, Disjoint cluster hulls, and Circular edge bundling.
+* **Integrated Monaco Editor:** Browse directory files via the sliding Tree Explorer and jump directly to coordinate-targeted code entities.
+* **Context-Driven AI RAG Chat:** Drag-and-drop file nodes, folder paths, compliance violations, or patterns directly into the chat prompt to restrict context boundaries.
+* **Impact Blast Radius Simulator:** Map direct and indirect downstream dependency paths to visualize ripple effects of code changes.
+* **Architecture Compliance & Security Checks:** Verify layered import rules (Levels 1-5 validation) and flag hardcoded keys, SQLi, and XSS patterns.
+* **Onboarding & Design Docs:** Automatically generate reading guides and Mermaid.js architecture flowcharts.
+* **Voice-Powered exploration:** Query codebases using integrated AssemblyAI Speech-to-Text and Murf AI Text-to-Speech call services.
 
 ### 🧪 RepoLabs
 The vector-powered advanced analytics suite running under the hood to perform deep mathematical codebase interrogation.
@@ -123,36 +96,19 @@ Locate duplicated or near-duplicate logic written across different files.
 
 ## 🏗 System Architecture
 
-```
-User → Nginx Reverse Proxy (Rate Limiting & Static Routing)
-                │
-        ┌───────┴───────┐
-        ▼               ▼
-   Frontend          Backend
-  (Next.js 16)     (Express 5)
-                        │
-                        ▼
-                ┌───────────────┐
-                │   BullMQ      │ ← Queue Orchestration (Redis backed)
-                └───────┬───────┘
-                        │
-                        ▼
-             ┌─────────────────────┐
-             │ Repo Worker         │
-             │  1. Clone Repo      │
-             │  2. Tree-sitter AST │
-             │  3. Parse Entities  │
-             │  4. Security Scan   │
-             │  5. Clean Up Clone  │
-             └──────────┬──────────┘
-                        │
-         ┌──────────────┼──────────────┐
-         ▼              ▼              ▼
-   ┌──────────┐   ┌──────────┐   ┌──────────┐
-   │ MongoDB  │   │  Qdrant  │   │  Redis   │
-   │ Metadata │   │  Vector  │   │ Session  │
-   │ & Files  │   │ Search   │   │ & Cache  │
-   └──────────┘   └──────────┘   └──────────┘
+```mermaid
+graph TD
+    User[User Client] -->|HTTP / WS| Nginx[Nginx Reverse Proxy]
+    Nginx -->|Static Routing| FE[Frontend: Next.js 16]
+    Nginx -->|API Route Forwarding| BE[Backend: Express 5]
+    BE -->|Queue Tasks| Queue[BullMQ Orchestration: Redis]
+    Queue --> Worker[Repo Worker]
+    Worker -->|1. Clone Repo| Disk[Ephemeral Local Storage]
+    Worker -->|2. AST Parsing| TS[Tree-sitter AST Engines]
+    Worker -->|3. Save Telemetry| DB[(MongoDB Metadata)]
+    Worker -->|4. Index Embeddings| Vector[(Qdrant Vector DB)]
+    Worker -->|5. Zero-Retention Purge| Disk
+    BE -->|Cache & Session Cache| Cache[(Redis Cache)]
 ```
 
 ### Key Architectural Decisions
