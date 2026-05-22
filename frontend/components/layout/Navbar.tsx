@@ -47,13 +47,18 @@ export default function Navbar() {
   };
 
   const inRepoSpace = pathname.startsWith("/chat") || pathname.startsWith("/codeflow");
+  const inRepoLabs = pathname.startsWith("/repolabs");
 
   if (pathname.startsWith("/codeflow")) return null;
 
   return (
     <nav
       className={`fixed left-0 right-0 z-50 transition-all duration-500 text-[#e5e5e5] px-6 py-3.5 flex items-center justify-between ${
-        scrolled
+        inRepoLabs
+          ? scrolled
+            ? "top-0 mx-0 rounded-none border-t-0 border-x-0 bg-[#000000] shadow-[0_8px_40px_rgba(0,0,0,0.6)] border-b border-[#ff6b00]/20"
+            : "top-0 mx-0 rounded-none bg-[#000000] border-b border-[#1a1a1a]"
+          : scrolled
           ? "top-0 mx-0 rounded-none border-t-0 border-x-0 glass-panel shadow-[0_8px_40px_rgba(0,0,0,0.6)] border-b border-[#ff6b00]/20"
           : "top-[15px] mx-[15px] rounded-2xl bg-[#000000]/30 backdrop-blur-xl border border-[rgba(255,255,255,0.05)] shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
       }`}
