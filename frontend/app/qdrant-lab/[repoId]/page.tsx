@@ -9,9 +9,9 @@ import ClonesTab from "./ClonesTab";
 import DriftTab from "./DriftTab";
 
 const TABS = [
-  { key: "search", label: "Semantic Search", icon: Search, color: "#58a6ff", desc: "Natural language code search" },
-  { key: "clones", label: "Clone Detection", icon: GitCompare, color: "#f0883e", desc: "Find semantic duplicates" },
-  { key: "drift", label: "Drift Detector", icon: Activity, color: "#a371f7", desc: "Track code evolution" },
+  { key: "search", label: "Semantic Search", icon: Search, desc: "Natural language code search" },
+  { key: "clones", label: "Clone Detection", icon: GitCompare, desc: "Find semantic duplicates" },
+  { key: "drift", label: "Drift Detector", icon: Activity, desc: "Track code evolution" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -22,31 +22,31 @@ export default function QdrantLabPage({ params }: { params: Promise<{ repoId: st
   const [activeTab, setActiveTab] = useState<TabKey>("search");
 
   return (
-    <div className="min-h-screen bg-[#0a0c10] text-[#c9d1d9] pt-20 relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-b from-[#58a6ff]/4 via-[#a371f7]/3 to-transparent blur-[120px] rounded-full pointer-events-none" />
+    <div className="min-h-screen bg-[#000000] text-[#E5E5E5] pt-20 relative selection:bg-[#FF6B00]/30 selection:text-white">
+      {/* Subtle ambient glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#FF6B00]/5 blur-[150px] rounded-full pointer-events-none" />
 
       {/* Header + Tabs */}
-      <div className="sticky top-[73px] z-30 bg-[#0a0c10]/80 backdrop-blur-xl border-b border-[#30363d]/50">
-        <div className="max-w-6xl mx-auto px-6">
+      <div className="sticky top-[73px] z-30 bg-[#000000]/80 backdrop-blur-xl border-b border-[#1A1A1A]">
+        <div className="max-w-5xl mx-auto px-6">
           {/* Title row */}
-          <div className="flex items-center gap-4 py-4">
-            <button onClick={() => router.push("/dashboard")} className="p-2 rounded-xl text-[#8b949e] hover:text-white hover:bg-[#21262d] transition-all cursor-pointer">
-              <ArrowLeft size={20} />
+          <div className="flex items-center gap-6 py-6">
+            <button onClick={() => router.push("/dashboard")} className="group p-2 -ml-2 rounded-full text-[#A3A3A3] hover:text-white hover:bg-[#1A1A1A] transition-all duration-300 cursor-pointer">
+              <ArrowLeft size={18} className="group-hover:-translate-x-0.5 transition-transform" />
             </button>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#58a6ff]/20 via-[#a371f7]/20 to-[#f0883e]/20 border border-[#58a6ff]/20 flex items-center justify-center">
-                <Sparkles size={18} className="text-[#58a6ff]" />
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#FF6B00]/20 to-[#FF8C00]/5 border border-[#FF6B00]/20 flex items-center justify-center shadow-[0_0_15px_rgba(255,107,0,0.1)]">
+                <Sparkles size={18} className="text-[#FF6B00]" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">Qdrant Lab</h1>
-                <p className="text-[11px] text-[#6e7681]">Vector-powered intelligence beyond RAG</p>
+                <h1 className="text-xl font-medium tracking-tight text-white">Qdrant Lab</h1>
+                <p className="text-[12px] text-[#A3A3A3] tracking-wide mt-0.5">Vector-powered codebase intelligence</p>
               </div>
             </div>
           </div>
 
           {/* Tab bar */}
-          <div className="flex gap-1 pb-0">
+          <div className="flex gap-6 pb-0">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.key;
@@ -54,15 +54,17 @@ export default function QdrantLabPage({ params }: { params: Promise<{ repoId: st
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`cursor-pointer group flex items-center gap-2 px-5 py-3 text-sm font-medium transition-all duration-200 border-b-2 rounded-t-lg ${
+                  className={`cursor-pointer group flex items-center gap-2.5 pb-4 text-[13px] font-medium transition-all duration-300 relative ${
                     isActive
-                      ? "text-white border-current bg-[#161b22]/50"
-                      : "text-[#8b949e] border-transparent hover:text-[#c9d1d9] hover:bg-[#161b22]/30"
+                      ? "text-white"
+                      : "text-[#737373] hover:text-[#A3A3A3]"
                   }`}
-                  style={isActive ? { color: tab.color, borderColor: tab.color } : {}}
                 >
-                  <Icon size={16} className={isActive ? "" : "opacity-60 group-hover:opacity-100"} />
+                  <Icon size={14} className={isActive ? "text-[#FF6B00]" : "opacity-70 group-hover:opacity-100 transition-opacity"} />
                   {tab.label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] rounded-t-full shadow-[0_-2px_10px_rgba(255,107,0,0.3)]" />
+                  )}
                 </button>
               );
             })}
@@ -71,7 +73,7 @@ export default function QdrantLabPage({ params }: { params: Promise<{ repoId: st
       </div>
 
       {/* Tab content */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-6 py-10">
         {activeTab === "search" && <SearchTab repoId={repoId} />}
         {activeTab === "clones" && <ClonesTab repoId={repoId} />}
         {activeTab === "drift" && <DriftTab repoId={repoId} />}

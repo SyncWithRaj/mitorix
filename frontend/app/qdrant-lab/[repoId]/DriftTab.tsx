@@ -16,11 +16,11 @@ interface DriftReport {
 
 function DriftGauge({ value }: { value: number }) {
   const r = 40, c = Math.PI * r, o = c - (value / 100) * c;
-  const color = value >= 60 ? "#da3633" : value >= 30 ? "#f0883e" : value >= 10 ? "#d29922" : "#2ea043";
+  const color = value >= 60 ? "#FF4500" : value >= 30 ? "#FF6B00" : value >= 10 ? "#FF8C00" : "#FFA800";
   return (
     <div className="relative w-28 h-16">
       <svg className="w-28 h-16" viewBox="0 0 100 55">
-        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#21262d" strokeWidth="6" strokeLinecap="round" />
+        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#1A1A1A" strokeWidth="6" strokeLinecap="round" />
         <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke={color} strokeWidth="6" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={o} className="transition-all duration-1000 ease-out" />
       </svg>
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-center"><span className="text-2xl font-bold" style={{ color }}>{value}%</span></div>
@@ -29,37 +29,37 @@ function DriftGauge({ value }: { value: number }) {
 }
 
 function StatusBadge({ status }: { status: DriftItem["status"] }) {
-  const cfg = { modified: { icon: RefreshCw, label: "MODIFIED", color: "#f0883e" }, deleted: { icon: XCircle, label: "DELETED", color: "#da3633" }, new: { icon: Plus, label: "NEW", color: "#2ea043" } }[status];
+  const cfg = { modified: { icon: RefreshCw, label: "MODIFIED", color: "#FF8C00" }, deleted: { icon: XCircle, label: "DELETED", color: "#FF4500" }, new: { icon: Plus, label: "NEW", color: "#FF6B00" } }[status];
   const Icon = cfg.icon;
-  return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono tracking-wider" style={{ color: cfg.color, backgroundColor: `${cfg.color}15` }}><Icon size={10} />{cfg.label}</span>;
+  return <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono tracking-wider" style={{ color: cfg.color, backgroundColor: `${cfg.color}15` }}><Icon size={10} />{cfg.label}</span>;
 }
 
 function FileDriftBar({ summary }: { summary: FileDriftSummary }) {
-  const color = summary.avgDrift >= 60 ? "#da3633" : summary.avgDrift >= 30 ? "#f0883e" : summary.avgDrift >= 10 ? "#d29922" : "#2ea043";
+  const color = summary.avgDrift >= 60 ? "#FF4500" : summary.avgDrift >= 30 ? "#FF6B00" : summary.avgDrift >= 10 ? "#FF8C00" : "#FFA800";
   return (
-    <div className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-[#161b22]/50 transition-colors group">
+    <div className="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-[#0A0A0A] transition-colors group">
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-mono text-[#c9d1d9] truncate group-hover:text-[#58a6ff] transition-colors">{summary.filePath}</p>
-        <p className="text-[10px] text-[#6e7681]">{summary.entityCount} entities · max {summary.maxDrift}% drift</p>
+        <p className="text-xs font-mono text-[#E5E5E5] truncate group-hover:text-[#FF6B00] transition-colors">{summary.filePath}</p>
+        <p className="text-[10px] text-[#737373] mt-0.5">{summary.entityCount} entities · max {summary.maxDrift}% drift</p>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <div className="w-20 h-1.5 bg-[#21262d] rounded-full overflow-hidden"><div className="h-full rounded-full transition-all duration-700" style={{ width: `${summary.avgDrift}%`, backgroundColor: color }} /></div>
-        <span className="text-[11px] font-mono font-semibold w-10 text-right" style={{ color }}>{summary.avgDrift}%</span>
+      <div className="flex items-center gap-3 shrink-0">
+        <div className="w-24 h-1 bg-[#1A1A1A] rounded-full overflow-hidden"><div className="h-full rounded-full transition-all duration-700" style={{ width: `${summary.avgDrift}%`, backgroundColor: color }} /></div>
+        <span className="text-[11px] font-mono font-medium w-8 text-right" style={{ color }}>{summary.avgDrift}%</span>
       </div>
     </div>
   );
 }
 
 function DriftItemRow({ item, index }: { item: DriftItem; index: number }) {
-  const c = item.driftScore >= 60 ? "#da3633" : item.driftScore >= 30 ? "#f0883e" : item.driftScore >= 10 ? "#d29922" : "#2ea043";
+  const c = item.driftScore >= 60 ? "#FF4500" : item.driftScore >= 30 ? "#FF6B00" : item.driftScore >= 10 ? "#FF8C00" : "#FFA800";
   return (
-    <div className="flex items-center gap-4 p-3 rounded-xl border border-[#30363d]/40 bg-[#0d1117]/60 hover:border-[#484f58] transition-all animate-fadeInUp" style={{ animationDelay: `${index * 30}ms` }}>
-      <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border" style={{ color: c, borderColor: `${c}40`, backgroundColor: `${c}10` }}>{item.driftScore}</div>
+    <div className="flex items-center gap-4 p-4 rounded-xl border border-[#1A1A1A] bg-[#050505] hover:border-[#FF6B00]/30 transition-all animate-fadeInUp" style={{ animationDelay: `${index * 30}ms` }}>
+      <div className="w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-medium shrink-0 border" style={{ color: c, borderColor: `${c}30`, backgroundColor: `${c}10` }}>{item.driftScore}</div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2"><p className="text-sm font-medium text-white truncate">{item.entity.name.substring(0, 60)}</p><StatusBadge status={item.status} /></div>
-        <p className="text-[11px] font-mono text-[#6e7681] truncate">{item.entity.filePath}{item.entity.startLine > 0 && <span>:{item.entity.startLine}–{item.entity.endLine}</span>}</p>
+        <div className="flex items-center gap-3 mb-1"><p className="text-[14px] font-medium text-[#E5E5E5] truncate">{item.entity.name.substring(0, 60)}</p><StatusBadge status={item.status} /></div>
+        <p className="text-[11px] font-mono text-[#737373] truncate">{item.entity.filePath}{item.entity.startLine > 0 && <span>:{item.entity.startLine}–{item.entity.endLine}</span>}</p>
       </div>
-      {item.matchScore !== undefined && <div className="text-right shrink-0"><p className="text-[10px] text-[#6e7681] uppercase">Match</p><p className="text-sm font-mono text-[#8b949e]">{item.matchScore}%</p></div>}
+      {item.matchScore !== undefined && <div className="text-right shrink-0"><p className="text-[9px] text-[#A3A3A3] uppercase tracking-widest mb-0.5">Match</p><p className="text-[13px] font-mono text-[#737373]">{item.matchScore}%</p></div>}
     </div>
   );
 }
@@ -120,38 +120,38 @@ export default function DriftTab({ repoId }: { repoId: string }) {
   return (
     <div>
       {/* How it works info */}
-      <div className="mb-6 p-4 rounded-xl border border-[#a371f7]/20 bg-[#a371f7]/5">
-        <p className="text-xs text-[#c9d1d9]"><span className="text-[#a371f7] font-semibold">How it works:</span> Index your repo → make code changes → re-index (re-process from dashboard). Each index creates a version fingerprint in Qdrant. Then compare two versions to see which functions semantically changed — even if git diff shows minor edits.</p>
+      <div className="mb-6 p-4 rounded-xl border border-[#FF6B00]/20 bg-[#FF6B00]/5">
+        <p className="text-[12px] text-[#A3A3A3]"><span className="text-[#FF6B00] font-medium">How it works:</span> Index your repo → make code changes → re-index (re-process from dashboard). Each index creates a version fingerprint in Qdrant. Then compare two versions to see which functions semantically changed — even if git diff shows minor edits.</p>
       </div>
 
       {/* Version Selector */}
-      <div className="mb-8 p-6 rounded-2xl border border-[#30363d]/60 bg-[#161b22]/40">
+      <div className="mb-8 p-6 rounded-2xl border border-[#1A1A1A] bg-[#0A0A0A]">
         {loadingVersions ? (
-          <div className="flex items-center justify-center py-4 gap-3"><Loader2 size={16} className="animate-spin text-[#8b949e]" /><span className="text-sm text-[#8b949e]">Loading version history...</span></div>
+          <div className="flex items-center justify-center py-4 gap-3"><Loader2 size={16} className="animate-spin text-[#737373]" /><span className="text-sm text-[#737373]">Loading version history...</span></div>
         ) : fingerprints.length < 2 && crossRepoTargets.length === 0 ? (
           <div className="text-center py-6">
-            <div className="w-14 h-14 rounded-2xl bg-[#21262d] border border-[#30363d] flex items-center justify-center mx-auto mb-4"><GitBranch size={24} className="text-[#484f58]" /></div>
-            <h3 className="text-lg font-semibold text-white mb-2">Not Enough Versions</h3>
-            <p className="text-sm text-[#8b949e] max-w-md mx-auto">Drift detection requires at least 2 indexed versions. Re-process your repo from the dashboard after making code changes to create a new version.</p>
-            <p className="text-xs text-[#6e7681] mt-3 font-mono">Versions found: {fingerprints.length} · Current: {currentFingerprint.substring(0, 12)}...</p>
+            <div className="w-14 h-14 rounded-full bg-[#050505] border border-[#1A1A1A] flex items-center justify-center mx-auto mb-4"><GitBranch size={24} className="text-[#404040]" /></div>
+            <h3 className="text-lg font-medium text-white mb-2">Not Enough Versions</h3>
+            <p className="text-[13px] text-[#737373] max-w-md mx-auto">Drift detection requires at least 2 indexed versions. Re-process your repo from the dashboard after making code changes to create a new version.</p>
+            <p className="text-[11px] text-[#404040] mt-4 font-mono">Versions found: {fingerprints.length} · Current: {currentFingerprint.substring(0, 12)}...</p>
           </div>
         ) : (
-          <div className="flex items-end gap-4 flex-wrap">
+          <div className="flex items-end gap-6 flex-wrap">
             <div className="flex-1 min-w-[200px]">
-              <label className="text-[10px] font-mono text-[#6e7681] uppercase tracking-widest block mb-2">Old Version</label>
+              <label className="text-[10px] font-mono text-[#737373] uppercase tracking-widest block mb-3">Old Version</label>
               <div className="relative">
-                <select value={oldVersion} onChange={(e) => setOldVersion(e.target.value)} className="w-full appearance-none bg-[#0d1117] border border-[#30363d] rounded-xl px-4 py-3 pr-10 text-sm text-white font-mono focus:outline-none focus:border-[#58a6ff] cursor-pointer">
+                <select value={oldVersion} onChange={(e) => setOldVersion(e.target.value)} className="w-full appearance-none bg-[#050505] border border-[#1A1A1A] rounded-xl px-4 py-3.5 pr-10 text-[13px] text-[#E5E5E5] font-mono focus:outline-none focus:border-[#FF6B00] transition-colors cursor-pointer">
                   <option value="">Select...</option>
                   {fingerprints.map(fp => <option key={fp} value={fp}>{fp.substring(0, 16)}...{fp === currentFingerprint ? " (current)" : ""}</option>)}
                 </select>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6e7681] pointer-events-none" />
+                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#737373] pointer-events-none" />
               </div>
             </div>
-            <div className="flex items-center justify-center w-10 h-10 text-[#6e7681] pb-1">→</div>
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#1A1A1A] text-[#737373] mb-2 shrink-0">→</div>
             <div className="flex-1 min-w-[200px]">
-              <label className="text-[10px] font-mono text-[#6e7681] uppercase tracking-widest block mb-2">New Version</label>
+              <label className="text-[10px] font-mono text-[#737373] uppercase tracking-widest block mb-3">New Version</label>
               <div className="relative">
-                <select value={newVersion} onChange={(e) => setNewVersion(e.target.value)} className="w-full appearance-none bg-[#0d1117] border border-[#30363d] rounded-xl px-4 py-3 pr-10 text-sm text-white font-mono focus:outline-none focus:border-[#58a6ff] cursor-pointer">
+                <select value={newVersion} onChange={(e) => setNewVersion(e.target.value)} className="w-full appearance-none bg-[#050505] border border-[#1A1A1A] rounded-xl px-4 py-3.5 pr-10 text-[13px] text-[#E5E5E5] font-mono focus:outline-none focus:border-[#FF6B00] transition-colors cursor-pointer">
                   <option value="">Select...</option>
                   {fingerprints.length > 0 && (
                     <optgroup label="This Repository">
@@ -168,11 +168,11 @@ export default function DriftTab({ repoId }: { repoId: string }) {
                     </optgroup>
                   )}
                 </select>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6e7681] pointer-events-none" />
+                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#737373] pointer-events-none" />
               </div>
             </div>
             <button onClick={runComparison} disabled={loading || !oldVersion || !newVersion}
-              className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#a371f7] to-[#8957e5] text-white text-sm font-bold transition-all hover:shadow-[0_0_25px_rgba(163,113,247,0.3)] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+              className="cursor-pointer flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#FF6B00] hover:bg-[#FF8C00] text-white text-[13px] font-medium transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed min-w-[180px]">
               {loading ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />}{loading ? "Comparing..." : "Compare Versions"}
             </button>
           </div>
@@ -181,52 +181,53 @@ export default function DriftTab({ repoId }: { repoId: string }) {
 
       {/* Loading */}
       {loading && (
-        <div className="flex flex-col items-center py-20">
-          <div className="relative mb-6"><div className="w-14 h-14 border-[3px] border-[#30363d] border-t-[#a371f7] rounded-full animate-spin" /></div>
-          <p className="text-sm text-[#8b949e]">Computing semantic drift across versions...</p>
+        <div className="flex flex-col items-center py-24">
+          <div className="relative mb-6"><div className="w-12 h-12 border-[2px] border-[#1A1A1A] border-t-[#FF6B00] rounded-full animate-spin" /></div>
+          <p className="text-[13px] text-[#A3A3A3]">Computing semantic drift across versions...</p>
         </div>
       )}
 
       {/* Results */}
       {report && !loading && (
-        <div className="animate-fadeIn space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-            <div className="sm:col-span-2 p-6 rounded-2xl border border-[#30363d]/60 bg-[#161b22]/40 flex flex-col items-center justify-center">
-              <p className="text-[10px] font-mono text-[#6e7681] uppercase tracking-widest mb-3">Overall Semantic Drift</p>
+        <div className="animate-fadeIn space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-6">
+            <div className="sm:col-span-2 p-8 rounded-2xl border border-[#1A1A1A] bg-[#050505] flex flex-col items-center justify-center relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF6B00]/5 blur-3xl rounded-full pointer-events-none" />
+              <p className="text-[10px] font-mono text-[#737373] uppercase tracking-widest mb-6 relative z-10">Overall Semantic Drift</p>
               <DriftGauge value={report.overallDrift} />
-              <p className="text-xs text-[#8b949e] mt-3 text-center">
+              <p className="text-[13px] text-[#A3A3A3] mt-4 text-center relative z-10">
                 {report.overallDrift < 10 ? "Codebase is stable" : report.overallDrift < 30 ? "Moderate drift detected" : report.overallDrift < 60 ? "Significant semantic changes" : "High drift — major changes"}
               </p>
             </div>
-            <div className="sm:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {[{ l: "Modified", v: report.stats.modified, i: RefreshCw, c: "#f0883e" }, { l: "Deleted", v: report.stats.deleted, i: Trash2, c: "#da3633" }, { l: "Added", v: report.stats.added, i: Plus, c: "#2ea043" },
-                { l: "Unchanged", v: report.stats.unchanged, i: CheckCircle, c: "#8b949e" }, { l: "Old Entities", v: report.stats.totalOldEntities, i: BarChart3, c: "#58a6ff" }, { l: "Time", v: `${(report.stats.elapsedMs / 1000).toFixed(1)}s`, i: Clock, c: "#a371f7" }
+            <div className="sm:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {[{ l: "Modified", v: report.stats.modified, i: RefreshCw, c: "#FF6B00" }, { l: "Deleted", v: report.stats.deleted, i: Trash2, c: "#FF4500" }, { l: "Added", v: report.stats.added, i: Plus, c: "#FF8C00" },
+                { l: "Unchanged", v: report.stats.unchanged, i: CheckCircle, c: "#A3A3A3" }, { l: "Old Entities", v: report.stats.totalOldEntities, i: BarChart3, c: "#737373" }, { l: "Time", v: `${(report.stats.elapsedMs / 1000).toFixed(1)}s`, i: Clock, c: "#FFA800" }
               ].map(s => (
-                <div key={s.l} className="p-3 rounded-xl bg-[#0d1117]/60 border border-[#30363d]/40">
-                  <div className="flex items-center gap-1.5 mb-1"><s.i size={12} style={{ color: s.c }} /><span className="text-[9px] font-mono text-[#6e7681] uppercase tracking-widest">{s.l}</span></div>
-                  <p className="text-lg font-bold text-white">{s.v}</p>
+                <div key={s.l} className="p-4 rounded-xl bg-[#050505] border border-[#1A1A1A]">
+                  <div className="flex items-center gap-2 mb-2"><s.i size={12} style={{ color: s.c }} /><span className="text-[10px] font-mono text-[#737373] uppercase tracking-widest">{s.l}</span></div>
+                  <p className="text-xl font-medium text-white">{s.v}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex gap-1 p-1 bg-[#161b22]/60 rounded-xl border border-[#30363d]/40 w-fit">
+          <div className="flex gap-2 p-1.5 bg-[#050505] rounded-xl border border-[#1A1A1A] w-fit">
             {[{ k: "items" as const, l: "Drift Items", c: report.items.length }, { k: "files" as const, l: "By File", c: report.fileSummaries.length }].map(t => (
-              <button key={t.k} onClick={() => setActiveView(t.k)} className={`cursor-pointer px-4 py-2 rounded-lg text-xs font-medium transition-all ${activeView === t.k ? "bg-[#30363d] text-white shadow-sm" : "text-[#8b949e] hover:text-[#c9d1d9]"}`}>
+              <button key={t.k} onClick={() => setActiveView(t.k)} className={`cursor-pointer px-5 py-2 rounded-lg text-[13px] font-medium transition-all ${activeView === t.k ? "bg-[#1A1A1A] text-white shadow-sm" : "text-[#737373] hover:text-[#E5E5E5]"}`}>
                 {t.l} <span className="opacity-50">({t.c})</span>
               </button>
             ))}
           </div>
 
           {activeView === "items" ? (
-            <div className="space-y-2">
-              {report.items.length === 0 ? <div className="text-center py-12"><CheckCircle size={32} className="text-[#2ea043] mx-auto mb-3" /><p className="text-lg font-medium text-white">No significant drift</p></div>
+            <div className="space-y-3">
+              {report.items.length === 0 ? <div className="text-center py-16"><CheckCircle size={32} className="text-[#FF8C00] mx-auto mb-4" /><p className="text-[16px] font-medium text-white">No significant drift</p></div>
                 : report.items.map((item, i) => <DriftItemRow key={`${item.entity.filePath}-${i}`} item={item} index={i} />)}
             </div>
           ) : (
-            <div className="rounded-xl border border-[#30363d]/60 bg-[#0d1117]/60 overflow-hidden">
-              {report.fileSummaries.length === 0 ? <div className="text-center py-12"><p className="text-sm text-[#8b949e]">No per-file drift data</p></div>
-                : <div className="divide-y divide-[#30363d]/30">{report.fileSummaries.map(s => <FileDriftBar key={s.filePath} summary={s} />)}</div>}
+            <div className="rounded-2xl border border-[#1A1A1A] bg-[#050505] overflow-hidden">
+              {report.fileSummaries.length === 0 ? <div className="text-center py-16"><p className="text-[13px] text-[#A3A3A3]">No per-file drift data</p></div>
+                : <div className="divide-y divide-[#1A1A1A] p-2">{report.fileSummaries.map(s => <FileDriftBar key={s.filePath} summary={s} />)}</div>}
             </div>
           )}
         </div>
@@ -234,13 +235,13 @@ export default function DriftTab({ repoId }: { repoId: string }) {
 
       {/* Empty state */}
       {!hasCompared && !loadingVersions && (fingerprints.length >= 2 || crossRepoTargets.length > 0) && (
-        <div className="flex flex-col items-center py-16 animate-fadeIn">
+        <div className="flex flex-col items-center justify-center py-24 animate-fadeIn">
           <div className="relative mb-8">
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#161b22] to-[#0d1117] border border-[#30363d] flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.4)]"><Activity size={40} className="text-[#30363d]" /></div>
-            <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-br from-[#a371f7] to-[#d29922] flex items-center justify-center shadow-lg"><Clock size={14} className="text-white" /></div>
+            <div className="w-20 h-20 rounded-full bg-[#0A0A0A] border border-[#1A1A1A] flex items-center justify-center"><Activity size={32} className="text-[#404040]" /></div>
+            <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[#FF6B00] flex items-center justify-center shadow-[0_0_10px_rgba(255,107,0,0.4)]"><Clock size={12} className="text-white" /></div>
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Track Semantic Evolution</h2>
-          <p className="text-sm text-[#8b949e] max-w-md text-center">Select two version fingerprints above. Qdrant will compute vector distances to reveal semantic changes that text diffs can&apos;t capture.</p>
+          <h2 className="text-[16px] font-medium text-white mb-3">Track Semantic Evolution</h2>
+          <p className="text-[13px] text-[#737373] max-w-md text-center leading-relaxed">Select two version fingerprints above. Qdrant will compute vector distances to reveal semantic changes that text diffs can&apos;t capture.</p>
         </div>
       )}
     </div>

@@ -6,39 +6,39 @@
 @source "../lib/**/*.{ts,tsx}";
 
 @theme inline {
-  --color-gh-bg: #0d1117;
-  --color-gh-panel: #161b22;
-  --color-gh-border: #30363d;
-  --color-gh-text: #c9d1d9;
-  --color-gh-text-muted: #8b949e;
-  --color-gh-btn-primary: #238636;
-  --color-gh-btn-primary-hover: #2ea043;
-  --color-gh-btn-secondary: #21262d;
-  --color-gh-btn-secondary-hover: #30363d;
-  --color-gh-input: #010409;
-  --color-gh-accent: #58a6ff;
-  --color-gh-danger: #da3633;
-  --color-gh-danger-hover: #b62324;
+  --color-gh-bg: #000000;
+  --color-gh-panel: #050505;
+  --color-gh-border: #1a1a1a;
+  --color-gh-text: #e5e5e5;
+  --color-gh-text-muted: #737373;
+  --color-gh-btn-primary: #ff6b00;
+  --color-gh-btn-primary-hover: #ff8c00;
+  --color-gh-btn-secondary: #0a0a0a;
+  --color-gh-btn-secondary-hover: #1a1a1a;
+  --color-gh-input: #050505;
+  --color-gh-accent: #ff6b00;
+  --color-gh-danger: #ff4500;
+  --color-gh-danger-hover: #ff5f00;
 }
 
 /* CodeFlow Theme Variables - Dark (Default) */
 :root {
-  --bg0: #0a0a0f;
-  --bg1: #12121a;
-  --bg2: #1a1a24;
-  --bg3: #24242e;
+  --bg0: #000000;
+  --bg1: #050505;
+  --bg2: #0a0a0a;
+  --bg3: #1a1a1a;
   --t0: #ffffff;
-  --t1: #e0e0e8;
-  --t2: #8888a0;
-  --t3: #55556a;
-  --acc: #00ff9d;
-  --accbg: rgba(0, 255, 157, 0.12);
-  --border: #2a2a38;
-  --red: #ff5f5f;
-  --orange: #ff9f43;
-  --green: #22c55e;
-  --blue: #4d9fff;
-  --purple: #a855f7;
+  --t1: #e5e5e5;
+  --t2: #a3a3a3;
+  --t3: #737373;
+  --acc: #ff6b00;
+  --accbg: rgba(255, 107, 0, 0.12);
+  --border: #1a1a1a;
+  --red: #ff4500;
+  --orange: #ff8c00;
+  --green: #ffb700;
+  --blue: #ffa200;
+  --purple: #ff6b00;
 }
 
 /* CodeFlow Theme Variables - Light */
@@ -51,8 +51,8 @@ body.light {
   --t1: #2d2d44;
   --t2: #6b6b88;
   --t3: #9999b0;
-  --acc: #00b36b;
-  --accbg: rgba(0, 179, 107, 0.12);
+  --acc: #ea580c;
+  --accbg: rgba(234, 88, 12, 0.12);
   --border: #d8d9e0;
   --red: #dc2626;
   --orange: #ea580c;
@@ -68,12 +68,12 @@ body.light {
   --color-gh-border: #d0d7de;
   --color-gh-text: #24292f;
   --color-gh-text-muted: #57606a;
-  --color-gh-btn-primary: #1f883d;
-  --color-gh-btn-primary-hover: #1a7f37;
+  --color-gh-btn-primary: #ea580c;
+  --color-gh-btn-primary-hover: #dd5209;
   --color-gh-btn-secondary: #f6f8fa;
   --color-gh-btn-secondary-hover: #f3f4f6;
   --color-gh-input: #ffffff;
-  --color-gh-accent: #0969da;
+  --color-gh-accent: #ea580c;
   --color-gh-danger: #cf222e;
   --color-gh-danger-hover: #a40e26;
 }
@@ -91,8 +91,8 @@ body {
 }
 
 .highlight-line {
-  background-color: rgba(255, 255, 0, 0.25);
-  border-left: 3px solid yellow;
+  background-color: rgba(255, 107, 0, 0.25);
+  border-left: 3px solid #ff6b00;
 }
 
 /* Entrance animations */
@@ -210,27 +210,27 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(48, 54, 61, 0.4); /* High transparency for a glassy feel */
+  background: rgba(255, 107, 0, 0.2); /* High transparency for a glassy feel */
   border-radius: 10px;
   transition: background 0.3s ease;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(88, 166, 255, 0.4); /* Subtle blue glow on hover */
+  background: rgba(255, 107, 0, 0.4); /* Subtle orange glow on hover */
 }
 
 /* Base Glassmorphism utility */
 .glass-panel {
-  background: rgba(22, 27, 34, 0.4);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 107, 0, 0.05);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
 .glass-panel-hover:hover {
-  background: rgba(22, 27, 34, 0.6);
-  border: 1px solid rgba(88, 166, 255, 0.2);
-  box-shadow: 0 8px 32px 0 rgba(88, 166, 255, 0.1);
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 107, 0, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(255, 107, 0, 0.1);
   transform: translateY(-2px);
 }
