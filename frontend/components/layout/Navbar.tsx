@@ -52,10 +52,10 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`sticky top-[15px] mx-[15px] z-50 transition-all duration-500 rounded-2xl ${
+      className={`sticky z-50 transition-all duration-500 ${
         scrolled
-          ? "glass-panel shadow-[0_8px_40px_rgba(0,0,0,0.6)] border-b border-[#ff6b00]/20"
-          : "bg-[#000000]/30 backdrop-blur-xl border border-[rgba(255,255,255,0.05)] shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
+          ? "top-0 mx-0 rounded-none w-full bg-[#000000]/90 backdrop-blur-xl border-b border-[#ff6b00]/20 shadow-[0_8px_32px_rgba(0,0,0,0.8)]"
+          : "top-[15px] mx-[15px] rounded-2xl bg-[#000000]/30 backdrop-blur-xl border border-[rgba(255,255,255,0.05)] shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
       } text-[#e5e5e5] px-6 py-3.5 flex items-center justify-between`}
     >
       <div className="flex items-center space-x-6">
