@@ -200,20 +200,33 @@ export default function ChatPanel({
     return () => window.removeEventListener("mouseup", handleGlobalMouseUp, true);
   }, [setAttachedNodes]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const userScrolledUpRef = useRef(false);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    const isNearBottom = target.scrollHeight - target.scrollTop - target.clientHeight < 150;
+    userScrolledUpRef.current = !isNearBottom;
+  };
+
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
   };
 
   const activeMessages = activeTab === "chat" ? chatMessages : callMessages;
 
   useEffect(() => {
+    userScrolledUpRef.current = false;
     scrollToBottom();
-  }, [chatMessages, callMessages, loading, activeTab]);
+  }, [chatMessages.length, callMessages.length, loading, activeTab]);
 
   // Auto-scroll during typewriter streaming
   useEffect(() => {
     if (streamingIndex !== null) {
-      const interval = setInterval(scrollToBottom, 100);
+      const interval = setInterval(() => {
+        if (!userScrolledUpRef.current) {
+          scrollToBottom("auto");
+        }
+      }, 100);
       return () => clearInterval(interval);
     }
   }, [streamingIndex]);
@@ -564,7 +577,8 @@ export default function ChatPanel({
       </div>
 
       <div
-        className={`flex-1 overflow-y-auto p-4 space-y-6 bg-[#000000] custom-scrollbar scroll-smooth relative z-0`}
+        className={`flex-1 overflow-y-auto p-4 space-y-6 bg-[#000000] custom-scrollbar relative z-0`}
+        onScroll={handleScroll}
       >
         <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-l from-[#ff6b00]/5 to-transparent blur-3xl pointer-events-none -z-10"></div>
 
