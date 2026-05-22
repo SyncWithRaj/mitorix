@@ -219,18 +219,19 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="max-w-6xl mt-20 mx-auto w-full py-12 px-6 flex-grow">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-[#1a1a1a]">
-        <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-            <Box className="text-[#ff6b00]" size={28} />
-            Repositories
-          </h1>
-          <p className="text-[#737373] mt-2 text-sm font-medium">
-            Manage and chat with indexed GitHub repositories in your isolated workspace.
-          </p>
+    <div className="w-full min-h-screen bg-black flex flex-col">
+      <div className="max-w-6xl mt-20 mx-auto w-full py-12 px-6 flex-grow">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-[#1a1a1a]">
+          <div>
+            <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+              <Box className="text-[#ff6b00]" size={28} />
+              Repositories
+            </h1>
+            <p className="text-[#737373] mt-2 text-sm font-medium">
+              Manage and chat with indexed GitHub repositories in your isolated workspace.
+            </p>
+          </div>
         </div>
-      </div>
 
       <div className="mb-8 p-8 bg-gradient-to-br from-[#050505] to-[#000000] border border-[#1a1a1a] rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] relative overflow-hidden group animate-fadeIn">
         <div
@@ -316,25 +317,6 @@ export default function Dashboard() {
               <Archive size={16} className="text-[#ff8c00]" />
               Open ZIP
             </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Language Support Banner */}
-      <div className="mb-8 p-4 bg-gradient-to-r from-[#050505] via-[#1a0f05]/30 to-[#050505] border border-[#1a1a1a] rounded-xl relative overflow-hidden animate-fadeIn">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#ff6b00]/5 to-transparent animate-shimmer pointer-events-none"></div>
-        <div className="flex items-start gap-3 relative z-10">
-          <div className="flex-shrink-0 mt-0.5">
-            <Info size={18} className="text-[#ff6b00]" />
-          </div>
-          <div>
-            <p className="text-sm text-[#e5e5e5] font-medium">
-              <span className="text-[#ff6b00] font-semibold">Currently supporting:</span>{" "}
-              JavaScript, TypeScript, HTML, and CSS repositories.
-            </p>
-            <p className="text-xs text-[#737373] mt-1">
-              More languages and frameworks will be supported in future updates. Stay tuned!
-            </p>
           </div>
         </div>
       </div>
@@ -448,6 +430,7 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }
