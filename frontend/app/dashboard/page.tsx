@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   GitBranch,
@@ -91,6 +91,7 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
   const [embeddingStates, setEmbeddingStates] = useState<Record<string, { current: number; total: number; completed: boolean }>>({});
+  const activeEventSources = useRef<Set<string>>(new Set());
 
   const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -185,6 +186,15 @@ export default function Dashboard() {
     checkAuth();
   }, [fetchRepos]);
 
+  useEffect(() => {
+    repos.forEach((repo) => {
+      if (repo.isEmbedding && !activeEventSources.current.has(repo._id)) {
+        activeEventSources.current.add(repo._id);
+        embedRepo(repo._id, true);
+      }
+    });
+  }, [repos]);
+
   const processRepo = async () => {
     if (!githubUrl) return;
     let toastId;
@@ -222,10 +232,12 @@ export default function Dashboard() {
     }
   };
 
-  const embedRepo = async (repoId: string) => {
+  const embedRepo = async (repoId: string, silent: boolean = false) => {
     let toastId: string | undefined;
     try {
-      toastId = toast.loading("Connecting to Vector Engine...");
+      if (!silent) {
+        toastId = toast.loading("Connecting to Vector Engine...");
+      }
       
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
       const eventSource = new EventSource(`${baseUrl}/repos/${repoId}/trigger-embedding`, {
@@ -242,22 +254,26 @@ export default function Dashboard() {
           const data = JSON.parse(event.data);
           
           if (data.status === "completed") {
-            toast.success("Embeddings generated & stored in Qdrant successfully!", { id: toastId });
+            if (!silent) toast.success("Embeddings generated & stored in Qdrant successfully!", { id: toastId });
             setEmbeddingStates(prev => ({
               ...prev,
               [repoId]: { current: data.total || 1, total: data.total || 1, completed: true }
             }));
             eventSource.close();
+            activeEventSources.current.delete(repoId);
             fetchRepos();
           } else if (data.status === "progress") {
-            toast.loading(`Embedding items: ${data.current} / ${data.total}`, { id: toastId });
+            if (!silent && toastId) {
+              toast.loading(`Embedding items: ${data.current} / ${data.total}`, { id: toastId });
+            }
             setEmbeddingStates(prev => ({
               ...prev,
               [repoId]: { current: data.current, total: data.total, completed: false }
             }));
           } else if (data.status === "error") {
-            toast.error(data.message || "Failed to generate embeddings", { id: toastId });
+            if (!silent) toast.error(data.message || "Failed to generate embeddings", { id: toastId });
             eventSource.close();
+            activeEventSources.current.delete(repoId);
             setEmbeddingStates(prev => {
               const newState = { ...prev };
               delete newState[repoId];
@@ -271,7 +287,8 @@ export default function Dashboard() {
 
       eventSource.onerror = () => {
         eventSource.close();
-        toast.error("Connection lost while generating embeddings.", { id: toastId });
+        activeEventSources.current.delete(repoId);
+        if (!silent) toast.error("Connection lost while generating embeddings.", { id: toastId });
         setEmbeddingStates(prev => {
           const newState = { ...prev };
           delete newState[repoId];
@@ -280,7 +297,8 @@ export default function Dashboard() {
       };
     } catch (err: any) {
       console.error("Embed repo error:", err);
-      toast.error(err.message || "Failed to start generating embeddings", { id: toastId });
+      if (!silent) toast.error(err.message || "Failed to start generating embeddings", { id: toastId });
+      activeEventSources.current.delete(repoId);
     }
   };
 
@@ -518,10 +536,10 @@ export default function Dashboard() {
                   <div className="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap gap-2.5 shrink-0 lg:ml-8 ml-2">
                     {repo.status === "indexed" && (
                       <>
-                        {embeddingStates[repo._id] && !embeddingStates[repo._id].completed ? (
+                        {(repo.isEmbedding || (embeddingStates[repo._id] && !embeddingStates[repo._id].completed)) ? (
                           <div className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs font-semibold px-4.5 py-2.5 rounded-xl border border-[#ffa800]/40 text-[#ffa800] bg-[#ffa800]/10">
                             <Loader2 size={14} className="animate-spin" />
-                            <span>{embeddingStates[repo._id].current} / {embeddingStates[repo._id].total}</span>
+                            <span>{embeddingStates[repo._id]?.current || 0} / {embeddingStates[repo._id]?.total || '-'}</span>
                           </div>
                         ) : !repo.isEmbedded && (
                           <button
