@@ -1,0 +1,236 @@
+@import "tailwindcss" source(none);
+
+@source "../app/**/*.{ts,tsx,css}";
+@source "../components/**/*.{ts,tsx,css}";
+@source "../context/**/*.{ts,tsx,css}";
+@source "../lib/**/*.{ts,tsx}";
+
+@theme inline {
+  --color-gh-bg: #0d1117;
+  --color-gh-panel: #161b22;
+  --color-gh-border: #30363d;
+  --color-gh-text: #c9d1d9;
+  --color-gh-text-muted: #8b949e;
+  --color-gh-btn-primary: #238636;
+  --color-gh-btn-primary-hover: #2ea043;
+  --color-gh-btn-secondary: #21262d;
+  --color-gh-btn-secondary-hover: #30363d;
+  --color-gh-input: #010409;
+  --color-gh-accent: #58a6ff;
+  --color-gh-danger: #da3633;
+  --color-gh-danger-hover: #b62324;
+}
+
+/* CodeFlow Theme Variables - Dark (Default) */
+:root {
+  --bg0: #0a0a0f;
+  --bg1: #12121a;
+  --bg2: #1a1a24;
+  --bg3: #24242e;
+  --t0: #ffffff;
+  --t1: #e0e0e8;
+  --t2: #8888a0;
+  --t3: #55556a;
+  --acc: #00ff9d;
+  --accbg: rgba(0, 255, 157, 0.12);
+  --border: #2a2a38;
+  --red: #ff5f5f;
+  --orange: #ff9f43;
+  --green: #22c55e;
+  --blue: #4d9fff;
+  --purple: #a855f7;
+}
+
+/* CodeFlow Theme Variables - Light */
+body.light {
+  --bg0: #f8f9fc;
+  --bg1: #ffffff;
+  --bg2: #f0f1f5;
+  --bg3: #e4e5eb;
+  --t0: #1a1a2e;
+  --t1: #2d2d44;
+  --t2: #6b6b88;
+  --t3: #9999b0;
+  --acc: #00b36b;
+  --accbg: rgba(0, 179, 107, 0.12);
+  --border: #d8d9e0;
+  --red: #dc2626;
+  --orange: #ea580c;
+  --green: #16a34a;
+  --blue: #2563eb;
+  --purple: #9333ea;
+}
+
+/* Light theme overrides for GitHub colors */
+body.light {
+  --color-gh-bg: #ffffff;
+  --color-gh-panel: #f6f8fa;
+  --color-gh-border: #d0d7de;
+  --color-gh-text: #24292f;
+  --color-gh-text-muted: #57606a;
+  --color-gh-btn-primary: #1f883d;
+  --color-gh-btn-primary-hover: #1a7f37;
+  --color-gh-btn-secondary: #f6f8fa;
+  --color-gh-btn-secondary-hover: #f3f4f6;
+  --color-gh-input: #ffffff;
+  --color-gh-accent: #0969da;
+  --color-gh-danger: #cf222e;
+  --color-gh-danger-hover: #a40e26;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-gh-bg);
+  color: var(--color-gh-text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.highlight-line {
+  background-color: rgba(255, 255, 0, 0.25);
+  border-left: 3px solid yellow;
+}
+
+/* Entrance animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+    filter: blur(40px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+    filter: blur(50px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 4s ease-in-out infinite;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out both;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.animate-blink {
+  animation: blink 0.8s step-end infinite;
+}
+
+.animate-toastIn {
+  animation: toastIn 0.3s ease-out both;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px; /* Thinner, sleeker scrollbar */
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(48, 54, 61, 0.4); /* High transparency for a glassy feel */
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(88, 166, 255, 0.4); /* Subtle blue glow on hover */
+}
+
+/* Base Glassmorphism utility */
+.glass-panel {
+  background: rgba(22, 27, 34, 0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.glass-panel-hover:hover {
+  background: rgba(22, 27, 34, 0.6);
+  border: 1px solid rgba(88, 166, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(88, 166, 255, 0.1);
+  transform: translateY(-2px);
+}
