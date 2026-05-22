@@ -73,6 +73,7 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
   }
 
   embeddingProgressTracker.set(repoId, { current: 0, total });
+  embeddingEvents.emit(`progress-${repoId}`, 0, total);
 
   const points: any[] = [];
 
