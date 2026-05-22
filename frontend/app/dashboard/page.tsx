@@ -90,6 +90,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
+  const [embeddingStates, setEmbeddingStates] = useState<Record<string, { current: number; total: number; completed: boolean }>>({});
 
   const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -186,20 +187,23 @@ export default function Dashboard() {
 
   const processRepo = async () => {
     if (!githubUrl) return;
+    let toastId;
     try {
       setLoading(true);
-      toast.loading("Queuing repository for cloning...");
+      toastId = toast.loading("Queuing repository for cloning...");
       await api.post("/repos/process", { githubUrl });
       setGithubUrl("");
-      toast.success("Analysis started in the background!");
-      fetchRepos();
+      toast.success("Analysis started in the background!", { id: toastId });
+      setTimeout(() => fetchRepos(), 500);
     } catch (err: any) {
       console.error("Process repo error:", err);
       toast.error(
-        err.response?.data?.message || "Failed to start analysis. Check the URL and try again."
+        err.response?.data?.message || "Failed to start analysis. Check the URL and try again.",
+        { id: toastId }
       );
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const deleteRepo = async (repoId: string) => {
@@ -219,14 +223,64 @@ export default function Dashboard() {
   };
 
   const embedRepo = async (repoId: string) => {
+    let toastId: string | undefined;
     try {
-      const toastId = toast.loading("Generating vector embeddings...");
-      await api.post(`/repos/${repoId}/trigger-embedding`);
-      toast.success("Embeddings generated & stored in Qdrant successfully!", { id: toastId });
-      fetchRepos();
+      toastId = toast.loading("Connecting to Vector Engine...");
+      
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+      const eventSource = new EventSource(`${baseUrl}/repos/${repoId}/trigger-embedding`, {
+        withCredentials: true,
+      });
+
+      setEmbeddingStates(prev => ({
+        ...prev,
+        [repoId]: { current: 0, total: 1, completed: false }
+      }));
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.status === "completed") {
+            toast.success("Embeddings generated & stored in Qdrant successfully!", { id: toastId });
+            setEmbeddingStates(prev => ({
+              ...prev,
+              [repoId]: { current: data.total || 1, total: data.total || 1, completed: true }
+            }));
+            eventSource.close();
+            fetchRepos();
+          } else if (data.status === "progress") {
+            toast.loading(`Embedding items: ${data.current} / ${data.total}`, { id: toastId });
+            setEmbeddingStates(prev => ({
+              ...prev,
+              [repoId]: { current: data.current, total: data.total, completed: false }
+            }));
+          } else if (data.status === "error") {
+            toast.error(data.message || "Failed to generate embeddings", { id: toastId });
+            eventSource.close();
+            setEmbeddingStates(prev => {
+              const newState = { ...prev };
+              delete newState[repoId];
+              return newState;
+            });
+          }
+        } catch (e) {
+          console.error("SSE Parse error", e);
+        }
+      };
+
+      eventSource.onerror = () => {
+        eventSource.close();
+        toast.error("Connection lost while generating embeddings.", { id: toastId });
+        setEmbeddingStates(prev => {
+          const newState = { ...prev };
+          delete newState[repoId];
+          return newState;
+        });
+      };
     } catch (err: any) {
       console.error("Embed repo error:", err);
-      toast.error(err.response?.data?.message || "Failed to generate embeddings");
+      toast.error(err.message || "Failed to start generating embeddings", { id: toastId });
     }
   };
 
@@ -464,16 +518,12 @@ export default function Dashboard() {
                   <div className="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap gap-2.5 shrink-0 lg:ml-8 ml-2">
                     {repo.status === "indexed" && (
                       <>
-                        <button
-                          onClick={() => router.push(`/codeflow/${repo._id}`)}
-                          className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs text-white font-bold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(255,107,0,0.15)] hover:shadow-[0_0_30px_rgba(255,107,0,0.45)] border border-[#ff6b00]/40 overflow-hidden bg-gradient-to-r from-[#ff6b00] via-[#ff8c00] to-[#ffa800] relative"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/action:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
-                          <Activity size={14} />
-                          <span>Launch RepoSpace</span>
-                        </button>
-                        
-                        {!repo.isEmbedded && (
+                        {embeddingStates[repo._id] && !embeddingStates[repo._id].completed ? (
+                          <div className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs font-semibold px-4.5 py-2.5 rounded-xl border border-[#ffa800]/40 text-[#ffa800] bg-[#ffa800]/10">
+                            <Loader2 size={14} className="animate-spin" />
+                            <span>{embeddingStates[repo._id].current} / {embeddingStates[repo._id].total}</span>
+                          </div>
+                        ) : !repo.isEmbedded && (
                           <button
                             onClick={() => embedRepo(repo._id)}
                             className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs font-semibold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#1f1f23] hover:border-[#ffa800]/40 text-[#a1a1aa] bg-[#0d0d0f] hover:bg-[#ffa800]/10"
@@ -485,8 +535,17 @@ export default function Dashboard() {
                         )}
                         
                         <button
+                          onClick={() => router.push(`/codeflow/${repo._id}`)}
+                          className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs text-white font-bold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(255,107,0,0.15)] hover:shadow-[0_0_30px_rgba(255,107,0,0.45)] border border-[#ff6b00]/40 overflow-hidden bg-gradient-to-r from-[#ff6b00] via-[#ff8c00] to-[#ffa800] relative"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/action:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
+                          <Activity size={14} />
+                          <span>Launch RepoSpace</span>
+                        </button>
+                        
+                        <button
                           onClick={() => router.push(`/repolabs/${repo._id}`)}
-                          className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs text-[#a1a1aa] hover:text-white font-semibold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#1f1f23] hover:border-[#ff8c00]/50 bg-[#0d0d0f] hover:bg-[#ff8c00]/10"
+                          className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs text-white font-semibold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#ff8c00]/40 hover:border-[#ff8c00]/80 bg-[#ff8c00]/10 hover:bg-[#ff8c00]/20 shadow-[0_0_15px_rgba(255,140,0,0.1)]"
                         >
                           <Search size={14} className="text-[#ff8c00]" />
                           <span>RepoLabs</span>

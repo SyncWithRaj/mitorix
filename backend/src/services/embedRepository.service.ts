@@ -19,7 +19,7 @@ const embeddings = new GoogleGenerativeAIEmbeddings({
   model: "models/gemini-embedding-001",
 });
 
-export async function embedRepository(repoId: string) {
+export async function embedRepository(repoId: string, onProgress?: (current: number, total: number) => void) {
   // Ensure the Qdrant collection and indexes exist before interacting
   const vectorInit = new VectorInitService();
   await vectorInit.initVectorCollection();
@@ -105,6 +105,10 @@ ${entity?.content || ""}
         },
       },
     });
+    
+    if (onProgress) {
+      onProgress(i + 1, total);
+    }
   }
 
   logger.info({ repoId, vectorCount: points.length }, "Uploading vectors to Qdrant");
