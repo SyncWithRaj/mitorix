@@ -94,7 +94,7 @@ export default function CodeEditor() {
           ))
         ) : (
           <div className="px-5 py-2.5 text-sm text-[#737373] italic pb-2 flex items-center gap-2 font-light">
-            No files open in workspace
+            No files open in RepoSpace
           </div>
         )}
 

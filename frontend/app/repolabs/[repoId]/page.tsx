@@ -16,13 +16,13 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]["key"];
 
-export default function QdrantLabPage({ params }: { params: Promise<{ repoId: string }> }) {
+export default function RepoLabsPage({ params }: { params: Promise<{ repoId: string }> }) {
   const { repoId } = use(params);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>("search");
 
   return (
-    <div className="min-h-screen bg-[#000000] text-[#E5E5E5] pt-20 relative selection:bg-[#FF6B00]/30 selection:text-white">
+    <div className="min-h-screen bg-[#000000] text-[#E5E5E5] pt-32 relative selection:bg-[#FF6B00]/30 selection:text-white">
       {/* Subtle ambient glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#FF6B00]/5 blur-[150px] rounded-full pointer-events-none" />
 
@@ -39,7 +39,7 @@ export default function QdrantLabPage({ params }: { params: Promise<{ repoId: st
                 <Sparkles size={18} className="text-[#FF6B00]" />
               </div>
               <div>
-                <h1 className="text-xl font-medium tracking-tight text-white">Qdrant Lab</h1>
+                <h1 className="text-xl font-medium tracking-tight text-white">RepoLabs</h1>
                 <p className="text-[12px] text-[#A3A3A3] tracking-wide mt-0.5">Vector-powered codebase intelligence</p>
               </div>
             </div>
