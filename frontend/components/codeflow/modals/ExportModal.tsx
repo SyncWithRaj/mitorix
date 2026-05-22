@@ -93,15 +93,15 @@ export default function ExportModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between p-4 border-b border-[#30363d] bg-[#0d1117]">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="bg-[#050505] border border-[#1a1a1a] rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between p-4 border-b border-[#1a1a1a] bg-[#000000]">
           <div className="flex items-center gap-2">
-            <Download className="w-5 h-5 text-[#c9d1d9]" />
-            <h2 className="text-lg font-bold text-[#c9d1d9]">Export Analysis</h2>
+            <Download className="w-5 h-5 text-[#ff6b00]" />
+            <h2 className="text-lg font-bold text-[#e5e5e5]">Export Analysis</h2>
           </div>
           <button
-            className="text-[#8b949e] hover:text-[#c9d1d9] transition"
+            className="text-[#737373] hover:text-[#e5e5e5] transition"
             onClick={() => setShowExportModal(false)}
           >
             <X className="w-5 h-5" />
@@ -110,46 +110,46 @@ export default function ExportModal() {
         <div className="p-4 flex flex-col gap-3">
           <button
             onClick={exportJSON}
-            className="flex items-center gap-3 p-3 bg-[#0d1117] hover:bg-[#21262d] border border-[#30363d] rounded-lg transition text-left"
+            className="flex items-center gap-3 p-3 bg-[#000000] hover:bg-[#1a1a1a] border border-[#1a1a1a] rounded-lg transition text-left"
           >
-            <FileJson className="w-6 h-6 text-[#a855f7]" />
+            <FileJson className="w-6 h-6 text-[#ff8c00]" />
             <div>
-              <div className="font-bold text-[#c9d1d9]">JSON Raw Data</div>
-              <div className="text-xs text-[#8b949e]">
+              <div className="font-bold text-[#e5e5e5]">JSON Raw Data</div>
+              <div className="text-xs text-[#737373]">
                 Full architecture metrics and connections array
               </div>
             </div>
           </button>
           <button
             onClick={() => generateReport("md")}
-            className="flex items-center gap-3 p-3 bg-[#0d1117] hover:bg-[#21262d] border border-[#30363d] rounded-lg transition text-left"
+            className="flex items-center gap-3 p-3 bg-[#000000] hover:bg-[#1a1a1a] border border-[#1a1a1a] rounded-lg transition text-left"
           >
-            <FileText className="w-6 h-6 text-[#58a6ff]" />
+            <FileText className="w-6 h-6 text-[#ff6b00]" />
             <div>
-              <div className="font-bold text-[#c9d1d9]">Markdown Report</div>
-              <div className="text-xs text-[#8b949e]">
+              <div className="font-bold text-[#e5e5e5]">Markdown Report</div>
+              <div className="text-xs text-[#737373]">
                 Detailed document with issues and metrics
               </div>
             </div>
           </button>
           <button
             onClick={() => generateReport("txt")}
-            className="flex items-center gap-3 p-3 bg-[#0d1117] hover:bg-[#21262d] border border-[#30363d] rounded-lg transition text-left"
+            className="flex items-center gap-3 p-3 bg-[#000000] hover:bg-[#1a1a1a] border border-[#1a1a1a] rounded-lg transition text-left"
           >
-            <FileCode2 className="w-6 h-6 text-[#8b949e]" />
+            <FileCode2 className="w-6 h-6 text-[#737373]" />
             <div>
-              <div className="font-bold text-[#c9d1d9]">Plain Text</div>
-              <div className="text-xs text-[#8b949e]">Simple readable summary format</div>
+              <div className="font-bold text-[#e5e5e5]">Plain Text</div>
+              <div className="text-xs text-[#737373]">Simple readable summary format</div>
             </div>
           </button>
           <button
             onClick={exportSVG}
-            className="flex items-center gap-3 p-3 bg-[#0d1117] hover:bg-[#21262d] border border-[#30363d] rounded-lg transition text-left"
+            className="flex items-center gap-3 p-3 bg-[#000000] hover:bg-[#1a1a1a] border border-[#1a1a1a] rounded-lg transition text-left"
           >
-            <Image className="w-6 h-6 text-[#00ff9d]" />
+            <Image className="w-6 h-6 text-blue-400" />
             <div>
-              <div className="font-bold text-[#c9d1d9]">SVG Vector Graphic</div>
-              <div className="text-xs text-[#8b949e]">
+              <div className="font-bold text-[#e5e5e5]">SVG Vector Graphic</div>
+              <div className="text-xs text-[#737373]">
                 High resolution export of current visualization
               </div>
             </div>

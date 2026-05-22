@@ -129,7 +129,7 @@ export default function CodePanel({ repoId }: { repoId: string }) {
 
   if (!selectedFile && codeOpenTabs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-[#8b949e] p-6 text-center">
+      <div className="flex flex-col items-center justify-center h-full text-[#737373] p-6 text-center">
         <p className="text-sm">
           Select a file from the graph or chat references to view source code.
         </p>
@@ -138,8 +138,8 @@ export default function CodePanel({ repoId }: { repoId: string }) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#0d1117]">
-      <div className="flex bg-[#010409] border-b border-[#30363d] overflow-x-auto min-h-[38px] items-end custom-scrollbar px-1 py-1">
+    <div className="flex flex-col h-full bg-[#000000]">
+      <div className="flex bg-[#050505] border-b border-[#1a1a1a] overflow-x-auto min-h-[38px] items-end custom-scrollbar px-1 py-1">
         {codeOpenTabs.map((tabPath) => {
           const active = tabPath === selectedFile;
           return (
@@ -151,8 +151,8 @@ export default function CodePanel({ repoId }: { repoId: string }) {
               }}
               className={`group inline-flex items-center gap-2 px-3 py-1.5 text-[11px] rounded-t-md border border-b-0 mr-1 transition ${
                 active
-                  ? "bg-[#0d1117] text-[#c9d1d9] border-[#30363d]"
-                  : "bg-[#161b22] text-[#8b949e] border-transparent hover:bg-[#21262d] hover:text-[#c9d1d9]"
+                  ? "bg-[#000000] text-[#e5e5e5] border-[#1a1a1a] border-t-2 border-t-[#ff6b00]"
+                  : "bg-[#0a0a0a] text-[#737373] border-transparent hover:bg-[#1a1a1a] hover:text-[#e5e5e5]"
               }`}
               title={tabPath}
             >
@@ -162,7 +162,7 @@ export default function CodePanel({ repoId }: { repoId: string }) {
                   e.stopPropagation();
                   closeTab(tabPath);
                 }}
-                className="p-0.5 rounded hover:bg-[#30363d]"
+                className="p-0.5 rounded hover:bg-[#1a1a1a]"
               >
                 <X size={12} />
               </span>
@@ -172,17 +172,17 @@ export default function CodePanel({ repoId }: { repoId: string }) {
       </div>
 
       {!selectedFile ? (
-        <div className="flex flex-col items-center justify-center h-full text-[#8b949e] p-6 text-center">
+        <div className="flex flex-col items-center justify-center h-full text-[#737373] p-6 text-center">
           <p className="text-sm">No active tab selected.</p>
         </div>
       ) : loading && !activeCode ? (
-        <div className="flex flex-col items-center justify-center h-full text-[#8b949e]">
-          <Loader2 className="w-6 h-6 animate-spin mb-2" />
+        <div className="flex flex-col items-center justify-center h-full text-[#737373]">
+          <Loader2 className="w-6 h-6 animate-spin mb-2 text-[#ff6b00]" />
           <p className="text-xs">Loading source code...</p>
         </div>
       ) : error && !activeCode ? (
-        <div className="flex flex-col items-center justify-center h-full text-[#f85149] p-6 text-center">
-          <AlertCircle className="w-8 h-8 mb-2 opacity-50" />
+        <div className="flex flex-col items-center justify-center h-full text-[#ff4500] p-6 text-center">
+          <AlertCircle className="w-8 h-8 mb-2 opacity-50 text-[#ff4500]" />
           <p className="text-sm">{error}</p>
         </div>
       ) : (

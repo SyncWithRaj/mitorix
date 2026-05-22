@@ -31,15 +31,12 @@ const TreeNode = ({
   const isExpanded = expandedPaths[node.path];
   const isFiltered = folderFilter === node.path || folderFilter?.startsWith(node.path + "/");
 
-  // Skip rendering the root node itself as a folder to keep it clean, or keep it.
-  // We'll render it just like any folder.
-
   return (
     <div className="flex flex-col">
       {/* Folder Header */}
       {node.path !== "" && (
         <div
-          className="flex items-center gap-1.5 py-1 px-1 rounded-md cursor-pointer transition-colors text-xs text-[#c9d1d9] hover:bg-[#21262d] group"
+          className="flex items-center gap-1.5 py-1 px-1 rounded-md cursor-pointer transition-colors text-xs text-[#e5e5e5] hover:bg-[#1a1a1a] group"
           onClick={(e) => {
             e.stopPropagation();
             togglePath(node.path);
@@ -60,18 +57,18 @@ const TreeNode = ({
           }}
           onDragEnd={() => useDragStore.getState().stopDrag()}
         >
-          <span className="shrink-0 w-4 h-4 flex items-center justify-center text-[#8b949e]">
+          <span className="shrink-0 w-4 h-4 flex items-center justify-center text-[#737373]">
             {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           </span>
-          <Folder size={14} className="shrink-0 text-[#d2a8ff]" />
+          <Folder size={14} className="shrink-0 text-[#ff8c00]" />
           <span className="truncate flex-1">{node.name}</span>
 
           {/* Filter Button */}
           <button
             className={`p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity ${
               isFiltered
-                ? "opacity-100 text-[#58a6ff] bg-[#58a6ff]/10"
-                : "text-[#8b949e] hover:text-white hover:bg-[#30363d]"
+                ? "opacity-100 text-[#ff6b00] bg-[#ff6b00]/10"
+                : "text-[#737373] hover:text-white hover:bg-[#1a1a1a]"
             }`}
             onClick={(e) => {
               e.stopPropagation();
@@ -87,7 +84,7 @@ const TreeNode = ({
       {/* Children Folders and Files */}
       {isExpanded && (
         <div
-          className={`${node.path !== "" ? "ml-3 pl-2 border-l border-[#30363d]" : ""} flex flex-col mt-0.5`}
+          className={`${node.path !== "" ? "ml-3 pl-2 border-l border-[#1a1a1a]" : ""} flex flex-col mt-0.5`}
         >
           {/* Render subfolders */}
           {node.children &&
@@ -113,8 +110,8 @@ const TreeNode = ({
                   key={file.path}
                   className={`flex items-center gap-1.5 py-1 px-2 rounded-md cursor-pointer transition-colors text-xs ${
                     isSelected
-                      ? "bg-[#58a6ff]/10 text-[#58a6ff]"
-                      : "text-[#c9d1d9] hover:bg-[#30363d] hover:text-white"
+                      ? "bg-[#ff6b00]/10 text-[#ff6b00]"
+                      : "text-[#e5e5e5] hover:bg-[#1a1a1a] hover:text-white"
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -136,7 +133,7 @@ const TreeNode = ({
                   }}
                   onDragEnd={() => useDragStore.getState().stopDrag()}
                 >
-                  <File size={14} className="shrink-0 opacity-70" />
+                  <File size={14} className="shrink-0 opacity-70 text-[#ff6b00]/60" />
                   <span className="truncate">{file.name}</span>
                 </div>
               );
@@ -164,14 +161,14 @@ export default function TreeExplorer() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#30363d]">
-        <div className="text-[10px] font-bold text-[#8b949e] uppercase tracking-wider">
+      <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#1a1a1a]">
+        <div className="text-[10px] font-bold text-[#737373] uppercase tracking-wider">
           Explorer
         </div>
         {folderFilter && (
           <button
             onClick={() => setFolderFilter(null)}
-            className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-[#58a6ff] bg-[#58a6ff]/10 hover:bg-[#58a6ff]/20 rounded transition-colors"
+            className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-[#ff6b00] bg-[#ff6b00]/10 hover:bg-[#ff6b00]/20 rounded transition-colors"
           >
             <X size={10} /> Clear Filter
           </button>

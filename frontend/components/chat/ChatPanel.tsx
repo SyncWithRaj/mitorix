@@ -64,7 +64,7 @@ function AssistantMessage({ content, shouldStream }: { content: string; shouldSt
   return (
     <span>
       {displayed}
-      {shouldStream && !isDone && <span className="animate-blink text-[#58a6ff] ml-0.5">▌</span>}
+      {shouldStream && !isDone && <span className="animate-blink text-[#ff6b00] ml-0.5">▌</span>}
     </span>
   );
 }
@@ -495,26 +495,26 @@ export default function ChatPanel({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0d1117] relative">
-      <div className="border-b border-[#30363d] bg-[#161b22]/90 backdrop-blur-md sticky top-0 z-10 flex flex-col shadow-sm">
+    <div className="flex flex-col h-full bg-[#000000] relative">
+      <div className="border-b border-[#1a1a1a] bg-[#050505]/90 backdrop-blur-md sticky top-0 z-10 flex flex-col shadow-sm">
         <div className="p-4 flex flex-row items-center justify-between">
-          <h3 className="text-xs font-bold tracking-widest uppercase text-[#c9d1d9] flex items-center gap-2">
-            <Bot size={16} className="text-[#58a6ff]" />
+          <h3 className="text-xs font-bold tracking-widest uppercase text-[#e5e5e5] flex items-center gap-2">
+            <Bot size={16} className="text-[#ff6b00]" />
             RepoLens AI
           </h3>
           <div className="flex items-center gap-2">
             {callState === "listening" && (
-              <div className="text-xs text-[#ff5858] font-semibold animate-pulse mr-2 flex items-center gap-1">
+              <div className="text-xs text-[#ff6b00] font-semibold animate-pulse mr-2 flex items-center gap-1">
                 <Mic size={12} /> Recording
               </div>
             )}
             {callState === "processing" && (
-              <div className="text-xs text-[#58a6ff] font-semibold animate-pulse mr-2 flex items-center gap-1">
+              <div className="text-xs text-[#ff8c00] font-semibold animate-pulse mr-2 flex items-center gap-1">
                 <Loader2 size={12} className="animate-spin" /> Thinking
               </div>
             )}
             {callState === "speaking" && (
-              <div className="text-xs text-[#a371f7] font-semibold animate-pulse mr-2 flex items-center gap-1">
+              <div className="text-xs text-[#ffa800] font-semibold animate-pulse mr-2 flex items-center gap-1">
                 <Bot size={12} /> Speaking
               </div>
             )}
@@ -523,7 +523,7 @@ export default function ChatPanel({
             {activeMessages.length > 0 && (
               <button
                 onClick={handleDeleteChat}
-                className="cursor-pointer p-1.5 rounded-lg text-[#8b949e] hover:text-[#f85149] hover:bg-[#f85149]/10 active:scale-90 transition-all duration-200"
+                className="cursor-pointer p-1.5 rounded-lg text-[#737373] hover:text-[#ff4500] hover:bg-[#ff4500]/10 active:scale-90 transition-all duration-200"
                 title={`Clear ${activeTab} history`}
               >
                 <Trash2 size={14} />
@@ -533,29 +533,29 @@ export default function ChatPanel({
             <div
               className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] animate-pulse ${
                 callState === "listening"
-                  ? "text-[#ff5858] bg-[#ff5858]"
+                  ? "text-[#ff6b00] bg-[#ff6b00]"
                   : callState === "processing"
-                    ? "text-[#58a6ff] bg-[#58a6ff]"
+                    ? "text-[#ff8c00] bg-[#ff8c00]"
                     : callState === "speaking"
-                      ? "text-[#a371f7] bg-[#a371f7]"
-                      : "text-[#2ea043] bg-[#2ea043]"
+                      ? "text-[#ffa800] bg-[#ffa800]"
+                      : "text-[#ff6b00] bg-[#ff6b00]"
               }`}
             ></div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-t border-[#30363d]/50">
+        <div className="flex border-t border-[#1a1a1a]">
           <button
             onClick={() => setActiveTab("chat")}
-            className={`cursor-pointer flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold tracking-widest uppercase transition-all duration-300 ${activeTab === "chat" ? "text-[#58a6ff] border-b-2 border-[#58a6ff] bg-[#0d1117]" : "text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#21262d]"}`}
+            className={`cursor-pointer flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold tracking-widest uppercase transition-all duration-300 ${activeTab === "chat" ? "text-[#ff6b00] border-b-2 border-[#ff6b00] bg-[#000000]" : "text-[#737373] hover:text-[#e5e5e5] hover:bg-[#0a0a0a]"}`}
           >
             <MessageSquare size={14} />
             Chat
           </button>
           <button
             onClick={() => setActiveTab("call")}
-            className={`cursor-pointer flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold tracking-widest uppercase transition-all duration-300 ${activeTab === "call" ? "text-[#2ea043] border-b-2 border-[#2ea043] bg-[#0d1117]" : "text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#21262d]"}`}
+            className={`cursor-pointer flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold tracking-widest uppercase transition-all duration-300 ${activeTab === "call" ? "text-[#ff8c00] border-b-2 border-[#ff8c00] bg-[#000000]" : "text-[#737373] hover:text-[#e5e5e5] hover:bg-[#0a0a0a]"}`}
           >
             <Phone size={14} />
             Call
@@ -564,21 +564,21 @@ export default function ChatPanel({
       </div>
 
       <div
-        className={`flex-1 overflow-y-auto p-4 space-y-6 bg-[#0d1117] custom-scrollbar scroll-smooth relative z-0`}
+        className={`flex-1 overflow-y-auto p-4 space-y-6 bg-[#000000] custom-scrollbar scroll-smooth relative z-0`}
       >
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-l from-[#58a6ff]/5 to-transparent blur-3xl pointer-events-none -z-10"></div>
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-l from-[#ff6b00]/5 to-transparent blur-3xl pointer-events-none -z-10"></div>
 
         {activeMessages.length === 0 ? (
           <div className="text-center py-16 flex flex-col items-center justify-center h-full">
-            <div className="w-16 h-16 rounded-full bg-[#161b22] border border-[#30363d] flex items-center justify-center mb-6 shadow-inner">
-              <Bot className="h-8 w-8 text-[#58a6ff]" />
+            <div className="w-16 h-16 rounded-full bg-[#050505] border border-[#1a1a1a] flex items-center justify-center mb-6 shadow-inner">
+              <Bot className="h-8 w-8 text-[#ff6b00]" />
             </div>
-            <p className="text-base font-medium text-[#c9d1d9] mb-2">
+            <p className="text-base font-medium text-[#e5e5e5] mb-2">
               {activeTab === "chat"
                 ? "How can I help with this codebase?"
                 : "Speak your mind with RepoLens"}
             </p>
-            <p className="text-sm text-[#8b949e]">
+            <p className="text-sm text-[#737373]">
               {activeTab === "chat"
                 ? "Ask for architecture details, exact files, or component logic."
                 : "I'm listening and ready to dive into the code with you."}
@@ -597,22 +597,22 @@ export default function ChatPanel({
                 <div
                   className={`max-w-[90%] md:max-w-[85%] rounded-2xl overflow-hidden transition-all duration-300 ${
                     msg.role === "user"
-                      ? "bg-gradient-to-br from-[#21262d] to-[#161b22] border border-[#30363d]/50 rounded-tr-sm shadow-[0_4px_20px_rgba(0,0,0,0.15)] group-hover:shadow-[0_4px_25px_rgba(255,255,255,0.05)]"
-                      : "glass-panel border border-[rgba(255,255,255,0.05)] border-l-2 border-l-[#58a6ff]/50 rounded-tl-sm shadow-[0_4px_25px_rgba(0,0,0,0.3)] group-hover:shadow-[0_8px_30px_rgba(88,166,255,0.1)]"
+                      ? "bg-gradient-to-br from-[#0a0a0a] to-[#050505] border border-[#1a1a1a]/50 rounded-tr-sm shadow-[0_4px_20px_rgba(0,0,0,0.5)] group-hover:shadow-[0_4px_25px_rgba(255,255,255,0.02)]"
+                      : "glass-panel border border-[rgba(255,255,255,0.02)] border-l-2 border-l-[#ff6b00]/50 rounded-tl-sm shadow-[0_4px_25px_rgba(0,0,0,0.8)] group-hover:shadow-[0_8px_30px_rgba(255,107,0,0.05)]"
                   }`}
                 >
                   <div
                     className={`px-4 py-2 text-[11px] font-bold tracking-wide uppercase flex items-center gap-2 transition-all duration-300 ${
                       msg.role === "user"
-                        ? "text-[#c9d1d9] justify-end"
-                        : "text-[#58a6ff] border-b border-[rgba(255,255,255,0.05)] bg-[rgba(0,0,0,0.2)]"
+                        ? "text-[#e5e5e5] justify-end"
+                        : "text-[#ff6b00] border-b border-[rgba(255,255,255,0.02)] bg-[rgba(0,0,0,0.4)]"
                     }`}
                   >
-                    {msg.role === "assistant" && <Bot size={14} className="text-[#58a6ff]" />}
+                    {msg.role === "assistant" && <Bot size={14} className="text-[#ff6b00]" />}
                     {msg.role === "user" ? "You" : "RepoLens"}
-                    {msg.role === "user" && <User size={14} className="text-[#8b949e]" />}
+                    {msg.role === "user" && <User size={14} className="text-[#737373]" />}
                   </div>
-                  <div className="p-4 text-[13px] sm:text-sm text-[#c9d1d9] whitespace-pre-wrap leading-relaxed font-sans">
+                  <div className="p-4 text-[13px] sm:text-sm text-[#e5e5e5] whitespace-pre-wrap leading-relaxed font-sans">
                     {msg.role === "assistant"
                       ? (() => {
                           let cleanContent = msg.content;
@@ -640,7 +640,7 @@ export default function ChatPanel({
                                       blastRadiusInfo.name
                                     )
                                   }
-                                  className="cursor-pointer mt-2 self-start py-2 px-4 flex items-center justify-center gap-2 bg-[#ff5858]/10 hover:bg-[#ff5858]/20 text-[#ff5858] border border-[#ff5858]/30 hover:border-[#ff5858] rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+                                  className="cursor-pointer mt-2 self-start py-2 px-4 flex items-center justify-center gap-2 bg-[#ff4500]/10 hover:bg-[#ff4500]/20 text-[#ff4500] border border-[#ff4500]/30 hover:border-[#ff4500] rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(255,69,0,0.15)] hover:shadow-[0_0_20px_rgba(255,69,0,0.3)]"
                                 >
                                   <Flame size={16} /> Visualize Blast Radius in Graph
                                 </button>
@@ -655,12 +655,12 @@ export default function ChatPanel({
                   {msg.role === "user" &&
                     ((msg.attachedNodes && msg.attachedNodes.length > 0) ||
                       (msg.attachments && msg.attachments.length > 0)) && (
-                      <div className="flex flex-wrap gap-1 px-4 pb-3 border-t border-[#30363d]/30 pt-2">
+                      <div className="flex flex-wrap gap-1 px-4 pb-3 border-t border-[#1a1a1a]/30 pt-2">
                         {((msg.attachedNodes || msg.attachments) ?? []).map(
                           (n: DraggedContextNode) => (
                             <span
                               key={n.id}
-                              className="text-[10px] bg-[#58a6ff]/10 border border-[#58a6ff]/20 rounded px-2 py-0.5 text-[#58a6ff] font-mono inline-flex items-center gap-1"
+                              className="text-[10px] bg-[#ff6b00]/10 border border-[#ff6b00]/20 rounded px-2 py-0.5 text-[#ff6b00] font-mono inline-flex items-center gap-1"
                             >
                               {entityIcons[n.type] || "📎"} {n.name}
                             </span>
@@ -672,7 +672,7 @@ export default function ChatPanel({
 
                 {msg.references && msg.references.length > 0 && (
                   <div className="mt-2 space-y-1.5 w-full max-w-[85%] self-start ml-2">
-                    <span className="text-[10px] font-bold text-[#8b949e] uppercase tracking-wider block mb-1">
+                    <span className="text-[10px] font-bold text-[#737373] uppercase tracking-wider block mb-1">
                       References
                     </span>
                     <div className="flex flex-wrap gap-2">
@@ -680,12 +680,12 @@ export default function ChatPanel({
                         <div
                           key={idx}
                           onClick={() => openReference(ref)}
-                          className="cursor-pointer inline-flex items-center gap-1.5 text-[11px] bg-[#161b22] border border-[#30363d] hover:border-[#58a6ff] hover:bg-[#58a6ff]/10 rounded-lg px-2.5 py-1.5 text-[#c9d1d9] transition-all shadow-sm group"
+                          className="cursor-pointer inline-flex items-center gap-1.5 text-[11px] bg-[#050505] border border-[#1a1a1a] hover:border-[#ff6b00] hover:bg-[#ff6b00]/10 rounded-lg px-2.5 py-1.5 text-[#e5e5e5] transition-all shadow-sm group"
                           title="Click to view in editor"
                         >
-                          <Code2 className="w-3.5 h-3.5 text-[#58a6ff] group-hover:scale-110 transition-transform" />
+                          <Code2 className="w-3.5 h-3.5 text-[#ff6b00] group-hover:scale-110 transition-transform" />
                           <span className="font-mono">{ref.file.split("/").pop()}</span>
-                          <span className="text-[#8b949e] font-mono">L{ref.startLine}</span>
+                          <span className="text-[#737373] font-mono">L{ref.startLine}</span>
                         </div>
                       ))}
                     </div>
@@ -698,16 +698,16 @@ export default function ChatPanel({
 
         {loading && (
           <div className="flex items-start animate-fadeInUp">
-            <div className="max-w-[85%] glass-panel border border-[rgba(255,255,255,0.05)] border-l-2 border-l-[#58a6ff]/50 rounded-2xl rounded-tl-sm overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.3)]">
-              <div className="px-4 py-2 text-[11px] font-bold tracking-wide uppercase border-b border-[rgba(255,255,255,0.05)] bg-[rgba(0,0,0,0.2)] text-[#58a6ff] flex items-center gap-2">
-                <Bot size={14} className="text-[#58a6ff]" />
+            <div className="max-w-[85%] glass-panel border border-[rgba(255,255,255,0.02)] border-l-2 border-l-[#ff6b00]/50 rounded-2xl rounded-tl-sm overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.8)]">
+              <div className="px-4 py-2 text-[11px] font-bold tracking-wide uppercase border-b border-[rgba(255,255,255,0.02)] bg-[rgba(0,0,0,0.4)] text-[#ff6b00] flex items-center gap-2">
+                <Bot size={14} className="text-[#ff6b00]" />
                 RepoLens
               </div>
-              <div className="p-5 text-[13px] text-[#8b949e] flex items-center gap-3">
+              <div className="p-5 text-[13px] text-[#737373] flex items-center gap-3">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-[#58a6ff] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                  <div className="w-2 h-2 bg-[#58a6ff] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                  <div className="w-2 h-2 bg-[#58a6ff] rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-[#ff6b00] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                  <div className="w-2 h-2 bg-[#ff6b00] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                  <div className="w-2 h-2 bg-[#ff6b00] rounded-full animate-bounce"></div>
                 </div>
                 Thinking...
               </div>
@@ -720,17 +720,17 @@ export default function ChatPanel({
       {activeTab === "chat" ? (
         <div
           ref={chatInputAreaRef}
-          className="px-4 py-4 bg-gradient-to-t from-[#0d1117] via-[#0d1117] to-[#0d1117]/10 relative z-10 w-full pt-10 mt-auto"
+          className="px-4 py-4 bg-gradient-to-t from-[#000000] via-[#000000] to-[#000000]/10 relative z-10 w-full pt-10 mt-auto"
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragEnter={handleDragOver}
           onDragLeave={handleDragLeave}
         >
           <div
-            className={`glass-panel border rounded-2xl focus-within:border-[#58a6ff]/50 focus-within:shadow-[0_0_15px_rgba(88,166,255,0.1)] transition-all duration-300 flex flex-col relative shadow-inner p-1 ${
+            className={`glass-panel border rounded-2xl focus-within:border-[#ff6b00]/50 focus-within:shadow-[0_0_15px_rgba(255,107,0,0.15)] transition-all duration-300 flex flex-col relative shadow-inner p-1 ${
               dropHighlight || isDragging
-                ? "border-[#58a6ff] shadow-[0_0_20px_rgba(88,166,255,0.2)] ring-2 ring-[#58a6ff]/20"
-                : "border-[#30363d]/80"
+                ? "border-[#ff6b00] shadow-[0_0_20px_rgba(255,107,0,0.25)] ring-2 ring-[#ff6b00]/20"
+                : "border-[#1a1a1a]"
             }`}
           >
             {/* Context Chips */}
@@ -739,9 +739,9 @@ export default function ChatPanel({
                 {attachedNodes.map((node: DraggedContextNode) => (
                   <div
                     key={node.id}
-                    className="inline-flex items-center gap-1.5 text-[11px] bg-[#58a6ff]/10 border border-[#58a6ff]/30 rounded-lg px-2.5 py-1.5 text-[#58a6ff] font-medium animate-fadeInUp group/chip"
+                    className="inline-flex items-center gap-1.5 text-[11px] bg-[#ff6b00]/10 border border-[#ff6b00]/30 rounded-lg px-2.5 py-1.5 text-[#ff6b00] font-medium animate-fadeInUp group/chip"
                   >
-                    <span className="text-[#8b949e]">{entityIcons[node.type] || "📎"}</span>
+                    <span className="text-[#737373]">{entityIcons[node.type] || "📎"}</span>
                     <span className="font-mono truncate max-w-[120px]">{node.name}</span>
                     <button
                       onClick={() =>
@@ -750,7 +750,7 @@ export default function ChatPanel({
                           prev.filter((n) => n.id !== node.id)
                         )
                       }
-                      className="ml-0.5 p-0.5 rounded-full hover:bg-[#f85149]/20 text-[#8b949e] hover:text-[#f85149] transition cursor-pointer opacity-0 group-hover/chip:opacity-100"
+                      className="ml-0.5 p-0.5 rounded-full hover:bg-[#ff4500]/20 text-[#737373] hover:text-[#ff4500] transition cursor-pointer opacity-0 group-hover/chip:opacity-100"
                     >
                       <X size={10} />
                     </button>
@@ -761,7 +761,7 @@ export default function ChatPanel({
 
             {/* Drop zone indicator */}
             {(dropHighlight || isDragging) && attachedNodes?.length === 0 && (
-              <div className="px-3 pt-3 pb-1 flex items-center gap-2 text-[11px] text-[#58a6ff] font-medium animate-pulse">
+              <div className="px-3 pt-3 pb-1 flex items-center gap-2 text-[11px] text-[#ff6b00] font-medium animate-pulse">
                 <GripVertical size={12} />
                 Drop here to attach context
               </div>
@@ -777,7 +777,7 @@ export default function ChatPanel({
                     ? "Ask about the attached items..."
                     : "Ask anything about this repo..."
                 }
-                className="flex-1 bg-transparent px-4 py-3 text-[13px] text-[#c9d1d9] focus:outline-none resize-none min-h-[44px] max-h-[150px] overflow-y-auto placeholder:text-[#8b949e] custom-scrollbar"
+                className="flex-1 bg-transparent px-4 py-3 text-[13px] text-[#e5e5e5] focus:outline-none resize-none min-h-[44px] max-h-[150px] overflow-y-auto placeholder:text-[#737373] custom-scrollbar"
                 disabled={loading}
                 rows={1}
               />
@@ -786,7 +786,7 @@ export default function ChatPanel({
                 disabled={
                   loading || (!input.trim() && (!attachedNodes || attachedNodes.length === 0))
                 }
-                className="mb-1 mr-1 p-2.5 rounded-xl bg-[#2ea043] hover:bg-[#3fb950] active:scale-95 text-white disabled:opacity-50 disabled:bg-[#30363d]/50 disabled:text-[#8b949e] transition-all flex items-center justify-center cursor-pointer disabled:cursor-not-allowed shadow-sm border border-[rgba(255,255,255,0.1)] disabled:border-transparent shrink-0"
+                className="mb-1 mr-1 p-2.5 rounded-xl bg-[#ff6b00] hover:bg-[#ff8c00] active:scale-95 text-white disabled:opacity-50 disabled:bg-[#1a1a1a] disabled:text-[#737373] transition-all flex items-center justify-center cursor-pointer disabled:cursor-not-allowed shadow-[0_0_15px_rgba(255,107,0,0.2)] border border-[#ff8c00]/30 disabled:border-transparent shrink-0"
               >
                 <Send
                   size={16}
@@ -800,25 +800,25 @@ export default function ChatPanel({
             </div>
           </div>
           <div className="w-full mt-3 flex justify-center">
-            <span className="text-[10px] text-[#8b949e] font-medium tracking-wide opacity-80 flex items-center gap-1.5">
-              RepoLens Assistant <span className="w-1 h-1 rounded-full bg-[#484f58]"></span> AI can
+            <span className="text-[10px] text-[#737373] font-medium tracking-wide opacity-80 flex items-center gap-1.5">
+              RepoLens Assistant <span className="w-1 h-1 rounded-full bg-[#1a1a1a]"></span> AI can
               make mistakes
             </span>
           </div>
         </div>
       ) : (
-        <div className="px-4 py-8 bg-[#0d1117] border-t border-[#30363d] relative z-10 flex flex-col items-center justify-center min-h-[160px]">
+        <div className="px-4 py-8 bg-[#000000] border-t border-[#1a1a1a] relative z-10 flex flex-col items-center justify-center min-h-[160px]">
           <audio ref={audioRef} className="hidden" />
 
           {callState === "idle" ? (
             <>
               <button
                 onClick={startListeningPhase}
-                className="cursor-pointer w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 bg-[#2ea043] border border-[#2ea043] text-white hover:bg-[#238636] hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(46,160,67,0.3)]"
+                className="cursor-pointer w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 bg-[#ff6b00] border border-[#ff6b00] text-white hover:bg-[#ff8c00] hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(255,107,0,0.3)]"
               >
                 <Phone size={32} />
               </button>
-              <span className="text-xs mt-4 tracking-wide font-medium text-[#8b949e]">
+              <span className="text-xs mt-4 tracking-wide font-medium text-[#737373]">
                 Tap to Start Call
               </span>
             </>
@@ -834,7 +834,7 @@ export default function ChatPanel({
                     return (
                       <div
                         key={i}
-                        className="w-[4px] rounded-full bg-[#ff5858] transition-all duration-100"
+                        className="w-[4px] rounded-full bg-[#ff6b00] transition-all duration-100"
                         style={{ height: `${barHeight}px`, opacity: 0.5 + normalizedLevel * 0.5 }}
                       />
                     );
@@ -846,26 +846,26 @@ export default function ChatPanel({
                 <div className="relative">
                   {callState === "listening" && (
                     <div
-                      className={`w-16 h-16 rounded-full bg-[#161b22] border-2 border-[#ff5858] flex items-center justify-center shadow-[0_0_20px_rgba(255,88,88,0.3)] ${audioLevel > SILENCE_THRESHOLD ? "scale-105" : "scale-100"} transition-transform duration-150`}
+                      className={`w-16 h-16 rounded-full bg-[#0a0a0a] border-2 border-[#ff6b00] flex items-center justify-center shadow-[0_0_20px_rgba(255,107,0,0.3)] ${audioLevel > SILENCE_THRESHOLD ? "scale-105" : "scale-100"} transition-transform duration-150`}
                     >
-                      <Mic className="w-8 h-8 text-[#ff5858]" />
+                      <Mic className="w-8 h-8 text-[#ff6b00]" />
                     </div>
                   )}
                   {callState === "processing" && (
-                    <div className="w-16 h-16 rounded-full bg-[#161b22] border-2 border-[#58a6ff] flex items-center justify-center shadow-[0_0_15px_rgba(88,166,255,0.3)]">
-                      <Loader2 className="w-8 h-8 text-[#58a6ff] animate-spin" />
+                    <div className="w-16 h-16 rounded-full bg-[#0a0a0a] border-2 border-[#ff8c00] flex items-center justify-center shadow-[0_0_15px_rgba(255,140,0,0.3)]">
+                      <Loader2 className="w-8 h-8 text-[#ff8c00] animate-spin" />
                     </div>
                   )}
                   {callState === "speaking" && (
-                    <div className="w-16 h-16 rounded-full bg-[#161b22] border-2 border-[#a371f7] flex items-center justify-center shadow-[0_0_15px_rgba(163,113,247,0.3)] animate-pulse">
-                      <Bot className="w-8 h-8 text-[#a371f7]" />
+                    <div className="w-16 h-16 rounded-full bg-[#0a0a0a] border-2 border-[#ffa800] flex items-center justify-center shadow-[0_0_15px_rgba(255,168,0,0.3)] animate-pulse">
+                      <Bot className="w-8 h-8 text-[#ffa800]" />
                     </div>
                   )}
                 </div>
 
                 <button
                   onClick={cleanupCall}
-                  className="cursor-pointer w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 bg-[#ff5858] text-white shadow-[0_4px_15px_rgba(255,88,88,0.4)] hover:bg-[#d73a49] hover:scale-105 active:scale-95"
+                  className="cursor-pointer w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 bg-[#ff3300] text-white shadow-[0_4px_15px_rgba(255,51,0,0.4)] hover:bg-[#cc2900] hover:scale-105 active:scale-95"
                   title="End Call"
                 >
                   <PhoneOff size={24} />
@@ -875,10 +875,10 @@ export default function ChatPanel({
               <span
                 className={`text-sm tracking-wide font-medium ${
                   callState === "listening"
-                    ? "text-[#ff5858]"
+                    ? "text-[#ff6b00]"
                     : callState === "processing"
-                      ? "text-[#58a6ff]"
-                      : "text-[#a371f7]"
+                      ? "text-[#ff8c00]"
+                      : "text-[#ffa800]"
                 }`}
               >
                 {callState === "listening" && "Listening... speak now"}

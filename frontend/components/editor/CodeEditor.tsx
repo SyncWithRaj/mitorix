@@ -52,30 +52,30 @@ export default function CodeEditor() {
   }, [editorState]);
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#0d1117] rounded-xl overflow-hidden relative border-none">
+    <div className="flex flex-col h-full w-full bg-[#000000] rounded-xl overflow-hidden relative border-none">
       {/* Absolute Glow Background just for aesthetic padding */}
-      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-l from-[#a371f7]/5 to-transparent blur-3xl pointer-events-none -z-10"></div>
+      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-l from-[#ff6b00]/5 to-transparent blur-3xl pointer-events-none -z-10"></div>
 
       {/* VSCode-style Tab Bar */}
-      <div className="flex bg-[#010409] border-b border-[#30363d] overflow-x-auto min-h-[46px] items-end custom-scrollbar px-1 pt-1.5 relative z-10 w-full">
+      <div className="flex bg-[#050505] border-b border-[#1a1a1a] overflow-x-auto min-h-[46px] items-end custom-scrollbar px-1 pt-1.5 relative z-10 w-full">
         {tabs && tabs.length > 0 ? (
           tabs.map((tab: any) => (
             <div
               key={tab.filePath}
               onClick={() => setActiveTabId(tab.filePath)}
-              className={`flex items-center gap-2 px-4 py-2 text-[13px] min-w-max cursor-pointer border-t-2 border-x border-[#30363d] rounded-t-lg transition-all group select-none ml-1
+              className={`flex items-center gap-2 px-4 py-2 text-[13px] min-w-max cursor-pointer border-t-2 border-x border-[#1a1a1a] rounded-t-lg transition-all group select-none ml-1
                 ${
                   activeTabId === tab.filePath
-                    ? "bg-[#0d1117] border-t-[#58a6ff] border-x-[#30363d] text-[#c9d1d9] border-b-transparent shadow-[0_-2px_10px_rgba(88,166,255,0.05)] z-20 scale-y-105 origin-bottom translate-y-[1px]"
-                    : "bg-[#161b22] border-t-transparent border-x-transparent text-[#8b949e] hover:bg-[#21262d] hover:text-[#c9d1d9]"
+                    ? "bg-[#000000] border-t-[#ff6b00] border-x-[#1a1a1a] text-[#e5e5e5] border-b-transparent shadow-[0_-2px_10px_rgba(255,107,0,0.05)] z-20 scale-y-105 origin-bottom translate-y-[1px]"
+                    : "bg-[#0a0a0a] border-t-transparent border-x-transparent text-[#737373] hover:bg-[#1a1a1a] hover:text-[#e5e5e5]"
                 }`}
             >
               <FileCode2
                 size={16}
                 className={
                   activeTabId === tab.filePath
-                    ? "text-[#58a6ff]"
-                    : "text-[#8b949e] group-hover:text-[#c9d1d9]"
+                    ? "text-[#ff6b00]"
+                    : "text-[#737373] group-hover:text-[#e5e5e5]"
                 }
               />
               <span className="truncate max-w-[200px] font-mono">
@@ -86,23 +86,23 @@ export default function CodeEditor() {
                   e.stopPropagation();
                   closeTab(e, tab.filePath);
                 }}
-                className={`ml-2 flex items-center justify-center p-0.5 hover:bg-[#30363d] rounded transition ${activeTabId === tab.filePath ? "opacity-100 text-[#8b949e] hover:text-[#c9d1d9]" : "opacity-0 group-hover:opacity-100 text-[#8b949e]"}`}
+                className={`ml-2 flex items-center justify-center p-0.5 hover:bg-[#1a1a1a] rounded transition ${activeTabId === tab.filePath ? "opacity-100 text-[#737373] hover:text-[#e5e5e5]" : "opacity-0 group-hover:opacity-100 text-[#737373]"}`}
               >
                 <X size={14} />
               </button>
             </div>
           ))
         ) : (
-          <div className="px-5 py-2.5 text-sm text-[#8b949e] italic pb-2 flex items-center gap-2 font-light">
+          <div className="px-5 py-2.5 text-sm text-[#737373] italic pb-2 flex items-center gap-2 font-light">
             No files open in workspace
           </div>
         )}
 
         {/* This fills the bottom gap for inactive tabs perfectly */}
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-[#30363d] z-0 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-[#1a1a1a] z-0 pointer-events-none"></div>
       </div>
 
-      <div className="flex-grow relative bg-[#0d1117] z-10">
+      <div className="flex-grow relative bg-[#000000] z-10">
         <MonacoEditor
           key={editorState?.filePath} // Force remount on file change
           height="100%"
