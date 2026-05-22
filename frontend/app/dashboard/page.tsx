@@ -14,6 +14,8 @@ import {
   Activity,
   Folder,
   Archive,
+  Search,
+  Database,
 } from "lucide-react";
 import JSZip from "jszip";
 import api from "@/lib/axios";
@@ -207,6 +209,18 @@ export default function Dashboard() {
     }
   };
 
+  const embedRepo = async (repoId: string) => {
+    try {
+      const toastId = toast.loading("Generating vector embeddings...");
+      await api.post(`/repos/${repoId}/trigger-embedding`);
+      toast.success("Embeddings generated & stored in Qdrant successfully!", { id: toastId });
+      fetchRepos();
+    } catch (err: any) {
+      console.error("Embed repo error:", err);
+      toast.error(err.response?.data?.message || "Failed to generate embeddings");
+    }
+  };
+
   return (
     <div className="max-w-6xl mt-20 mx-auto w-full py-12 px-6 flex-grow">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-[#30363d]/50">
@@ -396,6 +410,27 @@ export default function Dashboard() {
                         <span className="relative z-10 flex items-center gap-2">
                           <Activity size={16} />
                           RepoLens Intelligence
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => embedRepo(repo._id)}
+                        className="group/embed cursor-pointer relative flex items-center gap-2 text-sm text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#30363d] hover:border-[#2ea043]/50 bg-[#21262d] hover:bg-[#2ea043]/10 overflow-hidden"
+                        title={repo.isEmbedded ? "Re-index vectors for Drift Detection" : "Store codebase in Qdrant"}
+                      >
+                        <span className="relative z-10 flex items-center gap-2 text-[#2ea043]">
+                          <Database size={16} />
+                          {repo.isEmbedded ? "Update Vectors" : "Store in Qdrant"}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => router.push(`/qdrant-lab/${repo._id}`)}
+                        className="group/lab cursor-pointer relative flex items-center gap-2 text-sm text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_0_15px_rgba(88,166,255,0.2)] hover:shadow-[0_0_25px_rgba(88,166,255,0.4)] border border-[rgba(255,255,255,0.1)] overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#58a6ff] via-[#a371f7] to-[#f0883e] transition-opacity duration-300 group-hover/lab:opacity-90"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/lab:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
+                        <span className="relative z-10 flex items-center gap-2">
+                          <Search size={16} />
+                          Qdrant Lab
                         </span>
                       </button>
                     </>
