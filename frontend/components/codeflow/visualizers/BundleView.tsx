@@ -168,8 +168,8 @@ export default function BundleView() {
 
     node
       .on("mouseenter", function (e, d: any) {
-        d3.select(this).select("text").attr("fill", "#c9d1d9").attr("font-weight", "bold");
-        d3.select(this).select("circle").attr("r", 6).attr("fill", "#58a6ff");
+        d3.select(this).select("text").attr("fill", "#ff6b00").attr("font-weight", "bold");
+        d3.select(this).select("circle").attr("r", 6).attr("fill", "#ff6b00");
 
         const hl = highlightLinksRef.current;
         const rf = relationFiltersRef.current;
@@ -186,7 +186,7 @@ export default function BundleView() {
         link
           .attr("stroke", (l: any) => {
             if (l[0] === d || l[l.length - 1] === d) return `#${getColor(l.type)}`;
-            return "#30363d";
+            return "#1a1a1a";
           })
           .attr("stroke-opacity", (l: any) => {
             if (!isVisible(l.type)) return 0;
@@ -280,5 +280,5 @@ export default function BundleView() {
       .attr("marker-mid", (l: any) => highlightLinks && isVisible(l.type) ? `url(#bundle-arr-${getColor(l.type)})` : "");
   }, [highlightLinks, relationFilters]);
 
-  return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
+  return <div ref={containerRef} className="w-full h-full relative bg-[#000000]" />;
 }

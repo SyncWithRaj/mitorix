@@ -73,7 +73,7 @@ export default function DendrogramView() {
       .append("div")
       .attr(
         "class",
-        "absolute hidden bg-[rgba(22,27,34,0.95)] border border-[#30363d] rounded-lg p-3 text-xs shadow-xl z-50"
+        "absolute hidden bg-[#050505] border border-[#1a1a1a] rounded-lg p-3 text-xs shadow-2xl z-50 text-[#e5e5e5]"
       )
       .style("pointer-events", "none");
 
@@ -88,7 +88,7 @@ export default function DendrogramView() {
           `M${d.source.y},${d.source.x}C${(d.source.y + d.target.y) / 2},${d.source.x} ${(d.source.y + d.target.y) / 2},${d.target.x} ${d.target.y},${d.target.x}`
       )
       .attr("fill", "none")
-      .attr("stroke", "#30363d")
+      .attr("stroke", "#1a1a1a")
       .attr("stroke-width", 1.5)
       .attr("stroke-opacity", 0.6);
 
@@ -105,11 +105,11 @@ export default function DendrogramView() {
       .append("circle")
       .attr("r", (d: any) => (d.children ? 6 : 8))
       .attr("fill", (d: any) => {
-        if (d.children) return "#161b22";
+        if (d.children) return "#0a0a0a";
         const folderIdx = analysisData.folders.indexOf(d.data.folder) || 0;
         return COLORS[folderIdx % COLORS.length] || COLORS[0];
       })
-      .attr("stroke", (d: any) => (d.children ? "#8b949e" : "#0d1117"))
+      .attr("stroke", (d: any) => (d.children ? "#737373" : "#000000"))
       .attr("stroke-width", 2);
 
     // Leaf text
@@ -118,7 +118,7 @@ export default function DendrogramView() {
       .append("text")
       .attr("x", 12)
       .attr("dy", "0.35em")
-      .attr("fill", "#c9d1d9")
+      .attr("fill", "#e5e5e5")
       .attr("font-size", "10px")
       .attr("font-family", '"JetBrains Mono", monospace')
       .text((d: any) => {
@@ -133,7 +133,7 @@ export default function DendrogramView() {
       .attr("x", -10)
       .attr("dy", "0.35em")
       .attr("text-anchor", "end")
-      .attr("fill", "#8b949e")
+      .attr("fill", "#737373")
       .attr("font-size", "11px")
       .attr("font-weight", "600")
       .text((d: any) => d.data.name);
@@ -145,11 +145,11 @@ export default function DendrogramView() {
         tooltip
           .html(
             `
-        <div class="font-bold text-[#c9d1d9] mb-2 border-b border-[#30363d] pb-1">${d.data.name}</div>
+        <div class="font-bold text-[#ff6b00] mb-2 border-b border-[#1a1a1a] pb-1 font-mono">${d.data.name}</div>
         <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-          <span class="text-[#8b949e]">Lines</span><span class="text-white font-mono text-right">${d.data.lines}</span>
-          <span class="text-[#8b949e]">Functions</span><span class="text-white font-mono text-right">${d.data.fns}</span>
-          <span class="text-[#8b949e]">Layer</span><span class="text-white text-right truncate">${d.data.layer || "—"}</span>
+          <span class="text-[#737373]">Lines</span><span class="text-white font-mono text-right">${d.data.lines}</span>
+          <span class="text-[#737373]">Functions</span><span class="text-white font-mono text-right">${d.data.fns}</span>
+          <span class="text-[#737373]">Layer</span><span class="text-white text-right truncate font-mono">${d.data.layer || "—"}</span>
         </div>
       `
           )
@@ -162,7 +162,7 @@ export default function DendrogramView() {
           .transition()
           .duration(150)
           .attr("r", 12)
-          .attr("stroke", "#58a6ff")
+          .attr("stroke", "#ff6b00")
           .attr("stroke-width", 3);
       })
       .on("mousemove", (e) => {
@@ -175,7 +175,7 @@ export default function DendrogramView() {
           .transition()
           .duration(150)
           .attr("r", d.children ? 6 : 8)
-          .attr("stroke", d.children ? "#8b949e" : "#0d1117")
+          .attr("stroke", d.children ? "#737373" : "#000000")
           .attr("stroke-width", 2);
       })
       .on("click", (e, d: any) => {
@@ -210,5 +210,5 @@ export default function DendrogramView() {
     };
   }, [analysisData, folderFilter, selectFile, setFolderFilter, filteredFiles]);
 
-  return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
+  return <div ref={containerRef} className="w-full h-full relative bg-[#000000]" />;
 }

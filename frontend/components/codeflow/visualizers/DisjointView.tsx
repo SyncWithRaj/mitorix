@@ -145,7 +145,7 @@ export default function DisjointView() {
       .attr("class", "cluster-label")
       .attr("x", (_, i) => (i % cols) * cellW + 20)
       .attr("y", (_, i) => Math.floor(i / cols) * cellH + 28)
-      .attr("fill", "#8b949e")
+      .attr("fill", "#737373")
       .attr("font-size", "11px")
       .attr("font-weight", "600")
       .attr("font-family", '"JetBrains Mono", monospace')
@@ -180,7 +180,7 @@ export default function DisjointView() {
       .append("div")
       .attr(
         "class",
-        "absolute hidden bg-[rgba(22,27,34,0.95)] border border-[#30363d] rounded-lg p-3 text-xs shadow-xl z-50"
+        "absolute hidden bg-[#050505] border border-[#1a1a1a] rounded-lg p-3 text-xs shadow-2xl z-50 text-[#e5e5e5]"
       )
       .style("pointer-events", "none");
 
@@ -216,7 +216,7 @@ export default function DisjointView() {
         const folderIdx = analysisData.folders.indexOf(d.folder) || 0;
         return COLORS[folderIdx % COLORS.length] || COLORS[0];
       })
-      .attr("stroke", "#0d1117")
+      .attr("stroke", "#000000")
       .attr("stroke-width", 1.5);
 
     node
@@ -224,10 +224,10 @@ export default function DisjointView() {
         tooltip
           .html(
             `
-        <div class="font-bold text-[#c9d1d9] mb-2 border-b border-[#30363d] pb-1">${d.name}</div>
+        <div class="font-bold text-[#ff6b00] mb-2 border-b border-[#1a1a1a] pb-1 font-mono">${d.name}</div>
         <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-          <span class="text-[#8b949e]">Lines</span><span class="text-white font-mono text-right">${d.lines}</span>
-          <span class="text-[#8b949e]">Functions</span><span class="text-white font-mono text-right">${d.fns}</span>
+          <span class="text-[#737373]">Lines</span><span class="text-white font-mono text-right">${d.lines}</span>
+          <span class="text-[#737373]">Functions</span><span class="text-white font-mono text-right">${d.fns}</span>
         </div>
       `
           )
@@ -253,7 +253,7 @@ export default function DisjointView() {
             return l.source.id === d.id || l.target.id === d.id ? 0.9 : (hl ? 0.05 : 0);
           })
           .attr("stroke", (l: any) =>
-            l.source.id === d.id || l.target.id === d.id ? `#${getColor(l.type)}` : "#30363d"
+            l.source.id === d.id || l.target.id === d.id ? `#${getColor(l.type)}` : "#1a1a1a"
           )
           .attr("stroke-width", (l: any) => {
             if (!isVisible(l.type)) return 0.8;
@@ -269,7 +269,7 @@ export default function DisjointView() {
           .transition()
           .duration(150)
           .attr("r", 14)
-          .attr("stroke", "#58a6ff")
+          .attr("stroke", "#ff6b00")
           .attr("stroke-width", 2);
       })
       .on("mousemove", (e) => {
@@ -299,7 +299,7 @@ export default function DisjointView() {
           .transition()
           .duration(150)
           .attr("r", Math.max(6, Math.min(14, 4 + d.fns)))
-          .attr("stroke", "#0d1117")
+          .attr("stroke", "#000000")
           .attr("stroke-width", 1.5);
       })
       .on("click", (e, d: any) => {
@@ -372,5 +372,5 @@ export default function DisjointView() {
       .attr("marker-end", (d: any) => highlightLinks && isVisible(d.type) ? `url(#disjoint-arr-${getColor(d.type)})` : "");
   }, [highlightLinks, relationFilters]);
 
-  return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
+  return <div ref={containerRef} className="w-full h-full relative bg-[#000000]" />;
 }
