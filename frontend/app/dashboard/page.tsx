@@ -18,6 +18,12 @@ import {
   Server,
   TerminalSquare,
   AlertTriangle,
+  Sparkles,
+  ArrowRight,
+  TrendingUp,
+  Cpu,
+  Layers,
+  FileCode,
 } from "lucide-react";
 import JSZip from "jszip";
 import api from "@/lib/axios";
@@ -56,20 +62,20 @@ function RepoProgressTracker({ jobId, onComplete }: { jobId: string; onComplete:
   }, [jobId, onComplete]);
 
   return (
-    <div className="w-full mt-4 bg-[#030303] border border-[#1a1a1a] rounded-xl p-4">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-[10px] font-bold font-mono text-[#a3a3a3] uppercase tracking-widest flex items-center gap-2">
-          <Loader2 size={12} className="animate-spin text-[#ff6b00]" />
+    <div className="w-full mt-4 bg-[#080808] border border-[#1f1f1f] rounded-2xl p-5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] animate-in fade-in slide-in-from-top-2 duration-300">
+      <div className="flex justify-between items-center mb-3">
+        <span className="text-[10px] font-bold font-mono text-[#a3a3a3] uppercase tracking-widest flex items-center gap-2.5">
+          <Loader2 size={13} className="animate-spin text-[#ff6b00]" />
           {status}
         </span>
-        <span className="text-xs font-bold text-[#ff6b00]">{progress}%</span>
+        <span className="text-xs font-bold font-mono text-[#ff6b00]">{progress}%</span>
       </div>
-      <div className="w-full bg-[#0a0a0a] rounded-full h-1.5 overflow-hidden border border-[#1a1a1a]">
+      <div className="w-full bg-[#141414] rounded-full h-2 overflow-hidden border border-[#222222]">
         <div
-          className="bg-gradient-to-r from-[#ff6b00] to-[#ffa800] h-full rounded-full transition-all duration-300 ease-out relative"
+          className="bg-gradient-to-r from-[#ff6b00] via-[#ff8c00] to-[#ffa800] h-full rounded-full transition-all duration-300 ease-out relative shadow-[0_0_10px_rgba(255,107,0,0.5)]"
           style={{ width: `${progress}%` }}
         >
-          <div className="absolute inset-0 bg-white/30 w-full h-full animate-[shimmer_1.5s_infinite]"></div>
+          <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_1.5s_infinite]"></div>
         </div>
       </div>
     </div>
@@ -224,96 +230,118 @@ export default function Dashboard() {
     }
   };
 
+  const indexedRepos = repos.filter(r => r.status === "indexed");
+  const embeddedCount = repos.filter(r => r.isEmbedded).length;
+
   return (
-    <div className="w-full min-h-screen bg-[#000000] flex flex-col pt-32 pb-20 relative selection:bg-[#ff6b00] selection:text-white">
+    <div className="w-full min-h-screen bg-[#020202] flex flex-col pt-32 pb-24 relative selection:bg-[#ff6b00] selection:text-white overflow-hidden">
       {/* Background patterns */}
-      <div className="absolute top-0 right-0 w-[60vw] h-[60vw] max-w-[800px] bg-gradient-to-bl from-[#ff6b00]/5 via-[#ffa800]/5 to-transparent blur-[120px] rounded-full pointer-events-none"></div>
+      <div className="absolute top-0 right-[-10%] w-[70vw] h-[70vw] max-w-[900px] bg-gradient-to-br from-[#ff6b00]/5 via-[#ffa800]/2 to-transparent blur-[140px] rounded-full pointer-events-none mix-blend-screen animate-glow-pulse"></div>
+      <div className="absolute bottom-[5%] left-[-10%] w-[50vw] h-[50vw] max-w-[700px] bg-gradient-to-tr from-[#ff8c00]/4 to-[#ffa800]/1 to-transparent blur-[150px] rounded-full pointer-events-none mix-blend-screen animate-float"></div>
+      
+      {/* Tech Grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_30%,transparent_100%)] pointer-events-none"></div>
+
+      {/* Noise overlay */}
       <div
         className="absolute inset-0 opacity-[0.015] pointer-events-none"
         style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}
       ></div>
 
-      <div className="max-w-6xl mx-auto w-full px-6 flex-grow relative z-10 space-y-12">
+      <div className="max-w-6xl mx-auto w-full px-6 flex-grow relative z-10 space-y-10">
+        
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-[#1a1a1a] pb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-[#18181b] pb-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/30 text-[#ff6b00] text-xs font-mono uppercase tracking-wider mb-4">
-              <Server size={14} /> Active RepoSpaces
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/20 text-[#ff6b00] text-xs font-mono uppercase tracking-wider mb-4 shadow-[0_0_15px_rgba(255,107,0,0.1)]">
+              <Server size={13} className="animate-pulse" /> Active Workspace Hub
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter">
-              Repositories
+            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none">
+              Workspace Dashboard
             </h1>
-            <p className="text-[#a3a3a3] mt-2 text-base font-light max-w-xl">
-              Manage your indexed codebases, track telemetry status, and launch into the interactive architecture sandbox.
+            <p className="text-[#a3a3a3] mt-3 text-base font-light max-w-xl leading-relaxed">
+              Launch into high-fidelity code spaces, sync vectorized semantic context in Qdrant, and review parsing queue statuses.
             </p>
           </div>
           
-          <div className="flex gap-4">
-            <div className="bg-[#050505] border border-[#1a1a1a] rounded-xl px-4 py-3 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#ff6b00]/10 flex items-center justify-center">
-                <Box className="text-[#ff6b00] w-4 h-4" />
+          {/* Quick Metrics */}
+          <div className="flex flex-wrap gap-4 w-full md:w-auto">
+            <div className="bg-[#09090b]/80 backdrop-blur-xl border border-[#1f1f23] rounded-2xl px-5 py-4 flex items-center gap-4 shadow-xl shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#ff6b00]/10 border border-[#ff6b00]/20 flex items-center justify-center shadow-inner">
+                <Box className="text-[#ff6b00] w-5 h-5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-[#737373] uppercase tracking-wider">Indexed</span>
-                <span className="text-sm font-bold text-white">{repos.length} Repos</span>
+                <span className="text-[10px] font-bold text-[#737373] uppercase tracking-wider">Active Spaces</span>
+                <span className="text-base font-mono font-bold text-white">{repos.length} Created</span>
+              </div>
+            </div>
+
+            <div className="bg-[#09090b]/80 backdrop-blur-xl border border-[#1f1f23] rounded-2xl px-5 py-4 flex items-center gap-4 shadow-xl shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#ffa800]/10 border border-[#ffa800]/20 flex items-center justify-center shadow-inner">
+                <Database className="text-[#ffa800] w-5 h-5" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-[#737373] uppercase tracking-wider">Vectorized</span>
+                <span className="text-base font-mono font-bold text-white">{embeddedCount} synced</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Onboarding Section */}
-        <div className="bg-[#030303] border border-[#1a1a1a] rounded-3xl p-8 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-[#ff6b00]/5 to-transparent blur-3xl rounded-full pointer-events-none group-hover:bg-[#ff6b00]/10 transition-colors duration-700"></div>
+        {/* Provision Card */}
+        <div className="bg-gradient-to-b from-[#09090b]/90 to-[#030303]/95 backdrop-blur-2xl border border-[#1f1f23] rounded-3xl p-5 md:py-6 md:px-7 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+          <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-gradient-to-bl from-[#ff6b00]/5 via-transparent to-transparent blur-3xl rounded-full pointer-events-none group-hover:from-[#ff6b00]/10 transition-all duration-700"></div>
 
-          <h2 className="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-3">
-            <Plus size={20} className="text-[#ff6b00]" />
+          <h2 className="text-lg font-bold text-white mb-4 relative z-10 flex items-center gap-3">
+            <Plus size={18} className="text-[#ff6b00] border border-[#ff6b00]/25 rounded-md p-0.5 bg-[#ff6b00]/5" />
             Provision a new RepoSpace
           </h2>
           
-          <div className="flex flex-col md:flex-row gap-6 relative z-10">
+          <div className="flex flex-col md:flex-row gap-4 relative z-10">
             {/* Git URL Input */}
-            <div className="flex-grow flex flex-col sm:flex-row gap-4">
+            <div className="flex-grow flex flex-col sm:flex-row gap-3">
               <div className="relative flex-grow">
-                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                  <LinkIcon className="h-5 w-5 text-[#737373]" />
+                <div className="absolute inset-y-0 left-0 pl-4.5 flex items-center pointer-events-none">
+                  <LinkIcon className="h-4.5 w-4.5 text-[#737373]" />
                 </div>
                 <input
                   type="url"
                   placeholder="https://github.com/owner/repository"
                   value={githubUrl}
                   onChange={(e) => setGithubUrl(e.target.value)}
-                  className="w-full pl-14 pr-5 py-4 rounded-xl bg-[#000000] border border-[#1a1a1a] text-white focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all shadow-inner placeholder-[#737373]"
+                  className="w-full pl-12 pr-4 py-2.5 rounded-xl bg-[#030303] border border-[#1f1f23] text-sm text-white focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all duration-300 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] placeholder-[#52525b]"
                 />
               </div>
               <button
                 onClick={processRepo}
                 disabled={loading || !githubUrl}
-                className="group/btn relative cursor-pointer text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 active:scale-[0.98] border border-[#ff8c00]/30 shadow-[0_0_20px_rgba(255,107,0,0.15)] hover:shadow-[0_0_30px_rgba(255,107,0,0.3)] flex items-center justify-center min-w-[200px] overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-[#ff6b00] to-[#ff8c00]"
+                className="group/btn relative cursor-pointer text-xs text-white font-bold px-7 py-2.5 rounded-xl transition-all duration-300 active:scale-[0.98] border border-[#ff8c00]/30 shadow-[0_4px_20px_rgba(255,107,0,0.2)] hover:shadow-[0_0_35px_rgba(255,107,0,0.45)] flex items-center justify-center min-w-[160px] overflow-hidden disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-[#ff6b00] via-[#ff8c00] to-[#ffa800]"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
                 <span className="relative z-10 flex items-center gap-2">
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Clone & Index"}
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Clone & Index"}
+                  {!loading && <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />}
                 </span>
               </button>
             </div>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-[#1a1a1a] flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
-            <div className="text-sm text-[#737373] font-medium flex items-center gap-3">
+          <div className="mt-5 pt-5 border-t border-[#18181b] flex flex-col lg:flex-row items-center justify-between gap-4 relative z-10">
+            <div className="text-xs text-[#737373] font-medium flex items-center gap-3">
               {uploading ? (
-                <span className="flex items-center gap-2 text-[#ff6b00]">
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                <span className="flex items-center gap-2 text-[#ff6b00] font-mono">
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   {uploadProgress}
                 </span>
               ) : (
                 <>
-                  <TerminalSquare size={18} className="text-[#737373]" />
-                  <span>Or ingest a local codebase from your disk structure:</span>
+                  <TerminalSquare size={16} className="text-[#a1a1aa]" />
+                  <span>Or ingest a local codebase directly from files:</span>
                 </>
               )}
             </div>
             
-            <div className="flex gap-4 w-full lg:w-auto">
+            <div className="flex gap-3 w-full lg:w-auto">
               <input
                 type="file"
                 id="folder-upload-input"
@@ -326,10 +354,10 @@ export default function Dashboard() {
               <button
                 onClick={() => document.getElementById("folder-upload-input")?.click()}
                 disabled={loading || uploading}
-                className="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0a0a0a] hover:bg-[#121212] border border-[#1a1a1a] text-white text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 cursor-pointer hover:border-[#ff6b00]/40 shadow-sm"
+                className="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-[#0c0c0e] hover:bg-[#141416] border border-[#1f1f23] text-white text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:border-[#ff6b00]/40 shadow-md group/upload"
               >
-                <Folder size={18} className="text-[#ff6b00]" />
-                Directory
+                <Folder size={14} className="text-[#ff6b00] group-hover/upload:scale-105 transition-transform" />
+                Upload Folder
               </button>
 
               <input
@@ -342,10 +370,10 @@ export default function Dashboard() {
               <button
                 onClick={() => document.getElementById("zip-upload-input")?.click()}
                 disabled={loading || uploading}
-                className="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0a0a0a] hover:bg-[#121212] border border-[#1a1a1a] text-white text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 cursor-pointer hover:border-[#ffa800]/40 shadow-sm"
+                className="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-[#0c0c0e] hover:bg-[#141416] border border-[#1f1f23] text-white text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:border-[#ffa800]/40 shadow-md group/zip"
               >
-                <Archive size={18} className="text-[#ffa800]" />
-                ZIP Archive
+                <Archive size={14} className="text-[#ffa800] group-hover/zip:scale-105 transition-transform" />
+                Upload ZIP
               </button>
             </div>
           </div>
@@ -353,14 +381,23 @@ export default function Dashboard() {
 
         {/* Repository Grid */}
         <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2.5">
+              <Sparkles size={16} className="text-[#ff6b00]" />
+              Your Codebases
+            </h2>
+            <span className="text-xs font-mono font-semibold text-[#52525b]">{repos.length} space(s) registered</span>
+          </div>
+
           {repos.length === 0 ? (
-            <div className="text-center py-32 px-6 bg-[#030303] border border-dashed border-[#262626] rounded-3xl flex flex-col items-center">
-              <div className="w-20 h-20 rounded-full bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 shadow-inner">
-                <GitBranch className="h-10 w-10 text-[#525252]" />
+            <div className="text-center py-32 px-6 bg-gradient-to-b from-[#050507] to-[#020203] border border-dashed border-[#1f1f23] rounded-3xl flex flex-col items-center shadow-lg">
+              <div className="w-20 h-20 rounded-2xl bg-[#09090b] border border-[#1f1f23] flex items-center justify-center mb-6 shadow-inner relative">
+                <GitBranch className="h-9 w-9 text-[#3f3f46]" />
+                <div className="absolute inset-0 bg-[#ff6b00]/5 opacity-0 hover:opacity-100 blur-md rounded-2xl transition-opacity pointer-events-none"></div>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">No RepoSpaces Indexed</h3>
-              <p className="text-base text-[#737373] max-w-md">
-                Paste a public GitHub repository URL above or upload a local directory to initiate the BullMQ cloning sequence.
+              <h3 className="text-2xl font-bold text-white mb-2.5 tracking-tight">No RepoSpaces Provisioned</h3>
+              <p className="text-sm text-[#71717a] max-w-sm leading-relaxed">
+                Paste a public GitHub repository link or import a local codebase to begin the high-fidelity AST parsing pipeline.
               </p>
             </div>
           ) : (
@@ -368,24 +405,24 @@ export default function Dashboard() {
               {repos.map((repo, index) => (
                 <div
                   key={repo._id}
-                  className="group bg-[#030303] border border-[#1a1a1a] p-6 sm:p-8 rounded-3xl flex flex-col lg:flex-row justify-between lg:items-center gap-8 hover:border-[#ff6b00]/30 hover:shadow-[0_15px_40px_rgba(0,0,0,0.8)] transition-all duration-500 relative overflow-hidden"
+                  className="group bg-gradient-to-b from-[#070708]/90 to-[#030304]/95 backdrop-blur-2xl border border-[#18181b] p-4.5 sm:py-5 sm:px-6 rounded-2xl flex flex-col lg:flex-row justify-between lg:items-center gap-6 hover:border-[#ff6b00]/30 hover:shadow-[0_15px_40px_rgba(0,0,0,0.8)] transition-all duration-500 relative overflow-hidden"
                 >
-                  {/* Glowing vertical bar indicator */}
-                  <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#1a1a1a] group-hover:bg-gradient-to-b from-[#ff6b00] to-[#ffa800] transition-colors duration-500"></div>
+                  {/* Glowing left bar */}
+                  <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#18181b] group-hover:bg-gradient-to-b from-[#ff6b00] to-[#ffa800] transition-all duration-500"></div>
 
-                  <div className="flex-grow space-y-4 ml-2">
+                  <div className="flex-grow space-y-3 ml-2">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center shadow-inner group-hover:bg-[#ff6b00]/10 group-hover:border-[#ff6b00]/30 transition-colors shrink-0">
-                        <Github className="w-6 h-6 text-[#737373] group-hover:text-[#ff6b00] transition-colors" />
+                      <div className="w-11 h-11 rounded-xl bg-[#0d0d0f] border border-[#1f1f23] flex items-center justify-center shadow-inner group-hover:bg-[#ff6b00]/10 group-hover:border-[#ff6b00]/30 transition-all duration-500 shrink-0">
+                        <Github className="w-5.5 h-5.5 text-[#a1a1aa] group-hover:text-[#ff6b00] transition-colors duration-500" />
                       </div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-white group-hover:text-[#ff6b00] transition-colors">
+                      <div className="space-y-1 min-w-0">
+                        <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#ff6b00] transition-colors truncate">
                           {repo.name}
                         </h3>
-                        <div className="flex flex-wrap items-center gap-3 mt-2">
-                          <span className="flex items-center gap-2 text-xs font-mono font-medium bg-[#0a0a0a] px-3 py-1.5 rounded border border-[#1a1a1a]">
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          <span className="flex items-center gap-1.5 text-[9px] font-mono font-bold bg-[#0d0d0f] px-2.5 py-1 rounded border border-[#1f1f23]">
                             <span
-                              className={`w-2 h-2 rounded-full ${
+                              className={`w-1.5 h-1.5 rounded-full ${
                                 repo.status === "failed"
                                   ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse"
                                   : repo.status === "cloning" || repo.status === "indexing"
@@ -395,11 +432,21 @@ export default function Dashboard() {
                                       : "bg-orange-400"
                               }`}
                             ></span>
-                            <span className="text-[#e5e5e5] tracking-widest">{repo.status.toUpperCase()}</span>
+                            <span className="text-[#a1a1aa] tracking-widest">{repo.status.toUpperCase()}</span>
                           </span>
+
+                          <span className="text-xs font-mono text-[#52525b] truncate max-w-[200px] hidden sm:block">
+                            Branch: <code className="text-[#a1a1aa] bg-[#0c0c0e] px-1.5 py-0.5 rounded border border-[#1f1f23]">{repo.defaultBranch}</code>
+                          </span>
+
+                          {repo.commitHash && (
+                            <span className="text-xs font-mono text-[#52525b] hidden md:block">
+                              Hash: <code className="text-[#888]">{repo.commitHash.substring(0, 7)}</code>
+                            </span>
+                          )}
                           
                           {repo.status === "failed" && (
-                            <span className="text-xs text-red-400 flex items-center gap-1">
+                            <span className="text-xs text-red-500 font-medium flex items-center gap-1.5 bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">
                               <AlertTriangle size={12} /> Pipeline failed
                             </span>
                           )}
@@ -413,33 +460,36 @@ export default function Dashboard() {
                     )}
                   </div>
 
-                  <div className="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap gap-3 shrink-0 lg:ml-8 ml-2">
+                  {/* Actions Section */}
+                  <div className="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap gap-2.5 shrink-0 lg:ml-8 ml-2">
                     {repo.status === "indexed" && (
                       <>
                         <button
                           onClick={() => router.push(`/codeflow/${repo._id}`)}
-                          className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm text-white font-bold px-6 py-3.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(255,107,0,0.15)] hover:shadow-[0_0_30px_rgba(255,107,0,0.3)] border border-[#ff6b00]/40 overflow-hidden bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] relative"
+                          className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs text-white font-bold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(255,107,0,0.15)] hover:shadow-[0_0_30px_rgba(255,107,0,0.45)] border border-[#ff6b00]/40 overflow-hidden bg-gradient-to-r from-[#ff6b00] via-[#ff8c00] to-[#ffa800] relative"
                         >
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/action:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
-                          <Activity size={18} />
-                          <span>RepoSpace</span>
+                          <Activity size={14} />
+                          <span>Launch RepoSpace</span>
                         </button>
                         
-                        <button
-                          onClick={() => embedRepo(repo._id)}
-                          className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm text-[#e5e5e5] font-semibold px-6 py-3.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#1a1a1a] hover:border-[#ffa800]/50 bg-[#0a0a0a] hover:bg-[#ffa800]/10"
-                          title={repo.isEmbedded ? "Re-index vectors for Drift Detection" : "Store codebase in Qdrant"}
-                        >
-                          <Database size={18} className="text-[#ffa800]" />
-                          <span>{repo.isEmbedded ? "Sync Vectors" : "Init Qdrant"}</span>
-                        </button>
+                        {!repo.isEmbedded && (
+                          <button
+                            onClick={() => embedRepo(repo._id)}
+                            className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs font-semibold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#1f1f23] hover:border-[#ffa800]/40 text-[#a1a1aa] bg-[#0d0d0f] hover:bg-[#ffa800]/10"
+                            title="Store codebase in Qdrant"
+                          >
+                            <Database size={14} className="text-[#ffa800]" />
+                            <span>Init Qdrant</span>
+                          </button>
+                        )}
                         
                         <button
                           onClick={() => router.push(`/repolabs/${repo._id}`)}
-                          className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm text-[#e5e5e5] font-semibold px-6 py-3.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#1a1a1a] hover:border-[#ff8c00]/50 bg-[#0a0a0a] hover:bg-[#ff8c00]/10"
+                          className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs text-[#a1a1aa] hover:text-white font-semibold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#1f1f23] hover:border-[#ff8c00]/50 bg-[#0d0d0f] hover:bg-[#ff8c00]/10"
                         >
-                          <Search size={18} className="text-[#ff8c00]" />
-                          <span> RepoLab</span>
+                          <Search size={14} className="text-[#ff8c00]" />
+                          <span>RepoLabs</span>
                         </button>
                       </>
                     )}
@@ -447,10 +497,10 @@ export default function Dashboard() {
                     <button
                       onClick={() => deleteRepo(repo._id)}
                       disabled={repo.status === "cloning" || repo.status === "indexing"}
-                      className="flex-1 sm:flex-none flex items-center justify-center w-auto sm:w-14 px-6 sm:px-0 py-3.5 bg-[#0a0a0a] hover:bg-red-500/10 text-[#737373] hover:text-red-500 border border-[#1a1a1a] hover:border-red-500/30 rounded-xl transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed group/del"
+                      className="flex-1 sm:flex-none flex items-center justify-center w-auto sm:w-11 py-2.5 bg-[#0d0d0f] hover:bg-red-500/10 text-[#52525b] hover:text-red-500 border border-[#1f1f23] hover:border-red-500/30 rounded-xl transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed group/del"
                       title="Destroy Clone"
                     >
-                      <Trash2 size={18} className="group-hover/del:scale-110 transition-transform" />
+                      <Trash2 size={14} className="group-hover/del:scale-110 transition-transform duration-300" />
                     </button>
                   </div>
                 </div>

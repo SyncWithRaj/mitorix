@@ -165,17 +165,20 @@ User → Nginx Reverse Proxy (Rate Limiting & Static Routing)
 
 ## 🛠 Technology Stack
 
-| Layer | Technologies |
+| Layer | Technologies & Tools |
 |---|---|
-| **Frontend** | Next.js 16 (App Router), React 19, Zustand, Tailwind CSS v4 |
-| **Interactive UI** | Monaco Editor (`@monaco-editor/react`), react-force-graph-2d, react-resizable-panels, Mermaid.js |
-| **Backend** | Node.js 22, Express 5, TypeScript 5, Mongoose 9, MongoDB 7 |
-| **Task Queue** | BullMQ + ioredis (backed by Redis alpine) |
-| **AST Parsers** | Tree-sitter (C, C#, C++, Go, Java, JavaScript, PHP, Python, Ruby, Rust, TypeScript) |
-| **Vector DB** | Qdrant |
+| **Frontend** | Next.js 16 (App Router), React 19, Zustand, Tailwind CSS v4, Lucide Icons |
+| **Interactive UI** | Monaco Editor (`@monaco-editor/react`), D3.js Force-Graph (`react-force-graph-2d`), react-resizable-panels, Mermaid.js |
+| **Backend** | Node.js 22 (LTS), Express 5, TypeScript 5, Mongoose 9 |
+| **Task Queue** | BullMQ + ioredis (High-throughput background job queue) |
+| **AST Parsers** | Tree-sitter (C, C#, C++, Go, Java, JavaScript, PHP, Python, Ruby, Rust, TypeScript native compilers) |
+| **Vector Engine** | Qdrant Vector DB (Dense similarity search and Cosine distance comparisons) |
 | **AI/LLM** | Google Gemini (`gemini-2.5-flash`), Google GenAI Embeddings (`gemini-embedding-001`) |
-| **Voice Engine** | AssemblyAI (STT), Murf AI (TTS) |
-| **Ingress/Proxy** | Nginx (rate-limiting, request forwarding) |
+| **Voice Engine** | AssemblyAI (Speech-to-Text), Murf AI (Text-to-Speech) |
+| **Ingress & Proxy** | Nginx Reverse Proxy (Dynamic routing, rate-limiting, connection buffering) |
+| **DevOps & Orchestration** | Docker, Docker Compose (Multi-container orchestration, automated health checks) |
+| **Infrastructure & Storage** | MongoDB Community Server (Persistent metadata), Redis alpine (Session caches & Queue store) |
+| **Dev Tools & Scripts** | `setup.sh` (Auto-dependency resolver), `Makefile` (Workflow task automation), `gcc`/`g++`/`make` (native compilers for tree-sitter bindings) |
 
 ---
 
