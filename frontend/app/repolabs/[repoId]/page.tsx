@@ -27,7 +27,7 @@ export default function RepoLabsPage({ params }: { params: Promise<{ repoId: str
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#FF6B00]/5 blur-[150px] rounded-full pointer-events-none" />
 
       {/* Header + Tabs */}
-      <div className="sticky top-[73px] z-30 bg-[#000000]/80 backdrop-blur-xl border-b border-[#1A1A1A]">
+      <div className="sticky top-[61px] z-30 bg-[#000000] border-b border-[#1A1A1A]">
         <div className="max-w-5xl mx-auto px-6">
           {/* Title row */}
           <div className="flex items-center gap-6 py-6">
