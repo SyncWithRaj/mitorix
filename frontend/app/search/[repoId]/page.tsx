@@ -359,7 +359,7 @@ export default function SearchPage({
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] text-[#e5e5e5] pt-24 pb-12 relative overflow-hidden">
+    <div className="min-h-screen bg-[#000000] text-[#e5e5e5] pt-32 pb-12 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-[#ff6b00]/8 via-[#ff8c00]/4 to-transparent blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gradient-to-tl from-[#ff6b00]/3 to-transparent blur-[100px] rounded-full pointer-events-none" />
