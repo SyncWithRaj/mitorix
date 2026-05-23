@@ -17,11 +17,11 @@ RepoLens is an enterprise-grade AI-powered architectural copilot that leverages 
 
 ---
 
-## 🌌 Core Spaces & Modules
+## Core Spaces & Modules
 
 The platform is structured into two main workspaces:
 
-### 🖥️ RepoSpace
+### RepoSpace
 The interactive core workspace dashboard where you explore, map, and query repository structures visually and textually:
 * **8 Layout Viz Modes:** Toggle between Force-directed graph, Visual relation node-link maps, Treemaps (LOC profiles), Adjacency Matrix (import coupling), Dendrograms, Sankey flows, Disjoint cluster hulls, and Circular edge bundling.
 * **Integrated Monaco Editor:** Browse directory files via the sliding Tree Explorer and jump directly to coordinate-targeted code entities.
@@ -31,7 +31,7 @@ The interactive core workspace dashboard where you explore, map, and query repos
 * **Onboarding & Design Docs:** Automatically generate reading guides and Mermaid.js architecture flowcharts.
 * **Voice-Powered exploration:** Query codebases using integrated AssemblyAI Speech-to-Text and Murf AI Text-to-Speech call services.
 
-### 🧪 RepoLabs
+### RepoLabs
 The vector-powered advanced analytics suite running under the hood to perform deep mathematical codebase interrogation.
 * **Semantic Search:** Find variables, features, and abstractions using plain-text queries instead of exact keyword/regex searches.
 * **Version Drift Detector:** Computes Cosine vector distances across commits/versions to trace semantic logic churn.
@@ -39,62 +39,62 @@ The vector-powered advanced analytics suite running under the hood to perform de
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 
-### 🧠 Contextual AI Chat & Drag-and-Drop RAG
+### Contextual AI Chat & Drag-and-Drop RAG
 Ask natural language questions like *"Where is the database connection managed?"* or *"Walk me through the user registration lifecycle."* 
 - **Autoritative RAG Engine:** Powered by Google Gemini with semantic vector search.
 - **Drag-and-Drop Context:** Attach files, folders, code entities, security issues, or architectural compliance warnings directly from the UI to serve as the primary prompt context.
 - **Hybrid Query Processing:** Falls back to vector search when no explicit context is provided.
 
-### 🌐 Interactive Visualizers
+### Interactive Visualizers
 Visualize your repository as an interconnected, scope-aware dependency graph.
 - Maps connections between files, functions, variables, classes, and modules.
 - Zoom, pan, and filter nodes by entity type.
 - Click any node to open its implementation in the side-by-side Monaco editor.
 
-### 💥 Blast Radius & Impact Analysis
+### Blast Radius & Impact Analysis
 Identify downstream ripple effects before making code modifications.
 - **Analysis:** Resolves direct and indirect dependency trees.
 - **Visual Mapping:** Highlights affected files, functions, and modules in red on the force-graph.
 - **LLM Integration:** Ask the chatbot what will break if a file/function changes, and it automatically triggers the blast radius visualization using native tags.
 
-### 🔍 Static Security Scan
+### Static Security Scan
 In-depth static analysis parsing rules targeting common security threats:
 - **Hardcoded Secrets:** Detects exposed passwords, API keys, and authorization tokens.
 - **Injections:** Flag SQL injection patterns (string concatenation in queries) and XSS risks (`innerHTML`, `dangerouslySetInnerHTML`).
 - **Dynamic execution:** Searches for `eval()`, dynamic Function constructors, and risky OS command executions.
 - **Outstanding Comments:** Tracks TODOs, FIXMEs, HACKs, and XXX flags.
 
-### 🛡️ Clean Architecture Compliance Checks
+### Clean Architecture Compliance Checks
 Validate codebase layering and enforce architectural integrity based on Clean Architecture boundaries.
 - **Layer Mapping:** Levels 1 to 5 (Utils & Config -> Models & DB Schemas -> Services & Core Logic -> Controllers & Routes -> UI & Views).
 - **Leak Detection:** Flags boundary violations where lower layers depend on or import from higher layers.
 
-### 📈 Temporal Codebase Drift Detection
+### Temporal Codebase Drift Detection
 Track how code semantics change across different versions or entirely separate repositories.
 - Uses Qdrant as a temporal vector database.
 - Paginate points using `scroll` and compare vectors using query-matching to calculate drift scores.
 - Summarizes modified, deleted, and new entities alongside an overall semantic drift score.
 
-### 👥 Semantic Clone/Duplicate Detection
+### Semantic Clone/Duplicate Detection
 Locate duplicated or near-duplicate logic written across different files.
 - Uses Qdrant's vector similarity matching rather than simple string comparisons.
 - Identifies semantic clones that perform the same operations but use different naming or structure.
 - Aggregates duplicate code into clusters sorted by average similarity.
 
-### 📖 Onboarding Guide & System Design Diagrams
+### Onboarding Guide & System Design Diagrams
 - **Mermaid.js Flowcharts:** Generates beautiful, logically-grouped system design diagrams on-demand.
 - **Onboarding Guides:** Analyzes entry points, schemas, controllers, and tests to build a step-by-step reading path for new developers.
 
-### 📞 Hands-Free Voice-Powered Exploration
+### Hands-Free Voice-Powered Exploration
 - Stream text-to-speech with Murf AI.
 - Transcribe audio speech using AssemblyAI.
 
 ---
 
-## 🏗 System Architecture
+## System Architecture
 
 ```mermaid
 graph TD
@@ -119,7 +119,7 @@ graph TD
 
 ---
 
-## 🛠 Technology Stack
+## Technology Stack
 
 | Layer | Technologies & Tools |
 |---|---|
@@ -138,7 +138,7 @@ graph TD
 
 ---
 
-## 📂 Codebase Layout
+## Codebase Layout
 
 ```
 repolens/
@@ -175,7 +175,7 @@ repolens/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - **Node.js v22 (LTS)**
@@ -231,7 +231,7 @@ repolens/
 
 ---
 
-## 🐳 Docker Deployment
+## Docker Deployment
 
 To build and launch the production cluster (Frontend, Backend, MongoDB, Redis, Qdrant, and Nginx reverse proxy routing):
 
@@ -259,7 +259,7 @@ Once running, navigate to **http://localhost** (Port 80). Nginx handles routing 
 
 ---
 
-## ⚙️ Environment Configuration
+## Environment Configuration
 
 ### Backend Secrets (`backend/.env`)
 
@@ -282,13 +282,13 @@ Once running, navigate to **http://localhost** (Port 80). Nginx handles routing 
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please review the [CONTRIBUTING.md](CONTRIBUTING.md) guide to understand our coding standards, test coverage targets, and pulling process.
 
 ---
 
-## 📄 License
+## License
 
 RepoLens is licensed under the [ISC License](LICENSE).
 
