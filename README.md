@@ -48,7 +48,7 @@ Ask natural language questions like *"Where is the database connection managed?"
 - **Drag-and-Drop Context:** Attach files, folders, code entities, security issues, or architectural compliance warnings directly from the UI to serve as the primary prompt context.
 - **Hybrid Query Processing:** Falls back to vector search when no explicit context is provided.
 
-### 🌐 Interactive 2D Force-Graph & CodeFlow Visualizer
+### 🌐 Interactive Visualizers
 Visualize your repository as an interconnected, scope-aware dependency graph.
 - Maps connections between files, functions, variables, classes, and modules.
 - Zoom, pan, and filter nodes by entity type.
