@@ -19,7 +19,12 @@ const embeddings = new GoogleGenerativeAIEmbeddings({
   model: "models/gemini-embedding-001",
 });
 
-export async function embedRepository(repoId: string) {
+import { EventEmitter } from "events";
+
+export const embeddingProgressTracker = new Map<string, { current: number, total: number }>();
+export const embeddingEvents = new EventEmitter();
+
+export async function embedRepository(repoId: string, onProgress?: (current: number, total: number) => void) {
   // Ensure the Qdrant collection and indexes exist before interacting
   const vectorInit = new VectorInitService();
   await vectorInit.initVectorCollection();
@@ -67,6 +72,9 @@ export async function embedRepository(repoId: string) {
     throw new Error("No entities found for this repository");
   }
 
+  embeddingProgressTracker.set(repoId, { current: 0, total });
+  embeddingEvents.emit(`progress-${repoId}`, 0, total);
+
   const points: any[] = [];
 
   for (let i = 0; i < total; i++) {
@@ -105,6 +113,13 @@ ${entity?.content || ""}
         },
       },
     });
+    
+    const progress = i + 1;
+    embeddingProgressTracker.set(repoId, { current: progress, total });
+    embeddingEvents.emit(`progress-${repoId}`, progress, total);
+    if (onProgress) {
+      onProgress(progress, total);
+    }
   }
 
   logger.info({ repoId, vectorCount: points.length }, "Uploading vectors to Qdrant");
@@ -122,6 +137,8 @@ ${entity?.content || ""}
     });
   }
 
+  embeddingProgressTracker.delete(repoId);
+  embeddingEvents.emit(`completed-${repoId}`);
   logger.info({ repoId, embedded: total }, "Vector embedding completed");
 
   return {

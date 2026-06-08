@@ -123,9 +123,20 @@ export const getUserRepositories = async (req: Request, res: Response, next: Nex
     const user = requireAuthUser(req.user);
 
     const repos = await Repository.find({ user: String(user._id) }).sort({ createdAt: -1 });
+    
+    const { embeddingProgressTracker } = await import("../services/embedRepository.service.js");
+    
+    const reposWithEmbeddingStatus = repos.map(r => {
+      const repoObj = r.toJSON() as any;
+      if (embeddingProgressTracker.has(r._id.toString())) {
+        repoObj.isEmbedding = true;
+      }
+      return repoObj;
+    });
+
     res.json({
       success: true,
-      repos,
+      repos: reposWithEmbeddingStatus,
     });
   } catch (error) {
     next(error);
@@ -233,14 +244,39 @@ export const processRepoController = async (req: Request, res: Response, next: N
 };
 
 export const jobStatusController = async (req: Request, res: Response, next: NextFunction) => {
-  const jobId = ensureValidRepoId(req.params.id);
+  const jobId = req.params.id;
+  if (!jobId) {
+    return next(new AppError("Job ID is required", 400));
+  }
 
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
 
-  // Send an initial heartbeat
-  res.write(`data: ${JSON.stringify({ status: "connected", progress: 0 })}\n\n`);
+  try {
+    const job = await repoQueue.getJob(jobId);
+    if (job) {
+      const isCompleted = await job.isCompleted();
+      const isFailed = await job.isFailed();
+      if (isCompleted) {
+        res.write(`data: ${JSON.stringify({ status: "completed", progress: 100 })}\n\n`);
+        res.end();
+        return;
+      }
+      if (isFailed) {
+        res.write(`data: ${JSON.stringify({ status: "failed", progress: 0 })}\n\n`);
+        res.end();
+        return;
+      }
+      
+      const progress = job.progress;
+      res.write(`data: ${JSON.stringify({ status: "processing", progress: typeof progress === 'number' ? progress : 0 })}\n\n`);
+    } else {
+      res.write(`data: ${JSON.stringify({ status: "connected", progress: 0 })}\n\n`);
+    }
+  } catch (error) {
+    res.write(`data: ${JSON.stringify({ status: "connected", progress: 0 })}\n\n`);
+  }
 
   const queueEvents = new QueueEvents("repo-processing-queue", {
     connection: {
@@ -466,20 +502,74 @@ export const triggerEmbedding = async (req: Request, res: Response, next: NextFu
     const repoId = ensureValidRepoId(req.params.id);
     const repo = await getOwnedRepositoryOrThrow(repoId, req.user);
 
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    res.flushHeaders();
+
     if (repo.isEmbedded) {
-      return res.json({ success: true, message: "Repository already embedded" });
+      res.write(`data: ${JSON.stringify({ status: "completed", current: 1, total: 1 })}\n\n`);
+      return res.end();
+    }
+
+    const { embedRepository, embeddingProgressTracker, embeddingEvents } = await import("../services/embedRepository.service.js");
+
+    const onProgress = (current: number, total: number) => {
+      res.write(`data: ${JSON.stringify({ status: "progress", current, total })}\n\n`);
+    };
+
+    const onCompleted = () => {
+      res.write(`data: ${JSON.stringify({ status: "completed", current: 1, total: 1 })}\n\n`);
+      cleanup();
+      res.end();
+    };
+
+    const onError = (message: string) => {
+      res.write(`data: ${JSON.stringify({ status: "error", message })}\n\n`);
+      cleanup();
+      res.end();
+    };
+
+    const cleanup = () => {
+      embeddingEvents.off(`progress-${repoId}`, onProgress);
+      embeddingEvents.off(`completed-${repoId}`, onCompleted);
+      embeddingEvents.off(`error-${repoId}`, onError);
+    };
+
+    req.on("close", cleanup);
+
+    if (embeddingProgressTracker.has(repoId)) {
+      // Already running, just subscribe
+      const { current, total } = embeddingProgressTracker.get(repoId)!;
+      res.write(`data: ${JSON.stringify({ status: "progress", current, total })}\n\n`);
+      
+      embeddingEvents.on(`progress-${repoId}`, onProgress);
+      embeddingEvents.on(`completed-${repoId}`, onCompleted);
+      embeddingEvents.on(`error-${repoId}`, onError);
+      return;
     }
 
     logger.info({ repoId }, "Manual embedding trigger started");
-    const { embedRepository } = await import("../services/embedRepository.service.js");
-    await embedRepository(repoId);
-    await Repository.findByIdAndUpdate(repoId, { isEmbedded: true });
+    
+    // Send an initial connected status so the frontend immediately shows progress
+    res.write(`data: ${JSON.stringify({ status: "connected" })}\n\n`);
+    
+    embeddingEvents.on(`progress-${repoId}`, onProgress);
+    embeddingEvents.on(`completed-${repoId}`, onCompleted);
+    embeddingEvents.on(`error-${repoId}`, onError);
 
-    res.json({
-      success: true,
-      message: "Repository embedded successfully",
+    // Call without awaiting to not block, but subscribe to events
+    embedRepository(repoId).then(async () => {
+      await Repository.findByIdAndUpdate(repoId, { isEmbedded: true });
+    }).catch((error: any) => {
+      embeddingProgressTracker.delete(repoId);
+      embeddingEvents.emit(`error-${repoId}`, error.message || "Embedding failed");
+      logger.error({ err: error }, "Embedding failed");
     });
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    logger.error({ err: error }, "Embedding trigger failed");
+    res.write(`data: ${JSON.stringify({ status: "error", message: error.message || "Embedding failed" })}\n\n`);
+    res.end();
   }
 };

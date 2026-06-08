@@ -43,6 +43,6 @@ router.get("/:id/design-doc", protect, generateSystemDesignDoc);
 router.get("/:id/onboarding", protect, generateOnboardingGuide);
 router.get("/:id/security", protect, getRepoSecurityIssues);
 router.get("/:id/violations", protect, getRepoArchitectureViolations);
-router.post("/:id/trigger-embedding", protect, triggerEmbedding);
+router.get("/:id/trigger-embedding", protect, triggerEmbedding);
 
 export default router;

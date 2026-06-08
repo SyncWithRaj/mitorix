@@ -78,39 +78,39 @@ export default function StatsGrid() {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-2">
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col items-center justify-center hover:bg-[#21262d] transition-colors">
-          <div className="text-xl font-bold text-[#c9d1d9] font-mono">{filesCount}</div>
-          <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider mt-1">
+        <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-3 flex flex-col items-center justify-center hover:bg-[#1a1a1a] transition-colors">
+          <div className="text-xl font-bold text-[#e5e5e5] font-mono">{filesCount}</div>
+          <div className="text-[10px] uppercase text-[#737373] font-bold tracking-wider mt-1">
             Files
           </div>
         </div>
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col items-center justify-center hover:bg-[#21262d] transition-colors">
-          <div className="text-xl font-bold text-[#c9d1d9] font-mono">{functionsCount}</div>
-          <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider mt-1">
+        <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-3 flex flex-col items-center justify-center hover:bg-[#1a1a1a] transition-colors">
+          <div className="text-xl font-bold text-[#e5e5e5] font-mono">{functionsCount}</div>
+          <div className="text-[10px] uppercase text-[#737373] font-bold tracking-wider mt-1">
             Functions
           </div>
         </div>
         <div
           className={`border rounded-lg p-3 flex flex-col items-center justify-center transition-all duration-200 cursor-pointer select-none ${
             highlightLinks
-              ? "bg-[#58a6ff]/10 border-[#58a6ff] shadow-[0_0_12px_rgba(88,166,255,0.12)] scale-[1.03]"
-              : "bg-[#161b22] border-[#30363d] hover:bg-[#21262d] hover:border-[#8b949e]/30"
+              ? "bg-[#ff6b00]/10 border-[#ff6b00] shadow-[0_0_12px_rgba(255,107,0,0.12)] scale-[1.03]"
+              : "bg-[#0a0a0a] border-[#1a1a1a] hover:bg-[#1a1a1a] hover:border-[#ff6b00]/20"
           }`}
           onClick={() => setHighlightLinks(!highlightLinks)}
           title="Click to toggle link highlighting in the graph"
         >
           <div
-            className={`text-xl font-bold font-mono transition-colors ${highlightLinks ? "text-[#58a6ff]" : "text-[#c9d1d9]"}`}
+            className={`text-xl font-bold font-mono transition-colors ${highlightLinks ? "text-[#ff6b00]" : "text-[#e5e5e5]"}`}
           >
             {visibleLinksCount}
           </div>
           <div className="flex flex-col items-center gap-0.5 mt-1">
-            <span className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider">
+            <span className="text-[10px] uppercase text-[#737373] font-bold tracking-wider">
               Links
             </span>
             <span
               className={`text-[8px] px-1.5 py-0.5 rounded-full transition-all scale-90 whitespace-nowrap ${
-                highlightLinks ? "bg-[#58a6ff]/20 text-[#58a6ff]" : "bg-[#30363d] text-[#8b949e]"
+                highlightLinks ? "bg-[#ff6b00]/20 text-[#ff6b00]" : "bg-[#1a1a1a] text-[#737373]"
               }`}
             >
               {highlightLinks ? "Highlighted" : "Click to highlight"}
@@ -118,10 +118,10 @@ export default function StatsGrid() {
           </div>
         </div>
         <div
-          className={`bg-[#161b22] border rounded-lg p-3 flex flex-col items-center justify-center transition-colors ${
+          className={`bg-[#0a0a0a] border rounded-lg p-3 flex flex-col items-center justify-center transition-colors ${
             stats.dead > 10
-              ? "border-[#f85149] bg-[rgba(248,81,73,0.05)] hover:bg-[rgba(248,81,73,0.1)]"
-              : "border-[#30363d] hover:bg-[#21262d]"
+              ? "border-[#ff4500] bg-[rgba(255,69,0,0.05)] hover:bg-[rgba(255,69,0,0.1)]"
+              : "border-[#1a1a1a] hover:bg-[#1a1a1a]"
           }`}
           style={{ cursor: stats.dead > 0 ? "pointer" : "default" }}
           onClick={() => {
@@ -133,16 +133,16 @@ export default function StatsGrid() {
           }}
         >
           <div
-            className={`text-xl font-bold font-mono ${stats.dead > 10 ? "text-[#f85149]" : "text-[#c9d1d9]"}`}
+            className={`text-xl font-bold font-mono ${stats.dead > 10 ? "text-[#ff4500]" : "text-[#e5e5e5]"}`}
           >
             {stats.dead}
           </div>
           <div className="flex flex-col items-center gap-0.5 mt-1">
-            <span className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider">
+            <span className="text-[10px] uppercase text-[#737373] font-bold tracking-wider">
               Unused
             </span>
             {stats.dead > 0 && (
-              <span className="text-[8px] bg-[#30363d] text-[#c9d1d9] px-1.5 py-0.5 rounded-full whitespace-nowrap scale-90">
+              <span className="text-[8px] bg-[#1a1a1a] text-[#e5e5e5] px-1.5 py-0.5 rounded-full whitespace-nowrap scale-90">
                 Click to view
               </span>
             )}
@@ -150,30 +150,30 @@ export default function StatsGrid() {
         </div>
       </div>
 
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col items-center justify-center hover:bg-[#21262d] transition-colors gap-1">
-        <div className="text-2xl font-bold text-[#58a6ff] font-mono">
+      <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-3 flex flex-col items-center justify-center hover:bg-[#1a1a1a] transition-colors gap-1">
+        <div className="text-2xl font-bold text-[#ff6b00] font-mono">
           {stats.loc ? stats.loc.toLocaleString() : "0"}
         </div>
-        <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider">
+        <div className="text-[10px] uppercase text-[#737373] font-bold tracking-wider">
           Total Lines of Code
         </div>
 
         {/* Actual Programming Code Lines */}
-        <div className="w-full border-t border-[#30363d]/50 mt-2 pt-2 flex flex-col items-center justify-center">
-          <div className="text-lg font-bold text-[#22c55e] font-mono">
+        <div className="w-full border-t border-[#1a1a1a] mt-2 pt-2 flex flex-col items-center justify-center">
+          <div className="text-lg font-bold text-[#ff8c00] font-mono">
             {realLoc ? realLoc.toLocaleString() : "0"}
           </div>
-          <div className="text-[9px] uppercase text-[#8b949e] font-bold tracking-wider mt-0.5">
+          <div className="text-[9px] uppercase text-[#737373] font-bold tracking-wider mt-0.5">
             Actual Programming LOC
           </div>
         </div>
       </div>
 
       {highlightLinks && (
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col gap-2 transition-colors mt-2">
-          <div className="text-[10px] uppercase text-[#8b949e] font-bold tracking-wider text-center border-b border-[#30363d] pb-2 mb-1 flex items-center justify-between">
+        <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-3 flex flex-col gap-2 transition-colors mt-2">
+          <div className="text-[10px] uppercase text-[#737373] font-bold tracking-wider text-center border-b border-[#1a1a1a] pb-2 mb-1 flex items-center justify-between">
             <span>Filter Relations</span>
-            <span className="text-[8px] bg-[#30363d] text-[#8b949e] px-1.5 py-0.5 rounded-sm">
+            <span className="text-[8px] bg-[#1a1a1a] text-[#737373] px-1.5 py-0.5 rounded-sm">
               Click to toggle
             </span>
           </div>
@@ -185,7 +185,7 @@ export default function StatsGrid() {
               }`}
             >
               <span className={`w-2.5 h-2.5 rounded-full bg-[#ef4444] ${relationFilters.accesses ? "shadow-[0_0_8px_rgba(239,68,68,0.5)]" : ""}`}></span>
-              <span className={relationFilters.accesses ? "text-[#c9d1d9]" : "text-[#8b949e] line-through"}>Access</span>
+              <span className={relationFilters.accesses ? "text-[#e5e5e5]" : "text-[#737373] line-through"}>Access</span>
             </button>
             <button
               onClick={() => setRelationFilters((p) => ({ ...p, calls: !p.calls }))}
@@ -194,7 +194,7 @@ export default function StatsGrid() {
               }`}
             >
               <span className={`w-2.5 h-2.5 rounded-full bg-[#3b82f6] ${relationFilters.calls ? "shadow-[0_0_8px_rgba(59,130,246,0.5)]" : ""}`}></span>
-              <span className={relationFilters.calls ? "text-[#c9d1d9]" : "text-[#8b949e] line-through"}>Call</span>
+              <span className={relationFilters.calls ? "text-[#e5e5e5]" : "text-[#737373] line-through"}>Call</span>
             </button>
             <button
               onClick={() => setRelationFilters((p) => ({ ...p, imports: !p.imports }))}
@@ -203,7 +203,7 @@ export default function StatsGrid() {
               }`}
             >
               <span className={`w-2.5 h-2.5 rounded-full bg-[#22c55e] ${relationFilters.imports ? "shadow-[0_0_8px_rgba(34,197,94,0.5)]" : ""}`}></span>
-              <span className={relationFilters.imports ? "text-[#c9d1d9]" : "text-[#8b949e] line-through"}>Import</span>
+              <span className={relationFilters.imports ? "text-[#e5e5e5]" : "text-[#737373] line-through"}>Import</span>
             </button>
             <button
               onClick={() => setRelationFilters((p) => ({ ...p, handles: !p.handles }))}
@@ -212,7 +212,7 @@ export default function StatsGrid() {
               }`}
             >
               <span className={`w-2.5 h-2.5 rounded-full bg-[#eab308] ${relationFilters.handles ? "shadow-[0_0_8px_rgba(234,179,8,0.5)]" : ""}`}></span>
-              <span className={relationFilters.handles ? "text-[#c9d1d9]" : "text-[#8b949e] line-through"}>Handle</span>
+              <span className={relationFilters.handles ? "text-[#e5e5e5]" : "text-[#737373] line-through"}>Handle</span>
             </button>
           </div>
         </div>

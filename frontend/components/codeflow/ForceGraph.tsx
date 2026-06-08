@@ -93,7 +93,7 @@ export default function ForceGraph() {
       .attr("width", w)
       .attr("height", h)
       .style("cursor", "grab")
-      .style("background", "#0a0a0f");
+      .style("background", "#000000");
 
     const container = svg.append("g");
     const defs = svg.append("defs");
@@ -224,7 +224,7 @@ export default function ForceGraph() {
           "collision",
           d3.forceCollide().radius((d: any) => getR(d) + 10)
         )
-        .force("x", d3.forceX((d: any) => d.targetX || w / 2).strength(0.9))
+        .force("x", d3.forceX((d: any) => d.targetX || w / 2).strength(0.95))
         .force("y", d3.forceY((d: any) => d.targetY || h / 2).strength(0.3));
     } else if (graphConfig.viewMode === "grid") {
       const gridCols = Math.ceil(Math.sqrt(nodes.length));
@@ -316,7 +316,7 @@ export default function ForceGraph() {
       if (t.includes("call")) return "3b82f6";
       if (t.includes("import") || t.includes("export")) return "22c55e";
       if (t.includes("handle")) return "eab308";
-      return "8b949e";
+      return "737373";
     };
 
     const link = linkGroup
@@ -415,7 +415,7 @@ export default function ForceGraph() {
         .attr("font-family", '"JetBrains Mono", system-ui, sans-serif')
         .attr("font-weight", "500")
         .attr("paint-order", "stroke")
-        .attr("stroke", "#0a0a0f")
+        .attr("stroke", "#000000")
         .attr("stroke-width", "3px")
         .attr("stroke-linejoin", "round")
         .attr("pointer-events", "none")
@@ -567,7 +567,7 @@ export default function ForceGraph() {
     function getC(d: any) {
       if (blastRadius && affectedSet.size > 0) {
         if (d.id === selectedFile) return "#ff5f5f"; // HTML uses red for selected
-        if (affectedSet.has(d.id)) return "#ff9f43"; // HTML uses orange for affected
+        if (affectedSet.has(d.id)) return "#ff6b00"; // HTML uses orange for affected
         return colorMode === "folder"
           ? colorMap[d.folder] || COLORS[0]
           : colorMode === "layer"
@@ -639,7 +639,7 @@ export default function ForceGraph() {
         
         // If selected, highlight the connection in its color, otherwise dim
         if (s === selectedFile || t === selectedFile) return `#${baseColor}`;
-        return "#333333";
+        return "#1a1a1a";
       })
       .attr("stroke-width", (d: any) => {
         const base = Math.max(0.6, Math.min(1.5, Math.sqrt(d.count) * 0.3));
@@ -671,10 +671,10 @@ export default function ForceGraph() {
   if (!analysisData) {
     return (
       <div className="flex h-full w-full items-center justify-center">
-        <div className="animate-pulse text-[#8b949e]">Loading visualization...</div>
+        <div className="animate-pulse text-[#737373]">Loading visualization...</div>
       </div>
     );
   }
 
-  return <div ref={containerRef} className="w-full h-full relative overflow-hidden bg-[#0a0a0f]" />;
+  return <div ref={containerRef} className="w-full h-full relative overflow-hidden bg-[#000000]" />;
 }

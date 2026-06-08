@@ -145,7 +145,7 @@ export default function SankeyView() {
       g.append("text")
         .attr("x", w / 2 - 40)
         .attr("y", h / 2)
-        .attr("fill", "#8b949e")
+        .attr("fill", "#737373")
         .attr("font-size", "14px")
         .attr("text-anchor", "middle")
         .attr("font-family", "Outfit, sans-serif")
@@ -194,7 +194,7 @@ export default function SankeyView() {
       .append("div")
       .attr(
         "class",
-        "absolute hidden bg-[rgba(13,17,23,0.95)] border border-[#30363d] rounded-xl p-4 text-xs shadow-2xl z-50 backdrop-blur-md"
+        "absolute hidden bg-[#050505] border border-[#1a1a1a] rounded-xl p-4 text-xs shadow-2xl z-50 text-[#e5e5e5] backdrop-blur-md"
       )
       .style("pointer-events", "none");
 
@@ -214,13 +214,13 @@ export default function SankeyView() {
         tooltip
           .html(
             `
-          <div class="font-bold text-[#c9d1d9] mb-2 border-b border-[#30363d] pb-1 flex items-center gap-2">
+          <div class="font-bold text-[#ff6b00] mb-2 border-b border-[#1a1a1a] pb-1 flex items-center gap-2 font-mono">
             <span style="color: ${COLORS[d.source.id % COLORS.length]}">${d.source.name}</span>
-            <span class="text-[#8b949e]">→</span>
+            <span class="text-[#737373]">→</span>
             <span style="color: ${COLORS[d.target.id % COLORS.length]}">${d.target.name}</span>
           </div>
-          <div class="flex justify-between items-center gap-6">
-            <span class="text-[#8b949e]">Flow Strength</span>
+          <div class="flex justify-between items-center gap-6 text-xs">
+            <span class="text-[#737373]">Flow Strength</span>
             <span class="text-white font-mono font-bold text-sm">${d.value}</span>
           </div>
         `
@@ -262,13 +262,13 @@ export default function SankeyView() {
       .attr("y", (d: any) => (d.y0 + d.y1) / 2)
       .attr("dy", "0.35em")
       .attr("text-anchor", (d: any) => (d.x0 < w / 2 ? "start" : "end"))
-      .attr("fill", "#c9d1d9")
+      .attr("fill", "#e5e5e5")
       .attr("font-size", "11px")
       .attr("font-family", "Outfit, sans-serif")
       .attr("font-weight", "600")
       .text((d: any) => d.name)
       .append("tspan")
-      .attr("fill", "#8b949e")
+      .attr("fill", "#737373")
       .attr("font-weight", "400")
       .attr("dx", "4")
       .text((d: any) => `(${d.fileCount})`);
@@ -280,12 +280,12 @@ export default function SankeyView() {
         tooltip
           .html(
             `
-        <div class="font-bold text-[#c9d1d9] mb-2 border-b border-[#30363d] pb-1 flex items-center gap-2">
+        <div class="font-bold text-[#ff6b00] mb-2 border-b border-[#1a1a1a] pb-1 flex items-center gap-2 font-mono">
            <div class="w-2 h-2 rounded-full" style="background: ${COLORS[d.id % COLORS.length]}"></div>
            ${d.fullPath}
         </div>
-        <div class="flex justify-between items-center gap-6">
-          <span class="text-[#8b949e]">Files</span>
+        <div class="flex justify-between items-center gap-6 text-xs">
+          <span class="text-[#737373]">Files</span>
           <span class="text-white font-mono font-bold">${d.fileCount}</span>
         </div>
       `
@@ -317,13 +317,13 @@ export default function SankeyView() {
   }, [analysisData, folderFilter, setFolderFilter, filteredFiles, filteredConnections]);
 
   return (
-    <div className="w-full h-full relative bg-[#0a0a0f] overflow-hidden">
+    <div className="w-full h-full relative bg-[#000000] overflow-hidden">
       <div ref={containerRef} className="w-full h-full" />
       
       {/* Background decoration */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-[#4d9fff] blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[#a855f7] blur-[120px]" />
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-[#ff6b00]/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[#ff8c00]/5 blur-[120px]" />
       </div>
     </div>
   );

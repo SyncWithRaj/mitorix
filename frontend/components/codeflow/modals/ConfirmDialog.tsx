@@ -23,20 +23,20 @@ export default function ConfirmDialog() {
         };
       case "info":
         return {
-          color: "text-[#58a6ff]",
-          border: "border-[#58a6ff]/30",
-          bg: "bg-[#58a6ff]/10",
-          btn: "bg-[#58a6ff] hover:bg-[#3182ce] text-white",
-          icon: <Info className="w-8 h-8 text-[#58a6ff]" />,
+          color: "text-[#ff6b00]",
+          border: "border-[#ff6b00]/30",
+          bg: "bg-[#ff6b00]/10",
+          btn: "bg-[#ff6b00] hover:bg-[#ff8c00] text-white",
+          icon: <Info className="w-8 h-8 text-[#ff6b00]" />,
         };
       case "warning":
       default:
         return {
-          color: "text-[#ff9f43]",
-          border: "border-[#ff9f43]/30",
-          bg: "bg-[#ff9f43]/10",
-          btn: "bg-[#ff9f43] hover:bg-[#e68a30] text-white",
-          icon: <AlertTriangle className="w-8 h-8 text-[#ff9f43]" />,
+          color: "text-[#ff8c00]",
+          border: "border-[#ff8c00]/30",
+          bg: "bg-[#ff8c00]/10",
+          btn: "bg-[#ff8c00] hover:bg-[#ffa800] text-white",
+          icon: <AlertTriangle className="w-8 h-8 text-[#ff8c00]" />,
         };
     }
   };
@@ -44,21 +44,21 @@ export default function ConfirmDialog() {
   const styles = getToneStyles();
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
       <div
-        className={`bg-[#161b22] border ${styles.border} rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200`}
+        className={`bg-[#050505] border ${styles.border} rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200`}
       >
         <div className={`p-6 flex flex-col items-center text-center ${styles.bg}`}>
-          <div className="mb-4 bg-[#0d1117] p-3 rounded-full shadow-inner border border-[#30363d]">
+          <div className="mb-4 bg-[#000000] p-3 rounded-full shadow-inner border border-[#1a1a1a]">
             {styles.icon}
           </div>
-          <h2 className="text-xl font-bold text-[#c9d1d9] mb-2">{title}</h2>
-          <p className="text-[#8b949e] text-sm leading-relaxed">{desc}</p>
+          <h2 className="text-xl font-bold text-[#e5e5e5] mb-2">{title}</h2>
+          <p className="text-[#737373] text-sm leading-relaxed">{desc}</p>
         </div>
 
-        <div className="flex p-4 gap-3 bg-[#0d1117] border-t border-[#30363d]">
+        <div className="flex p-4 gap-3 bg-[#000000] border-t border-[#1a1a1a]">
           <button
-            className="flex-1 px-4 py-2 bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] rounded-md transition text-[#c9d1d9] font-medium"
+            className="flex-1 px-4 py-2 bg-[#0a0a0a] hover:bg-[#1a1a1a] border border-[#1a1a1a] rounded-md transition text-[#e5e5e5] font-medium"
             onClick={() => setConfirmDialog(null)}
           >
             Cancel

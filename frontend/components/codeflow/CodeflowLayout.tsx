@@ -379,7 +379,7 @@ export default function CodeflowLayout({
 
         <div className="flex items-center gap-1 sm:gap-2">
           <button
-            className="p-1.5 text-gh-text-muted hover:text-[#58a6ff] hover:bg-gh-btn-secondary-hover rounded-md transition flex items-center gap-1.5"
+            className="p-1.5 text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover rounded-md transition flex items-center gap-1.5"
             title="Generate System Design"
             onClick={() => setIsDesignDocOpen(true)}
           >
@@ -387,7 +387,7 @@ export default function CodeflowLayout({
             <span className="text-[10px] uppercase font-bold hidden xl:inline">Design Doc</span>
           </button>
           <button
-            className="p-1.5 text-gh-text-muted hover:text-[#2ea043] hover:bg-gh-btn-secondary-hover rounded-md transition flex items-center gap-1.5"
+            className="p-1.5 text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover rounded-md transition flex items-center gap-1.5"
             title="Onboarding Guide"
             onClick={() => setIsOnboardingOpen(true)}
           >
@@ -460,21 +460,21 @@ export default function CodeflowLayout({
                 {/* Upper Section */}
                 <div className="flex-1 p-4 space-y-5 overflow-y-auto custom-scrollbar">
                   {folderFilter && (
-                    <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-2 flex items-center justify-between gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-2 flex items-center justify-between gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
                       <div className="flex items-center gap-2 overflow-hidden">
-                        <Folder size={14} className="text-[#58a6ff] shrink-0" />
+                        <Folder size={14} className="text-[#ff6b00] shrink-0" />
                         <div className="flex flex-col min-w-0">
-                          <span className="text-[10px] text-[#8b949e] uppercase font-bold tracking-tight">
+                          <span className="text-[10px] text-[#737373] uppercase font-bold tracking-tight">
                             Active Filter
                           </span>
-                          <span className="text-xs text-[#c9d1d9] font-medium truncate">
+                          <span className="text-xs text-[#e5e5e5] font-medium truncate">
                             {folderFilter}
                           </span>
                         </div>
                       </div>
                       <button
                         onClick={() => setFolderFilter(null)}
-                        className="p-1.5 hover:bg-[#21262d] rounded-md text-[#8b949e] hover:text-[#f85149] transition-colors"
+                        className="p-1.5 hover:bg-[#1a1a1a] rounded-md text-[#737373] hover:text-[#ff4500] transition-colors"
                         title="Clear Filter"
                       >
                         <X size={14} />
@@ -492,15 +492,15 @@ export default function CodeflowLayout({
 
                 {/* Sliding File Explorer Drawer Overlapping Wholly */}
                 {explorerOpen && (
-                  <div className="absolute inset-0 z-50 bg-[#0d1117] flex flex-col animate-in slide-in-from-left duration-200">
-                    <div className="flex items-center justify-between p-3 border-b border-[#30363d] bg-[#161b22]">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#c9d1d9] uppercase tracking-wider">
-                        <Folder size={14} className="text-[#58a6ff]" />
+                  <div className="absolute inset-0 z-50 bg-[#000000] flex flex-col animate-in slide-in-from-left duration-200">
+                    <div className="flex items-center justify-between p-3 border-b border-[#1a1a1a] bg-[#050505]">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#e5e5e5] uppercase tracking-wider">
+                        <Folder size={14} className="text-[#ff6b00]" />
                         <span>File Tree Explorer</span>
                       </div>
                       <button
                         onClick={() => setExplorerOpen(false)}
-                        className="p-1 hover:bg-[#21262d] rounded text-[#8b949e] hover:text-[#c9d1d9]"
+                        className="p-1 hover:bg-[#1a1a1a] rounded text-[#737373] hover:text-[#e5e5e5]"
                         title="Close Explorer"
                       >
                         <Ban size={14} />
@@ -527,7 +527,7 @@ export default function CodeflowLayout({
         {/* Explorer Overlay (independent of left panel) */}
         {explorerOpen && (
           <div
-            className="absolute z-60 bg-[#0d1117] border-r border-gh-border shadow-2xl flex flex-col min-h-0"
+            className="absolute z-60 bg-[#000000] border-r border-gh-border shadow-2xl flex flex-col min-h-0"
             style={{
               top: 0,
               bottom: 0,
@@ -535,14 +535,14 @@ export default function CodeflowLayout({
               width: `${leftPanelOpen ? leftPanelWidth : 320}px`,
             }}
           >
-            <div className="flex items-center justify-between p-3 border-b border-[#30363d] bg-[#161b22]">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#c9d1d9] uppercase tracking-wider">
-                <Folder size={14} className="text-[#58a6ff]" />
+            <div className="flex items-center justify-between p-3 border-b border-[#1a1a1a] bg-[#050505]">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#e5e5e5] uppercase tracking-wider">
+                <Folder size={14} className="text-[#ff6b00]" />
                 <span>File Tree Explorer</span>
               </div>
               <button
                 onClick={() => setExplorerOpen(false)}
-                className="p-1 hover:bg-[#21262d] rounded text-[#8b949e] hover:text-[#c9d1d9]"
+                className="p-1 hover:bg-[#1a1a1a] rounded text-[#737373] hover:text-[#e5e5e5]"
                 title="Close Explorer"
               >
                 <Ban size={14} />
@@ -629,7 +629,7 @@ export default function CodeflowLayout({
 
         {/* ── Chat Slide-Out Panel ── */}
         {chatOpen && (
-          <div className="w-[380px] shrink-0 z-20 border-l border-gh-border bg-[#0d1117] shadow-[-10px_0_20px_rgba(0,0,0,0.2)] flex flex-col animate-in slide-in-from-right duration-300 relative min-h-0">
+          <div className="w-[380px] shrink-0 z-20 border-l border-gh-border bg-[#000000] shadow-[-10px_0_20px_rgba(0,0,0,0.5)] flex flex-col animate-in slide-in-from-right duration-300 relative min-h-0">
             <ChatPanel
               repoId={repoId}
               chatMessages={chatMessages}

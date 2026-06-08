@@ -31,38 +31,38 @@ export default function CanvasToolbar() {
   return (
     <>
       <div className="absolute bottom-6 right-6 z-20 flex flex-col gap-1.5">
-        <div className="flex flex-col bg-[rgba(22,27,34,0.85)] backdrop-blur-md border border-[#30363d] rounded-lg shadow-lg overflow-hidden">
+        <div className="flex flex-col bg-[rgba(10,10,10,0.85)] backdrop-blur-md border border-[#1a1a1a] rounded-lg shadow-lg overflow-hidden">
           <button
             onClick={handleZoomIn}
-            className="p-2 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] transition-colors border-b border-[#30363d]"
+            className="p-2 text-[#737373] hover:text-[#e5e5e5] hover:bg-[#1a1a1a] transition-colors border-b border-[#1a1a1a]"
             title="Zoom In"
           >
             <ZoomIn size={16} />
           </button>
           <button
             onClick={handleZoomOut}
-            className="p-2 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] transition-colors border-b border-[#30363d]"
+            className="p-2 text-[#737373] hover:text-[#e5e5e5] hover:bg-[#1a1a1a] transition-colors border-b border-[#1a1a1a]"
             title="Zoom Out"
           >
             <ZoomOut size={16} />
           </button>
           <button
             onClick={handleResetZoom}
-            className="p-2 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] transition-colors border-b border-[#30363d]"
+            className="p-2 text-[#737373] hover:text-[#e5e5e5] hover:bg-[#1a1a1a] transition-colors border-b border-[#1a1a1a]"
             title="Reset Zoom"
           >
             <RotateCcw size={16} />
           </button>
           <button
             onClick={handleFitView}
-            className="p-2 text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d] transition-colors border-b border-[#30363d]"
+            className="p-2 text-[#737373] hover:text-[#e5e5e5] hover:bg-[#1a1a1a] transition-colors border-b border-[#1a1a1a]"
             title="Fit View"
           >
             <Maximize size={16} />
           </button>
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 transition-colors ${showSettings ? "bg-[#58a6ff]/10 text-[#58a6ff]" : "text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d]"}`}
+            className={`p-2 transition-colors ${showSettings ? "bg-[#ff6b00]/10 text-[#ff6b00]" : "text-[#737373] hover:text-[#e5e5e5] hover:bg-[#1a1a1a]"}`}
             title="Graph Settings"
           >
             <Settings size={16} />
@@ -71,10 +71,10 @@ export default function CanvasToolbar() {
       </div>
 
       {showSettings && (
-        <div className="absolute bottom-6 right-20 z-20 w-64 bg-[rgba(22,27,34,0.95)] backdrop-blur-md border border-[#30363d] rounded-lg shadow-xl p-4 flex flex-col gap-4">
+        <div className="absolute bottom-6 right-20 z-20 w-64 bg-[rgba(5,5,5,0.95)] backdrop-blur-md border border-[#1a1a1a] rounded-lg shadow-xl p-4 flex flex-col gap-4 animate-fadeIn">
           {/* Layout Mode */}
           <div className="flex flex-col gap-2">
-            <div className="text-[10px] font-bold text-[#8b949e] uppercase tracking-wider">
+            <div className="text-[10px] font-bold text-[#737373] uppercase tracking-wider">
               Layout
             </div>
             <div className="flex flex-wrap gap-1">
@@ -84,8 +84,8 @@ export default function CanvasToolbar() {
                   onClick={() => setGraphConfig({ ...graphConfig, viewMode: mode.id })}
                   className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
                     graphConfig.viewMode === mode.id
-                      ? "bg-[#21262d] text-white border border-[#30363d]"
-                      : "text-[#8b949e] hover:text-white border border-transparent"
+                      ? "bg-[#0a0a0a] text-white border border-[#ff6b00]/30 shadow-sm"
+                      : "text-[#737373] hover:text-white border border-transparent"
                   }`}
                 >
                   {mode.label}
@@ -96,12 +96,12 @@ export default function CanvasToolbar() {
 
           {/* Spacing Controls */}
           <div className="flex flex-col gap-2">
-            <div className="text-[10px] font-bold text-[#8b949e] uppercase tracking-wider">
+            <div className="text-[10px] font-bold text-[#737373] uppercase tracking-wider">
               Spacing
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-xs text-[#8b949e] w-12">Spread</span>
+              <span className="text-xs text-[#737373] w-12">Spread</span>
               <input
                 type="range"
                 min="50"
@@ -110,7 +110,7 @@ export default function CanvasToolbar() {
                 onChange={(e) =>
                   setGraphConfig({ ...graphConfig, spacing: parseInt(e.target.value) })
                 }
-                className="flex-1 accent-[#58a6ff]"
+                className="flex-1 accent-[#ff6b00] cursor-pointer"
               />
               <span className="text-xs text-white font-mono w-8 text-right">
                 {graphConfig.spacing}
@@ -118,7 +118,7 @@ export default function CanvasToolbar() {
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-xs text-[#8b949e] w-12">Links</span>
+              <span className="text-xs text-[#737373] w-12">Links</span>
               <input
                 type="range"
                 min="30"
@@ -127,7 +127,7 @@ export default function CanvasToolbar() {
                 onChange={(e) =>
                   setGraphConfig({ ...graphConfig, linkDist: parseInt(e.target.value) })
                 }
-                className="flex-1 accent-[#58a6ff]"
+                className="flex-1 accent-[#ff6b00] cursor-pointer"
               />
               <span className="text-xs text-white font-mono w-8 text-right">
                 {graphConfig.linkDist}
@@ -136,8 +136,8 @@ export default function CanvasToolbar() {
           </div>
 
           {/* Display Toggles */}
-          <div className="flex flex-col gap-2 pt-2 border-t border-[#30363d]">
-            <div className="text-[10px] font-bold text-[#8b949e] uppercase tracking-wider">
+          <div className="flex flex-col gap-2 pt-2 border-t border-[#1a1a1a]">
+            <div className="text-[10px] font-bold text-[#737373] uppercase tracking-wider">
               Display
             </div>
 
@@ -146,9 +146,9 @@ export default function CanvasToolbar() {
                 type="checkbox"
                 checked={graphConfig.showLabels}
                 onChange={(e) => setGraphConfig({ ...graphConfig, showLabels: e.target.checked })}
-                className="accent-[#58a6ff] cursor-pointer"
+                className="accent-[#ff6b00] cursor-pointer"
               />
-              <span className="text-xs text-[#c9d1d9] group-hover:text-white transition-colors">
+              <span className="text-xs text-[#e5e5e5] group-hover:text-white transition-colors">
                 Show labels
               </span>
             </label>
@@ -158,9 +158,9 @@ export default function CanvasToolbar() {
                 type="checkbox"
                 checked={graphConfig.curvedLinks}
                 onChange={(e) => setGraphConfig({ ...graphConfig, curvedLinks: e.target.checked })}
-                className="accent-[#58a6ff] cursor-pointer"
+                className="accent-[#ff6b00] cursor-pointer"
               />
-              <span className="text-xs text-[#c9d1d9] group-hover:text-white transition-colors">
+              <span className="text-xs text-[#e5e5e5] group-hover:text-white transition-colors">
                 Curved links
               </span>
             </label>

@@ -33,7 +33,7 @@ export default function VizSelector() {
   ];
 
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex bg-[rgba(22,27,34,0.85)] backdrop-blur-md border border-[#30363d] rounded-lg p-1 shadow-lg">
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex bg-[rgba(10,10,10,0.85)] backdrop-blur-md border border-[#1a1a1a] rounded-lg p-1 shadow-lg">
       {tabs.map((tab) => {
         const isActive = graphConfig.vizType === tab.id;
         const Icon = tab.icon;
@@ -43,11 +43,11 @@ export default function VizSelector() {
             onClick={() => handleSelect(tab.id)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
               isActive
-                ? "bg-[#21262d] text-white shadow-sm border border-[#30363d]"
-                : "text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[rgba(255,255,255,0.05)] border border-transparent"
+                ? "bg-[#0a0a0a] text-white shadow-sm border border-[#ff6b00]/30"
+                : "text-[#737373] hover:text-[#e5e5e5] hover:bg-[rgba(255,255,255,0.02)] border border-transparent"
             }`}
           >
-            <Icon size={14} className={isActive ? "text-[#58a6ff]" : ""} />
+            <Icon size={14} className={isActive ? "text-[#ff6b00]" : ""} />
             <span className="hidden sm:inline">{tab.label}</span>
           </button>
         );

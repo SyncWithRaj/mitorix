@@ -92,7 +92,7 @@ export default function TreemapView() {
       })
       .attr("opacity", 0.85)
       .attr("rx", 3)
-      .attr("stroke", "#0d1117")
+      .attr("stroke", "#000000")
       .attr("stroke-width", 1)
       .style("cursor", "pointer");
 
@@ -116,7 +116,7 @@ export default function TreemapView() {
       .append("div")
       .attr(
         "class",
-        "absolute hidden bg-[rgba(22,27,34,0.95)] border border-[#30363d] rounded-lg p-3 text-xs shadow-xl z-50"
+        "absolute hidden bg-[#050505] border border-[#1a1a1a] rounded-lg p-3 text-xs shadow-2xl z-50 text-[#e5e5e5]"
       )
       .style("pointer-events", "none");
 
@@ -125,11 +125,11 @@ export default function TreemapView() {
         tooltip
           .html(
             `
-        <div class="font-bold text-[#c9d1d9] mb-2 border-b border-[#30363d] pb-1">${d.data.name}</div>
-        <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-          <span class="text-[#8b949e]">Lines</span><span class="text-white font-mono text-right">${d.data.value}</span>
-          <span class="text-[#8b949e]">Functions</span><span class="text-white font-mono text-right">${d.data.fns}</span>
-          <span class="text-[#8b949e]">Folder</span><span class="text-white text-right truncate max-w-[120px]">${d.data.folder}</span>
+        <div class="font-bold text-[#ff6b00] mb-2 border-b border-[#1a1a1a] pb-1 font-mono">${d.data.name}</div>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+          <span class="text-[#737373]">Lines</span><span class="text-white font-mono text-right">${d.data.value}</span>
+          <span class="text-[#737373]">Functions</span><span class="text-white font-mono text-right">${d.data.fns}</span>
+          <span class="text-[#737373]">Folder</span><span class="text-white text-right truncate max-w-[120px] font-mono">${d.data.folder}</span>
         </div>
       `
           )
@@ -142,7 +142,7 @@ export default function TreemapView() {
           .transition()
           .duration(150)
           .attr("opacity", 1)
-          .attr("stroke", "#58a6ff")
+          .attr("stroke", "#ff6b00")
           .attr("stroke-width", 2);
       })
       .on("mousemove", (e) => {
@@ -158,7 +158,7 @@ export default function TreemapView() {
           .transition()
           .duration(150)
           .attr("opacity", isSelected ? 1 : isAffected ? 0.95 : 0.85)
-          .attr("stroke", isSelected ? "#ff5f5f" : isAffected ? "#e3b341" : "#0d1117")
+          .attr("stroke", isSelected ? "#ff5f5f" : isAffected ? "#ff6b00" : "#000000")
           .attr("stroke-width", isSelected || isAffected ? 2 : 1);
       })
       .on("click", (e, d: any) => {
@@ -189,5 +189,5 @@ export default function TreemapView() {
     };
   }, [analysisData, folderFilter, colorMode, selectedFile, blastRadius, selectFile, filteredFiles]);
 
-  return <div ref={containerRef} className="w-full h-full relative bg-[#0a0a0f]" />;
+  return <div ref={containerRef} className="w-full h-full relative bg-[#000000]" />;
 }

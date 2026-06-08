@@ -82,7 +82,7 @@ export default function MatrixView() {
       .attr("y", -8)
       .attr("text-anchor", "start")
       .attr("transform", (_, i) => `rotate(-45,${i * cellSize + cellSize / 2},-8)`)
-      .attr("fill", "#8b949e")
+      .attr("fill", "#737373")
       .attr("font-size", "10px")
       .attr("font-family", '"JetBrains Mono", monospace')
       .text((d) => {
@@ -101,7 +101,7 @@ export default function MatrixView() {
       .attr("x", -8)
       .attr("y", (_, i) => i * cellSize + cellSize / 2 + 3)
       .attr("text-anchor", "end")
-      .attr("fill", "#8b949e")
+      .attr("fill", "#737373")
       .attr("font-size", "10px")
       .attr("font-family", '"JetBrains Mono", monospace')
       .text((d) => {
@@ -122,7 +122,7 @@ export default function MatrixView() {
       .append("div")
       .attr(
         "class",
-        "absolute hidden bg-[rgba(22,27,34,0.95)] border border-[#30363d] rounded-lg p-3 text-xs shadow-xl z-50"
+        "absolute hidden bg-[#050505] border border-[#1a1a1a] rounded-lg p-3 text-xs shadow-2xl z-50 text-[#e5e5e5]"
       )
       .style("pointer-events", "none");
 
@@ -137,9 +137,9 @@ export default function MatrixView() {
       .attr("height", cellSize - 1)
       .attr("rx", 2)
       .attr("fill", (d) =>
-        d.value > 0 ? `rgba(88,166,255,${Math.max(0.15, d.value / maxVal)})` : "#161b22"
+        d.value > 0 ? `rgba(255,107,0,${Math.max(0.15, d.value / maxVal)})` : "#0a0a0a"
       )
-      .attr("stroke", "#0d1117")
+      .attr("stroke", "#000000")
       .attr("stroke-width", 0.5)
       .style("cursor", "pointer");
 
@@ -148,12 +148,12 @@ export default function MatrixView() {
         tooltip
           .html(
             `
-        <div class="font-bold text-[#c9d1d9] mb-2 border-b border-[#30363d] pb-1 break-all max-w-[200px]">
-          ${d.source.name} <span class="text-[#8b949e] mx-1">→</span> ${d.target.name}
+        <div class="font-bold text-[#ff6b00] mb-2 border-b border-[#1a1a1a] pb-1 break-all max-w-[200px] font-mono">
+          ${d.source.name} <span class="text-[#737373] mx-1">→</span> ${d.target.name}
         </div>
-        <div class="flex justify-between items-center gap-4">
-          <span class="text-[#8b949e]">Connections</span>
-          <span class="text-[#58a6ff] font-mono font-bold">${d.value}</span>
+        <div class="flex justify-between items-center gap-4 text-xs">
+          <span class="text-[#737373]">Connections</span>
+          <span class="text-[#ff6b00] font-mono font-bold">${d.value}</span>
         </div>
       `
           )
@@ -166,14 +166,14 @@ export default function MatrixView() {
         );
 
         colLabels
-          .attr("fill", (_, i) => (i === d.col ? "#58a6ff" : "#8b949e"))
+          .attr("fill", (_, i) => (i === d.col ? "#ff6b00" : "#737373"))
           .attr("font-weight", (_, i) => (i === d.col ? "600" : "400"));
 
         rowLabels
-          .attr("fill", (_, i) => (i === d.row ? "#58a6ff" : "#8b949e"))
+          .attr("fill", (_, i) => (i === d.row ? "#ff6b00" : "#737373"))
           .attr("font-weight", (_, i) => (i === d.row ? "600" : "400"));
 
-        d3.select(this).attr("stroke", "#58a6ff").attr("stroke-width", 1.5).raise(); // bring to front
+        d3.select(this).attr("stroke", "#ff6b00").attr("stroke-width", 1.5).raise(); // bring to front
       })
       .on("mousemove", (e) => {
         tooltip.style("left", `${e.offsetX + 15}px`).style("top", `${e.offsetY + 15}px`);
@@ -181,9 +181,9 @@ export default function MatrixView() {
       .on("mouseleave", function () {
         tooltip.style("display", "none");
         cells.attr("opacity", 1);
-        colLabels.attr("fill", "#8b949e").attr("font-weight", "400");
-        rowLabels.attr("fill", "#8b949e").attr("font-weight", "400");
-        d3.select(this).attr("stroke", "#0d1117").attr("stroke-width", 0.5);
+        colLabels.attr("fill", "#737373").attr("font-weight", "400");
+        rowLabels.attr("fill", "#737373").attr("font-weight", "400");
+        d3.select(this).attr("stroke", "#000000").attr("stroke-width", 0.5);
       })
       .on("click", (e, d: any) => {
         e.stopPropagation();
@@ -216,7 +216,7 @@ export default function MatrixView() {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full relative bg-[#0a0a0f] flex items-center justify-center"
+      className="w-full h-full relative bg-[#000000] flex items-center justify-center"
     />
   );
 }

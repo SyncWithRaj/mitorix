@@ -17,6 +17,9 @@ import fileRoute from "./routes/file.routes.js";
 import callRoutes from "./routes/call.route.js";
 import historyRoutes from "./routes/history.route.js";
 import codeflowRoutes from "./routes/codeflow.routes.js";
+import searchRoutes from "./routes/search.route.js";
+import cloneRoutes from "./routes/clone.route.js";
+import driftRoutes from "./routes/drift.route.js";
 
 import { errorHandler } from "./middlewares/error.middleware.js";
 
@@ -55,6 +58,9 @@ app.use("/api/v1/files", fileRoute);
 app.use("/api/v1/call", callRoutes);
 app.use("/api/v1/history", historyRoutes);
 app.use("/api/v1/codeflow", codeflowRoutes);
+app.use("/api/v1/search", searchRoutes);
+app.use("/api/v1/clones", cloneRoutes);
+app.use("/api/v1/drift", driftRoutes);
 
 app.use(errorHandler);
 

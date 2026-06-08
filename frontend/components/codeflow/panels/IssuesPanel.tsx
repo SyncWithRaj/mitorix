@@ -13,16 +13,16 @@ export default function IssuesPanel() {
 
   return (
     <div>
-      <div className="flex items-center gap-2 text-xs font-semibold text-[#c9d1d9] mb-4">
-        <Search size={16} />
+      <div className="flex items-center gap-2 text-xs font-semibold text-[#e5e5e5] mb-4">
+        <Search size={16} className="text-[#ff6b00]" />
         Architecture Issues ({analysisData.issues.length})
       </div>
 
       {analysisData.issues.length === 0 ? (
-        <div className="text-center py-10 px-4">
-          <Sparkles size={48} className="mx-auto text-[#30363d] mb-4 opacity-50" />
-          <div className="text-[#22c55e] font-semibold text-sm mb-1">No issues detected!</div>
-          <div className="text-[#8b949e] text-[10px]">Your architecture is looking clean.</div>
+        <div className="text-center py-10 px-4 animate-fadeIn">
+          <Sparkles size={48} className="mx-auto text-[#1a1a1a] mb-4 opacity-50" />
+          <div className="text-[#ff8c00] font-semibold text-sm mb-1">No issues detected!</div>
+          <div className="text-[#737373] text-[10px]">Your architecture is looking clean.</div>
         </div>
       ) : (
         <div className="space-y-3">
@@ -31,12 +31,12 @@ export default function IssuesPanel() {
             return (
               <div
                 key={i}
-                className={`p-3 rounded-lg border cursor-pointer transition hover:brightness-110 bg-[#161b22] ${
+                className={`p-3 rounded-lg border cursor-pointer transition hover:brightness-110 bg-[#0a0a0a] ${
                   issue.type === "critical"
-                    ? "border-red-500/30"
+                    ? "border-red-500/20"
                     : issue.type === "warning"
-                      ? "border-orange-500/30"
-                      : "border-blue-500/30"
+                      ? "border-[#ff6b00]/20"
+                      : "border-blue-500/20"
                 }`}
                 onClick={() => {
                   if (isUnused) {
@@ -64,18 +64,18 @@ export default function IssuesPanel() {
                   <div
                     className={`w-2 h-2 rounded-full ${
                       issue.type === "critical"
-                        ? "bg-red-500"
+                        ? "bg-red-500 animate-pulse"
                         : issue.type === "warning"
-                          ? "bg-orange-500"
+                          ? "bg-[#ff6b00]"
                           : "bg-blue-500"
                     }`}
                   />
-                  <span className="font-semibold text-xs text-[#c9d1d9]">{issue.title}</span>
+                  <span className="font-semibold text-xs text-[#e5e5e5]">{issue.title}</span>
                 </div>
-                <div className="text-[10px] text-[#8b949e] leading-relaxed line-clamp-3">
+                <div className="text-[10px] text-[#737373] leading-relaxed line-clamp-3">
                   {issue.desc}
                 </div>
-                <div className="text-[9px] text-[#58a6ff] mt-2.5 font-medium">
+                <div className="text-[9px] text-[#ff6b00] mt-2.5 font-medium">
                   Click for details ({issue.items ? issue.items.length : 0} items) →
                 </div>
               </div>
