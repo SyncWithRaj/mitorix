@@ -5,13 +5,13 @@ import Navbar from "@/components/layout/Navbar";
 import Providers from "@/components/layout/Providers";
 
 const geistSans = localFont({
-  src: "../public/fonts/GeistVF.woff2",
+  src: "./fonts/GeistVF.woff2",
   variable: "--font-geist-sans",
   weight: "100 900",
 });
 
 const geistMono = localFont({
-  src: "../public/fonts/GeistMonoVF.woff2",
+  src: "./fonts/GeistMonoVF.woff2",
   variable: "--font-geist-mono",
   weight: "100 900",
 });
