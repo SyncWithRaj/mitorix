@@ -37,3 +37,6 @@ wipe:
 
 showdb:
 	docker exec -it repolens_mongo mongosh RepoLens
+
+nomic:
+	docker exec -it repolens_ollama ollama pull nomic-embed-text
