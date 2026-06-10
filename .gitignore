@@ -77,8 +77,6 @@ frontend/**/*.jpeg
 frontend/**/*.gif
 frontend/**/*.svg
 frontend/**/*.webp
-frontend/**/*.woff
-frontend/**/*.woff2
 frontend/**/*.ttf
 frontend/**/*.eot
 frontend/**/*.patch
