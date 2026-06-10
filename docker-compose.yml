@@ -43,6 +43,21 @@ services:
       retries: 5
       start_period: 30s
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: repolens_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "bash", "-c", "cat < /dev/null > /dev/tcp/localhost/11434" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
   backend:
     image: repolens-backend:latest
     build: ./backend
@@ -58,6 +73,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - OLLAMA_BASE_URL=http://ollama:11434
       # The rest are picked up from the .env file automatically
     depends_on:
       mongodb:
@@ -65,6 +81,8 @@ services:
       redis:
         condition: service_healthy
       qdrant:
+        condition: service_healthy
+      ollama:
         condition: service_healthy
     restart: unless-stopped
 
@@ -98,3 +116,4 @@ services:
 
 volumes:
   mongo_data:
+  ollama_data:

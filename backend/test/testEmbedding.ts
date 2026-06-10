@@ -1,5 +1,7 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import { embeddingModel } from "../src/services/embedding.service.js";
-import { vectorStore } from "../src/services/vector.service.js";
 
 async function testEmbedding() {
   try {
@@ -19,19 +21,8 @@ function createUser(req,res){
 
     console.log("Vector generation successful");
     console.log("Vector length:", vector.length);
-
-    // Step 2 — insert into Qdrant using LangChain
-    await vectorStore.addDocuments([
-      {
-        pageContent: text,
-        metadata: {
-          test: true,
-          name: "createUser",
-        },
-      },
-    ]);
-
-    console.log("Insertion into Qdrant successful");
+    console.log("Expected: 768 (nomic-embed-text)");
+    console.log("Match:", vector.length === 768 ? "✅" : "❌");
   } catch (err) {
     console.error("Error ❌", err);
   }

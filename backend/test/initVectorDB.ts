@@ -7,7 +7,7 @@ const client = new QdrantClient({
 async function run() {
   await client.createCollection("repo_entities", {
     vectors: {
-      size: 3072,
+      size: 768,
       distance: "Cosine",
     },
   });
