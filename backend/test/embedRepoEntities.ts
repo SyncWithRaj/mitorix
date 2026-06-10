@@ -3,12 +3,27 @@ dotenv.config();
 
 import mongoose from "mongoose";
 import { QdrantClient } from "@qdrant/js-client-rest";
-import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import { OllamaEmbeddings } from "@langchain/ollama";
 import { CodeEntity } from "../src/models/codeEntity.model.js";
 
 const MONGO_URI = process.env.MONGO_URI!;
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY!;
+const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
 const COLLECTION = "repo_entities";
+
+/**
+ * Nomic-embed-text has a 2048-token context window.
+ * ~1 token ≈ 4 chars for code → safe limit is ~6000 chars.
+ */
+const MAX_EMBED_CHARS = 6000;
+
+function truncateForEmbedding(text: string): string {
+  if (text.length <= MAX_EMBED_CHARS) return text;
+  const truncated = text.substring(0, MAX_EMBED_CHARS);
+  const lastNewline = truncated.lastIndexOf("\n");
+  return lastNewline > MAX_EMBED_CHARS * 0.5
+    ? truncated.substring(0, lastNewline)
+    : truncated;
+}
 
 async function run() {
   const repoId = process.argv[2];
@@ -26,9 +41,9 @@ async function run() {
     apiKey: process.env.QDRANT_API_KEY!,
   });
 
-  const embeddings = new GoogleGenerativeAIEmbeddings({
-    apiKey: GOOGLE_API_KEY,
-    model: "models/gemini-embedding-001",
+  const embeddings = new OllamaEmbeddings({
+    model: "nomic-embed-text",
+    baseUrl: OLLAMA_BASE_URL,
   });
 
   console.log("Fetching entities...");
@@ -60,7 +75,7 @@ Code:
 ${entity.content || ""}
 `;
 
-    const vector = await embeddings.embedQuery(text);
+    const vector = await embeddings.embedQuery(truncateForEmbedding(text));
 
     points.push({
       id: i + 1,
@@ -69,7 +84,6 @@ ${entity.content || ""}
         pageContent: entity.content || entity.name,
         metadata: {
           mongoId: entity._id.toString(),
-          fingerprint: repo.fingerprint,
           filePath: entity.filePath,
           startLine: entity.startLine,
           endLine: entity.endLine,

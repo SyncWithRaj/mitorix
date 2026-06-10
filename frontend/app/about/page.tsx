@@ -193,14 +193,14 @@ export default function AboutPage() {
               <h2 className="text-3xl font-extrabold text-white tracking-tight">3. Qdrant Vector DB & RAG Pipeline</h2>
             </div>
             <p className="text-[#a3a3a3] leading-relaxed font-light text-base">
-              Semantic lookup queries utilize the **Qdrant Vector Database**. RepoLens breaks functions and classes into discrete code blocks. We feed these blocks through the **Google Gemini Text Embedding API** to generate high-dimensional coordinates representing semantic context.
+              Semantic lookup queries utilize the **Qdrant Vector Database**. RepoLens breaks functions and classes into discrete code blocks. We feed these blocks through **Nomic-embed-text** (running locally via **Ollama**) to generate 768-dimensional vectors representing semantic context — fully local, zero API cost, and zero data leakage.
             </p>
             
             <div className="bg-[#030303] border border-[#1a1a1a] rounded-2xl p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                 <div className="space-y-2">
-                  <div className="text-lg font-bold text-white font-mono">1536/768</div>
-                  <div className="text-xs text-[#737373]">Vector Dimensionality</div>
+                  <div className="text-lg font-bold text-white font-mono">768</div>
+                  <div className="text-xs text-[#737373]">Vector Dimensionality (Nomic)</div>
                 </div>
                 <div className="space-y-2 border-y md:border-y-0 md:border-x border-[#1a1a1a] py-4 md:py-0">
                   <div className="text-lg font-bold text-white font-mono">Cosine Similarity</div>
@@ -218,7 +218,7 @@ export default function AboutPage() {
                   To isolate lookups per RepoSpace and prevent bleed, Qdrant vectors store metadata payloads. The API enforces strict field matching checks for <code className="text-xs font-mono bg-[#1a1a1a] text-white px-1">repo_id</code> on every query.
                 </p>
                 <p className="text-[#737373]">
-                  When a user asks a question, we embed the query text, retrieve the top 15 matching AST code blocks, and combine them with MongoDB file metadata to construct the RAG prompt for Google Gemini, generating exact codebase references.
+                  When a user asks a question, we embed the query text locally via Nomic, retrieve the top 15 matching AST code blocks, and combine them with MongoDB file metadata to construct the RAG prompt for Google Gemini LLM, generating exact codebase references.
                 </p>
               </div>
             </div>
@@ -449,7 +449,7 @@ export default function AboutPage() {
                 <div className="flex items-center justify-center text-[#ff6b00] text-lg font-bold rotate-90 md:rotate-0">➔</div>
                 <div className="flex-1 bg-black border border-[#1a1a1a] p-4 rounded-xl flex flex-col justify-between items-center">
                   <div className="text-[#ff8c00] font-bold">2. REASON (RAG)</div>
-                  <div className="text-[10px] text-[#737373] mt-2">Google Gemini matches query embeddings with indexed files in Qdrant.</div>
+                  <div className="text-[10px] text-[#737373] mt-2">Nomic-embed-text (Ollama) matches query embeddings with indexed files in Qdrant. Gemini LLM generates the answer.</div>
                 </div>
                 <div className="flex items-center justify-center text-[#ff8c00] text-lg font-bold rotate-90 md:rotate-0">➔</div>
                 <div className="flex-1 bg-black border border-[#1a1a1a] p-4 rounded-xl flex flex-col justify-between items-center">
@@ -493,7 +493,7 @@ export default function AboutPage() {
                   <CheckCircle2 className="text-[#ffa800] shrink-0 mt-1" size={16} />
                   <div>
                     <strong className="text-white">Environment Staging:</strong>
-                    <p className="text-xs text-[#737373] mt-1">Backend parameters are isolated within environment variables, securing API keys for Gemini, AssemblyAI, and Murf AI, alongside JWT secrets.</p>
+                    <p className="text-xs text-[#737373] mt-1">Backend parameters are isolated within environment variables, securing API keys for Gemini LLM, AssemblyAI, and Murf AI, alongside JWT secrets. Embeddings run locally via Ollama — no API key needed.</p>
                   </div>
                 </div>
               </div>

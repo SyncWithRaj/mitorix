@@ -5,7 +5,8 @@
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)
 ![MongoDB](https://img.shields.io/badge/MongoDB-7-4DB33D?style=for-the-badge&logo=mongodb)
-![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI-4285F4?style=for-the-badge&logo=google)
+![Google Gemini](https://img.shields.io/badge/Google_Gemini-LLM-4285F4?style=for-the-badge&logo=google)
+![Ollama](https://img.shields.io/badge/Ollama-Local_AI-000000?style=for-the-badge)
 ![Qdrant](https://img.shields.io/badge/Qdrant-Vector_DB-FF5252?style=for-the-badge)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)
 
@@ -44,7 +45,7 @@ The vector-powered advanced analytics suite running under the hood to perform de
 
 ### Contextual AI Chat & Drag-and-Drop RAG
 Ask natural language questions like *"Where is the database connection managed?"* or *"Walk me through the user registration lifecycle."* 
-- **Autoritative RAG Engine:** Powered by Google Gemini with semantic vector search.
+- **Autoritative RAG Engine:** Powered by Google Gemini LLM with local Nomic-embed-text vector search via Ollama.
 - **Drag-and-Drop Context:** Attach files, folders, code entities, security issues, or architectural compliance warnings directly from the UI to serve as the primary prompt context.
 - **Hybrid Query Processing:** Falls back to vector search when no explicit context is provided.
 
@@ -129,7 +130,7 @@ graph TD
 | **Task Queue** | BullMQ + ioredis (High-throughput background job queue) |
 | **AST Parsers** | Tree-sitter (C, C#, C++, Go, Java, JavaScript, PHP, Python, Ruby, Rust, TypeScript native compilers) |
 | **Vector Engine** | Qdrant Vector DB (Dense similarity search and Cosine distance comparisons) |
-| **AI/LLM** | Google Gemini (`gemini-2.5-flash`), Google GenAI Embeddings (`gemini-embedding-001`) |
+| **AI/LLM** | Google Gemini (`gemini-2.5-flash`) for chat/RAG, Nomic-embed-text via Ollama for local vector embeddings (768-dim) |
 | **Voice Engine** | AssemblyAI (Speech-to-Text), Murf AI (Text-to-Speech) |
 | **Ingress & Proxy** | Nginx Reverse Proxy (Dynamic routing, rate-limiting, connection buffering) |
 | **DevOps & Orchestration** | Docker, Docker Compose (Multi-container orchestration, automated health checks) |
@@ -181,6 +182,7 @@ repolens/
 - **Node.js v22 (LTS)**
 - **Docker & Docker Compose**
 - **Git**
+- **Ollama** — [Install Ollama](https://ollama.com) and pull the embedding model: `ollama pull nomic-embed-text`
 
 ### Local Quickstart
 
@@ -201,6 +203,7 @@ repolens/
    Open `backend/.env` and update the required credentials:
    ```env
    GOOGLE_API_KEY=your_gemini_api_key
+   OLLAMA_BASE_URL=http://127.0.0.1:11434
    JWT_SECRET=use_a_strong_random_string_here
    ```
 
@@ -271,7 +274,8 @@ Once running, navigate to **http://localhost** (Port 80). Nginx handles routing 
 | `REDIS_URL` | Yes | Redis cluster connection URI |
 | `QDRANT_URL` | Yes | Qdrant vector database endpoint URL |
 | `QDRANT_API_KEY`| No | Optional API key for Qdrant Cloud setups |
-| `GOOGLE_API_KEY`| Yes | Google Gemini API credentials |
+| `GOOGLE_API_KEY`| Yes | Google Gemini API credentials (LLM chat) |
+| `OLLAMA_BASE_URL`| No | Ollama server URL (defaults to `http://127.0.0.1:11434`) |
 | `JWT_SECRET` | Yes | Token signature secret key |
 | `GITHUB_CLIENT_ID`| Yes | GitHub OAuth Application Client ID |
 | `GITHUB_CLIENT_SECRET`| Yes | GitHub OAuth Application Secret Key |

@@ -68,7 +68,8 @@ At minimum, you need:
 
 Optional (for full functionality):
 - `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` — [Create a GitHub OAuth App](https://github.com/settings/developers) (not needed if using Dev Login)
-- `GOOGLE_API_KEY` — [Get a Gemini API key](https://aistudio.google.com/apikey) (needed for chat/RAG, not for graph/editor)
+- `GOOGLE_API_KEY` — [Get a Gemini API key](https://aistudio.google.com/apikey) (needed for LLM chat responses, not for embeddings or graph/editor)
+- **Ollama** — [Install Ollama](https://ollama.com) and run `ollama pull nomic-embed-text` (needed for vector embeddings — runs locally, no API key required)
 
 ### Step 3: Start Infrastructure & Seed Data
 
@@ -84,7 +85,7 @@ The seed script:
 - Creates a **demo user** you can log in with (no GitHub OAuth needed)
 - Runs the **real RepoLens parsing pipeline** on a bundled Express todo app
 - Populates MongoDB with file tree, code entities, and relationships
-- If `GOOGLE_API_KEY` is set, also embeds into Qdrant (enables chat)
+- If Ollama is running with `nomic-embed-text`, also embeds into Qdrant (enables chat and semantic search)
 
 ### Step 4: Start Development Servers
 
@@ -176,7 +177,7 @@ backend/src/
 - **Controllers** call **Services**. Controllers handle HTTP; services handle logic.
 - **Workers** process BullMQ jobs asynchronously (repo cloning, parsing, embedding).
 - **Parsers** extend `BaseParser` with a consistent interface per language.
-- **RAG pipeline:** User query → embed query → Qdrant similarity search → build context → Gemini LLM → stream response.
+- **RAG pipeline:** User query → embed query (Nomic via Ollama, local) → Qdrant similarity search → build context → Gemini LLM → stream response.
 
 ---
 
