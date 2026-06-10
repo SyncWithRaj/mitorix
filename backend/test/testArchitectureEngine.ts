@@ -5,7 +5,7 @@ import { CodeRelationship } from "../src/models/relationship.model.js";
 import { ArchitectureViolation } from "../src/models/architectureViolation.model.js";
 import { Repository } from "../src/models/repo.model.js";
 
-dotenv.config({ path: "../.env" });
+dotenv.config({ path: "../.env", quiet: true } as any);
 
 async function testArchitectureEngine() {
   console.log("=== 📐 Starting Clean Architecture Engine Test Suite ===");

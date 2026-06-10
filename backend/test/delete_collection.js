@@ -1,6 +1,6 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
 import dotenv from "dotenv";
-dotenv.config({ path: "../.env" });
+dotenv.config({ path: "../.env", quiet: true } as any);
 
 const client = new QdrantClient({
   url: process.env.QDRANT_URL,

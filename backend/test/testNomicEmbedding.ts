@@ -11,7 +11,7 @@
  */
 
 import dotenv from "dotenv";
-dotenv.config({ path: "../.env" });
+dotenv.config({ path: "../.env", quiet: true } as any);
 
 import { OllamaEmbeddings } from "@langchain/ollama";
 

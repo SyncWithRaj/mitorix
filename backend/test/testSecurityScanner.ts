@@ -6,7 +6,7 @@ import { runSecurityScan } from "../src/services/securityScanner.service.js";
 import { SecurityIssue } from "../src/models/securityIssue.model.js";
 import { Repository } from "../src/models/repo.model.js";
 
-dotenv.config({ path: "../.env" });
+dotenv.config({ path: "../.env", quiet: true } as any);
 
 async function testScanner() {
   console.log("=== 🛡️ Starting Security Scanner Test Suite ===");

@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config({ path: "../.env" });
+dotenv.config({ path: "../.env", quiet: true } as any);
 
 import mongoose from "mongoose";
 import { QdrantClient } from "@qdrant/js-client-rest";

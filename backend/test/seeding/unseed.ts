@@ -16,7 +16,7 @@ import mongoose from "mongoose";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const backendRoot = path.resolve(__dirname, "../..");
-dotenv.config({ path: path.join(backendRoot, "../.env") });
+dotenv.config({ path: path.join(backendRoot, "../.env"), quiet: true } as any);
 
 import { User } from "../../src/models/auth.model.js";
 import { Repository } from "../../src/models/repo.model.js";

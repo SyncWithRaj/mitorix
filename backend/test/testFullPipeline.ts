@@ -5,7 +5,7 @@ import { SecurityIssue } from "../src/models/securityIssue.model.js";
 import { ArchitectureViolation } from "../src/models/architectureViolation.model.js";
 import { Repository } from "../src/models/repo.model.js";
 
-dotenv.config({ path: "../.env" });
+dotenv.config({ path: "../.env", quiet: true } as any);
 
 async function testFullPipeline() {
   console.log("=== 💡 Starting Full Analysis Pipeline & suggestions Test Suite ===");
