@@ -14,7 +14,7 @@ import { fileURLToPath } from "url";
 import mongoose from "mongoose";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const backendRoot = path.resolve(__dirname, "../..");
-dotenv.config({ path: path.join(backendRoot, ".env") });
+dotenv.config({ path: path.join(backendRoot, "../.env") });
 import { User } from "../../src/models/auth.model.js";
 import { Repository } from "../../src/models/repo.model.js";
 import { CodeEntity } from "../../src/models/codeEntity.model.js";

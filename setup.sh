@@ -10,7 +10,7 @@
 #   3. Install backend npm dependencies
 #   4. Install frontend npm dependencies
 #   5. Install Ollama and pull the nomic-embed-text model (local embeddings)
-#   6. Scaffold a starter .env for the backend (if missing)
+#   6. Scaffold a starter .env for the project root (if missing)
 #
 # Tested on: Ubuntu/Debian, Fedora/RHEL, Arch, macOS, Alpine
 # ==============================================
@@ -270,19 +270,19 @@ install_ollama
 
 header "Step 6/6 — Environment setup"
 
-BACKEND_ENV="${SCRIPT_DIR}/backend/.env"
-BACKEND_ENV_EXAMPLE="${SCRIPT_DIR}/backend/.env.development.example"
+ROOT_ENV="${SCRIPT_DIR}/.env"
+ROOT_ENV_EXAMPLE="${SCRIPT_DIR}/.env.development.example"
 
-if [[ -f "$BACKEND_ENV" ]]; then
-  success "backend/.env already exists — skipping ✓"
+if [[ -f "$ROOT_ENV" ]]; then
+  success ".env already exists — skipping ✓"
 else
-  if [[ -f "$BACKEND_ENV_EXAMPLE" ]]; then
-    cp "$BACKEND_ENV_EXAMPLE" "$BACKEND_ENV"
-    warn "Created backend/.env from .env.development.example"
-    warn "→ Please edit backend/.env and fill in your JWT_SECRET"
+  if [[ -f "$ROOT_ENV_EXAMPLE" ]]; then
+    cp "$ROOT_ENV_EXAMPLE" "$ROOT_ENV"
+    warn "Created .env from .env.development.example"
+    warn "→ Please edit .env and fill in your JWT_SECRET"
   else
-    warn "No .env or .env.development.example found in backend/."
-    warn "→ You will need to create backend/.env manually before starting the server."
+    warn "No .env.development.example found in root."
+    warn "→ You will need to create .env manually before starting the server."
   fi
 fi
 
@@ -296,7 +296,7 @@ printf "\n"
 printf "  Next steps:\n"
 printf "\n"
 printf "  1. Configure your secrets:\n"
-printf "     ${CYAN}nano backend/.env${NC}\n"
+printf "     ${CYAN}nano .env${NC}\n"
 printf "\n"
 printf "  2. Start infrastructure (MongoDB, Redis, Qdrant):\n"
 printf "     ${CYAN}docker compose up -d mongodb redis qdrant${NC}\n"

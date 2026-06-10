@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ path: "../.env" });
 
 import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";

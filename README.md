@@ -200,7 +200,7 @@ repolens/
    ```
 
 3. **Configure API Secrets**
-   Open `backend/.env` and update the required credentials:
+   Open `.env` and update the required credentials:
    ```env
    GOOGLE_API_KEY=your_gemini_api_key
    OLLAMA_BASE_URL=http://127.0.0.1:11434
@@ -264,7 +264,7 @@ Once running, navigate to **http://localhost** (Port 80). Nginx handles routing 
 
 ## Environment Configuration
 
-### Backend Secrets (`backend/.env`)
+### Secrets (`.env`)
 
 | Variable | Required | Description |
 |---|---|---|

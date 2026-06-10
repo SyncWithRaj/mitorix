@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 import { beforeAll } from "vitest";
 
 beforeAll(() => {
-  dotenv.config({ path: ".env" });
+  dotenv.config({ path: "../.env" });
   // Override with test-specific values
   process.env.NODE_ENV = "test";
   process.env.JWT_SECRET = "test-jwt-secret-for-vitest";

@@ -65,7 +65,7 @@ services:
     expose:
       - "5000"
     env_file:
-      - ./backend/.env
+      - ./.env
     environment:
       - NODE_ENV=production
       - MONGO_URI=mongodb://mongodb:27017/RepoLens

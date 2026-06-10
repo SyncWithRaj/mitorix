@@ -52,15 +52,15 @@ The setup script will:
 1. Validate Node.js v22+
 2. Install OS-level build tools (for tree-sitter native compilation)
 3. Run `npm ci` in `backend/` and `frontend/`
-4. Scaffold `backend/.env` from the example template
+4. Scaffold `.env` from the example template
 5. Skip reinstall on re-runs if dependencies haven't changed
 
 ### Step 2: Configure Environment
 
-Edit `backend/.env` and fill in your secrets:
+Edit `.env` and fill in your secrets:
 
 ```bash
-nano backend/.env
+nano .env
 ```
 
 At minimum, you need:
