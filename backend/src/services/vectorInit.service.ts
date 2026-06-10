@@ -51,7 +51,7 @@ export class VectorInitService {
 
     await this.client.createCollection(COLLECTION, {
       vectors: {
-        size: 3072,
+        size: 768,
         distance: "Cosine",
       },
       hnsw_config: {

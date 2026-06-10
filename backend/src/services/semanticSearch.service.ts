@@ -2,19 +2,19 @@
  * Semantic Code Search Service
  *
  * Uses Qdrant as a standalone search engine (NOT RAG — no LLM involved).
- * Embeds the user's natural language query using Gemini's RETRIEVAL_QUERY
- * task type for optimal query–document alignment, then performs vector
- * similarity search with payload filters + keyword re-ranking.
+ * Embeds the user's natural language query using Nomic-embed-text via Ollama
+ * (local inference), then performs vector similarity search with payload
+ * filters + keyword re-ranking.
  *
  * Accuracy improvements over naive vector search:
- *  1. Proper task_type: RETRIEVAL_QUERY vs RETRIEVAL_DOCUMENT alignment
+ *  1. Nomic-embed-text trained for both query and document embedding
  *  2. Query augmentation to match document embedding format
  *  3. Hybrid scoring: vector similarity + keyword relevance boost
  *  4. Fetch more candidates from Qdrant, then re-rank and trim
  */
 
 import { QdrantClient } from "@qdrant/js-client-rest";
-import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import { embeddingModel, truncateForEmbedding } from "./embedding.service.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { Repository } from "../models/repo.model.js";
 import path from "path";
@@ -29,13 +29,9 @@ const qdrant = new QdrantClient({
   apiKey: process.env.QDRANT_API_KEY!,
 });
 
-// Dedicated embedding model for search QUERIES — uses RETRIEVAL_QUERY task type
-// This tells Gemini to optimise the vector for matching against documents
-const queryEmbeddings = new GoogleGenerativeAIEmbeddings({
-  apiKey: process.env.GOOGLE_API_KEY!,
-  model: "models/gemini-embedding-001",
-  taskType: "RETRIEVAL_QUERY",
-});
+// Embedding model for search QUERIES — uses Nomic via Ollama (local)
+// Nomic-embed-text is trained for both document and query embedding
+const queryEmbeddings = embeddingModel;
 
 export interface SearchFilters {
   entityType?: string; // e.g., "function", "class", "route"
@@ -196,7 +192,7 @@ export async function semanticSearch(
 
   // ── Step 1: Augment query & embed with RETRIEVAL_QUERY task type ──
   const augmentedQuery = augmentQuery(query, filters);
-  const queryVector = await queryEmbeddings.embedQuery(augmentedQuery);
+  const queryVector = await queryEmbeddings.embedQuery(truncateForEmbedding(augmentedQuery));
 
   // ── Step 2: Build Qdrant filter conditions ──
   const mustConditions: any[] = [

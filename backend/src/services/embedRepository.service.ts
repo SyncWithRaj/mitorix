@@ -1,4 +1,4 @@
-import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import { embeddingModel, truncateForEmbedding } from "./embedding.service.js";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import mongoose from "mongoose";
 import { CodeEntity } from "../models/codeEntity.model.js";
@@ -14,10 +14,7 @@ const qdrant = new QdrantClient({
   apiKey: process.env.QDRANT_API_KEY!,
 });
 
-const embeddings = new GoogleGenerativeAIEmbeddings({
-  apiKey: process.env.GOOGLE_API_KEY!,
-  model: "models/gemini-embedding-001",
-});
+const embeddings = embeddingModel;
 
 import { EventEmitter } from "events";
 
@@ -77,14 +74,24 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
 
   const points: any[] = [];
 
-  for (let i = 0; i < total; i++) {
-    const entity = entities[i];
+  // ── Batch embedding for speed ──
+  // Instead of embedding one entity at a time, we batch them and use
+  // embedDocuments() which sends all texts in a single Ollama call.
+  const EMBED_BATCH_SIZE = 20;
+  const QDRANT_UPLOAD_BATCH = 200;
+  let processedCount = 0;
 
-    if ((i + 1) % 10 === 0 || i === 0) {
-      logger.debug({ repoId, progress: `${i + 1}/${total}`, name: entity.name }, "Embedding entity");
+  for (let batchStart = 0; batchStart < total; batchStart += EMBED_BATCH_SIZE) {
+    const batchEnd = Math.min(batchStart + EMBED_BATCH_SIZE, total);
+    const batch = entities.slice(batchStart, batchEnd);
+
+    if (batchStart % 40 === 0 || batchStart === 0) {
+      logger.debug({ repoId, progress: `${batchStart}/${total}` }, "Embedding batch");
     }
 
-    const text = `
+    // Prepare all texts for this batch
+    const texts = batch.map((entity) => {
+      const text = `
 Entity Type: ${entity?.type}
 Name: ${entity?.name}
 File: ${entity?.filePath}
@@ -92,43 +99,50 @@ File: ${entity?.filePath}
 Code:
 ${entity?.content || ""}
 `;
-
-    const vector = await embeddings.embedQuery(text);
-
-    const language = entity.language || "unknown";
-
-    points.push({
-      id: uuidv4(), // UUID required by Qdrant
-      vector,
-      payload: {
-        pageContent: entity.content || entity.name,
-        metadata: {
-          mongoId: entity._id.toString(),
-          repoId: repoId.toString(),
-          fingerprint: repo.fingerprint,
-          filePath: entity.filePath,
-          language: language,
-          startLine: entity.startLine,
-          endLine: entity.endLine,
-        },
-      },
+      return truncateForEmbedding(text);
     });
-    
-    const progress = i + 1;
-    embeddingProgressTracker.set(repoId, { current: progress, total });
-    embeddingEvents.emit(`progress-${repoId}`, progress, total);
+
+    // Embed entire batch in ONE call to Ollama
+    const vectors = await embeddings.embedDocuments(texts);
+
+    // Build Qdrant points from the batch
+    for (let j = 0; j < batch.length; j++) {
+      const entity = batch[j];
+      const language = entity.language || "unknown";
+
+      points.push({
+        id: uuidv4(),
+        vector: vectors[j],
+        payload: {
+          pageContent: entity.content || entity.name,
+          metadata: {
+            mongoId: entity._id.toString(),
+            repoId: repoId.toString(),
+            fingerprint: repo.fingerprint,
+            filePath: entity.filePath,
+            language: language,
+            startLine: entity.startLine,
+            endLine: entity.endLine,
+          },
+        },
+      });
+    }
+
+    processedCount += batch.length;
+    embeddingProgressTracker.set(repoId, { current: processedCount, total });
+    embeddingEvents.emit(`progress-${repoId}`, processedCount, total);
     if (onProgress) {
-      onProgress(progress, total);
+      onProgress(processedCount, total);
     }
   }
 
+  // ── Upload vectors to Qdrant ──
   logger.info({ repoId, vectorCount: points.length }, "Uploading vectors to Qdrant");
 
-  const CHUNK_SIZE = 200;
-  const totalChunks = Math.ceil(points.length / CHUNK_SIZE);
-  for (let i = 0; i < points.length; i += CHUNK_SIZE) {
-    const chunk = points.slice(i, i + CHUNK_SIZE);
-    const chunkNum = Math.floor(i / CHUNK_SIZE) + 1;
+  const totalChunks = Math.ceil(points.length / QDRANT_UPLOAD_BATCH);
+  for (let i = 0; i < points.length; i += QDRANT_UPLOAD_BATCH) {
+    const chunk = points.slice(i, i + QDRANT_UPLOAD_BATCH);
+    const chunkNum = Math.floor(i / QDRANT_UPLOAD_BATCH) + 1;
     logger.debug({ repoId, chunk: `${chunkNum}/${totalChunks}` }, "Uploading vector chunk");
 
     await qdrant.upsert(COLLECTION, {
@@ -146,3 +160,4 @@ ${entity?.content || ""}
     embedded: total,
   };
 }
+
