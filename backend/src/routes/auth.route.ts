@@ -20,10 +20,11 @@ router.get("/github/callback", passport.authenticate("github", { session: false 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, { expiresIn: "7d" });
 
   // Set cookie on backend domain for direct API calls
+  const isHttps = process.env.FRONTEND_URL?.startsWith("https");
   res.cookie("token", token, {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    secure: isHttps,
+    sameSite: isHttps ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
