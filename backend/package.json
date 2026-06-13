@@ -10,8 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "seed": "tsx test/seeding/seed.ts",
-    "unseed": "tsx test/seeding/unseed.ts",
+    "seed": "tsx src/__tests__/scripts/seed.ts",
+    "unseed": "tsx src/__tests__/scripts/unseed.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -25,9 +25,6 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@langchain/core": "^1.1.48",
-    "@langchain/ollama": "^1.2.7",
-    "@langchain/qdrant": "^1.0.1",
     "@octokit/app": "^14.0.2",
     "@qdrant/js-client-rest": "^1.17.0",
     "adm-zip": "^0.5.17",
