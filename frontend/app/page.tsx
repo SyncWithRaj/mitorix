@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import Script from "next/script";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -26,11 +27,85 @@ import {
   LineChart,
   Search,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"chat" | "graph" | "blast">("chat");
+  const [loading, setLoading] = useState(false);
+
+  const handlePayment = async () => {
+    setLoading(true);
+    try {
+      const createOrderRes = await fetch("http://localhost:5000/api/v1/payments/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: 49900, currency: "INR" }), // 499 INR
+      });
+
+      if (!createOrderRes.ok) {
+        const errText = await createOrderRes.text();
+        throw new Error(`Failed to create order: ${errText}`);
+      }
+
+      const orderData = await createOrderRes.json();
+      const keyId = orderData.key_id;
+      
+      if (!keyId) {
+        throw new Error("Razorpay Key ID is not returned from the server.");
+      }
+
+      const options = {
+        key: keyId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "RepoLens Pro",
+        description: "Test Transaction",
+        order_id: orderData.order_id,
+        handler: async function (response: any) {
+          const verifyRes = await fetch("http://localhost:5000/api/v1/payments/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
+
+          const verifyData = await verifyRes.json();
+          if (verifyData.success) {
+            alert("Payment successful!");
+          } else {
+            alert("Payment verification failed.");
+          }
+        },
+        prefill: {
+          name: "Test User",
+          email: "test@example.com",
+          contact: "9999999999",
+        },
+        theme: {
+          color: "#ff6b00", // Orange theme
+        },
+      };
+
+      if (!(window as any).Razorpay) {
+        throw new Error("Razorpay script not loaded. Please check your internet connection.");
+      }
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on("payment.failed", function (response: any) {
+        alert("Payment failed: " + response.error.description);
+      });
+      rzp.open();
+    } catch (error: any) {
+      console.error(error);
+      alert("Error: " + (error.message || "Something went wrong!"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const languages = [
     { name: "TypeScript", ext: ".ts / .tsx", color: "from-[#3178c6] to-[#235a97]", text: "white" },
@@ -673,6 +748,103 @@ await client.upsert(collectionName, {
               </tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="w-full max-w-6xl mx-auto py-32 px-6 relative border-t border-[#1a1a1a]">
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+        
+        {/* Glow effect for pricing */}
+        <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[60vw] max-w-[800px] h-[300px] bg-[#ff6b00] opacity-[0.05] blur-[120px] rounded-full pointer-events-none mix-blend-screen"></div>
+
+        <div className="text-center mb-20 relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/30 text-[#ff6b00] text-xs font-mono uppercase tracking-wider mb-6">
+            Pricing
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight text-white drop-shadow-md">
+            Simple, Transparent Pricing
+          </h2>
+          <p className="text-[#a3a3a3] max-w-2xl mx-auto text-lg font-light">
+            Choose the plan that fits your repository mapping needs.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto relative z-10">
+          {/* Free Plan */}
+          <div className="bg-[#030303]/80 backdrop-blur-xl border border-[#1a1a1a] rounded-3xl p-10 flex flex-col hover:border-[#ff6b00]/30 transition-all duration-500 relative group overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <h2 className="text-2xl font-bold mb-2 text-white/90">Basic</h2>
+            <div className="text-5xl font-extrabold mb-2 text-white">₹0 <span className="text-xl text-[#737373] font-medium">/month</span></div>
+            <p className="text-sm text-[#737373] mb-8 font-light">Perfect for exploring the platform.</p>
+            <ul className="space-y-4 mb-10 flex-1">
+              <li className="flex items-center text-[#a3a3a3]">
+                <CheckCircle2 className="w-5 h-5 mr-3 text-[#737373]" />
+                Basic Codebase Analysis
+              </li>
+              <li className="flex items-center text-[#a3a3a3]">
+                <CheckCircle2 className="w-5 h-5 mr-3 text-[#737373]" />
+                Standard Support
+              </li>
+              <li className="flex items-center text-[#a3a3a3] opacity-50">
+                <CheckCircle2 className="w-5 h-5 mr-3 text-[#333]" />
+                Advanced Visualizations
+              </li>
+              <li className="flex items-center text-[#a3a3a3] opacity-50">
+                <CheckCircle2 className="w-5 h-5 mr-3 text-[#333]" />
+                Priority Support
+              </li>
+            </ul>
+            <button disabled className="w-full py-4 px-6 rounded-xl font-semibold bg-[#0a0a0a] text-[#737373] cursor-not-allowed border border-[#1a1a1a] transition-all">
+              Current Plan
+            </button>
+          </div>
+
+          {/* Pro Plan */}
+          <div className="bg-gradient-to-b from-[#ff6b00]/15 to-[#030303] border border-[#ff6b00]/40 rounded-3xl p-10 flex flex-col relative transform hover:-translate-y-2 transition-transform duration-500 shadow-[0_0_40px_rgba(255,107,0,0.15)] hover:shadow-[0_0_60px_rgba(255,107,0,0.25)] overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#ff6b00]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            {/* Sparkle decoration */}
+            <Sparkles className="absolute top-6 right-6 text-[#ff8c00]/40 w-24 h-24 -z-10 group-hover:scale-110 transition-transform duration-700" strokeWidth={1} />
+            
+            <div className="absolute top-0 right-8 transform -translate-y-1/2 bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] text-[10px] font-bold px-4 py-1.5 rounded-full text-white uppercase tracking-wider shadow-[0_0_20px_rgba(255,107,0,0.4)]">
+              Most Popular
+            </div>
+            
+            <h2 className="text-2xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70">Pro</h2>
+            <div className="text-5xl font-extrabold mb-2 text-white">
+              ₹499 <span className="text-xl text-[#737373] font-medium">/month</span>
+            </div>
+            <p className="text-sm text-[#ff8c00] mb-8 font-medium">Everything in Basic, plus unlimited power.</p>
+            
+            <ul className="space-y-4 mb-10 flex-1 relative z-10">
+              <li className="flex items-center text-[#e5e5e5]">
+                <CheckCircle2 className="w-5 h-5 mr-3 text-[#ff6b00]" />
+                Unlimited Codebase Analysis
+              </li>
+              <li className="flex items-center text-[#e5e5e5]">
+                <CheckCircle2 className="w-5 h-5 mr-3 text-[#ff6b00]" />
+                Advanced Force-Graph Visualizations
+              </li>
+              <li className="flex items-center text-[#e5e5e5]">
+                <CheckCircle2 className="w-5 h-5 mr-3 text-[#ff6b00]" />
+                Blast Radius & Vulnerability Scans
+              </li>
+              <li className="flex items-center text-[#e5e5e5]">
+                <CheckCircle2 className="w-5 h-5 mr-3 text-[#ff6b00]" />
+                Priority 24/7 Support
+              </li>
+            </ul>
+            <button 
+              onClick={handlePayment} 
+              disabled={loading}
+              className="w-full py-4 px-6 rounded-xl font-bold bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] hover:from-[#ff8c00] hover:to-[#ffa200] text-white transition-all duration-300 shadow-[0_0_25px_rgba(255,107,0,0.35)] hover:shadow-[0_0_40px_rgba(255,107,0,0.5)] flex justify-center items-center active:scale-[0.98] border border-[#ff8c00]/30 relative overflow-hidden group/btn"
+            >
+              <div className="absolute inset-0 bg-white/20 translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+              <span className="relative z-10 flex items-center gap-2">
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Upgrade to Pro"}
+              </span>
+            </button>
+          </div>
         </div>
       </section>
 

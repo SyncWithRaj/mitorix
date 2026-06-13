@@ -72,14 +72,7 @@ export default function Footer() {
                   How it Works
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/pricing"
-                  className="text-[#737373] hover:text-[#ff6b00] transition-colors inline-block relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1px] after:bg-[#ff6b00] hover:after:w-full after:transition-all after:duration-300"
-                >
-                  Pricing
-                </Link>
-              </li>
+
               <li>
                 <Link
                   href="/changelog"
