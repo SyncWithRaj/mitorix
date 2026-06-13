@@ -14,7 +14,7 @@
  */
 
 import { QdrantClient } from "@qdrant/js-client-rest";
-import { embeddingModel, truncateForEmbedding } from "./embedding.service.js";
+import { embedDirect, truncateForEmbedding } from "./embedding.service.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { Repository } from "../models/repo.model.js";
 import path from "path";
@@ -29,9 +29,8 @@ const qdrant = new QdrantClient({
   apiKey: process.env.QDRANT_API_KEY!,
 });
 
-// Embedding model for search QUERIES — uses Nomic via Ollama (local)
+// Query embedding uses direct Ollama /api/embed call — faster than LangChain wrapper
 // Nomic-embed-text is trained for both document and query embedding
-const queryEmbeddings = embeddingModel;
 
 export interface SearchFilters {
   entityType?: string; // e.g., "function", "class", "route"
@@ -190,9 +189,9 @@ export async function semanticSearch(
     await Repository.findByIdAndUpdate(repoId, { isEmbedded: true });
   }
 
-  // ── Step 1: Augment query & embed with RETRIEVAL_QUERY task type ──
+  // ── Step 1: Augment query & embed using direct Ollama call (faster than LangChain) ──
   const augmentedQuery = augmentQuery(query, filters);
-  const queryVector = await queryEmbeddings.embedQuery(truncateForEmbedding(augmentedQuery));
+  const queryVector = await embedDirect(augmentedQuery);
 
   // ── Step 2: Build Qdrant filter conditions ──
   const mustConditions: any[] = [
@@ -219,6 +218,8 @@ export async function semanticSearch(
   );
 
   // ── Step 3: Fetch MORE candidates from Qdrant (over-fetch for re-ranking) ──
+  // HNSW search params: ef controls accuracy/speed tradeoff.
+  // Higher ef = more accurate but slower. 64-128 is a good balance.
   const overFetchMultiplier = 3;
   const searchResults = await qdrant.search(COLLECTION, {
     vector: queryVector,
@@ -226,6 +227,10 @@ export async function semanticSearch(
     filter: { must: mustConditions },
     with_payload: true,
     score_threshold: scoreThreshold,
+    params: {
+      hnsw_ef: 96,       // Search accuracy parameter (default 128, lower = faster)
+      exact: false,       // Use approximate search (HNSW) not brute-force
+    },
   });
 
   logger.debug(
@@ -238,7 +243,10 @@ export async function semanticSearch(
     .map((r: any) => r.payload?.metadata?.mongoId)
     .filter(Boolean);
 
-  const entities = await CodeEntity.find({ _id: { $in: mongoIds } }).lean();
+  const entities = await CodeEntity.find(
+    { _id: { $in: mongoIds } },
+    { name: 1, type: 1, filePath: 1, language: 1, startLine: 1, endLine: 1, content: 1, parameters: 1, returnType: 1 }
+  ).lean();
   const entityMap = new Map(entities.map((e: any) => [e._id.toString(), e]));
 
   // ── Step 5: Score, re-rank, and build results ──

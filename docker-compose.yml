@@ -50,6 +50,9 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h          # Keep model loaded in RAM — no cold starts
+      - OLLAMA_MAX_LOADED_MODELS=1     # Focus all RAM on nomic-embed-text
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "bash", "-c", "cat < /dev/null > /dev/tcp/localhost/11434" ]

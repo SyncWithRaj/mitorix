@@ -1,8 +1,22 @@
-.PHONY: dev start stop restart logs build clean wipe showdb
+.PHONY: dev start stop restart logs build clean wipe showdb pull-model dev-full
 
-# Start only the infrastructure (MongoDB, Redis, Qdrant) for local development
+# Start infrastructure (MongoDB, Redis, Qdrant, Ollama) for local development
 dev:
-	docker compose up -d mongodb redis qdrant
+	docker compose up -d mongodb redis qdrant ollama
+
+# Start infra + auto-pull the embedding model (first-time setup)
+dev-full: dev pull-model
+
+# Wait for Ollama to be healthy, then pull nomic-embed-text if not already present
+pull-model:
+	@echo "Waiting for Ollama to be ready..."
+	@until docker exec repolens_ollama ollama list >/dev/null 2>&1; do sleep 2; done
+	@if ! docker exec repolens_ollama ollama list 2>/dev/null | grep -q "nomic-embed-text"; then \
+		echo "Pulling nomic-embed-text model..."; \
+		docker exec repolens_ollama ollama pull nomic-embed-text; \
+	else \
+		echo "nomic-embed-text already available ✓"; \
+	fi
 
 # Start the full application in the background
 start:

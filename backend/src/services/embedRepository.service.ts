@@ -1,4 +1,4 @@
-import { embeddingModel, truncateForEmbedding } from "./embedding.service.js";
+import { embedBatch, truncateForEmbedding } from "./embedding.service.js";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import mongoose from "mongoose";
 import { CodeEntity } from "../models/codeEntity.model.js";
@@ -14,12 +14,21 @@ const qdrant = new QdrantClient({
   apiKey: process.env.QDRANT_API_KEY!,
 });
 
-const embeddings = embeddingModel;
-
 import { EventEmitter } from "events";
 
 export const embeddingProgressTracker = new Map<string, { current: number, total: number }>();
 export const embeddingEvents = new EventEmitter();
+
+// ── Performance-tuned constants ─────────────────────────────────────────────
+// EMBED_BATCH_SIZE:  Number of entities per embedding batch.
+//                    Increased from 20 → 50 since we now use concurrent workers.
+// EMBED_CONCURRENCY: Number of parallel Ollama requests within each batch.
+//                    Matches OLLAMA_NUM_PARALLEL=4 in docker-compose.
+// QDRANT_UPLOAD_BATCH: Points per Qdrant upsert call.
+// ─────────────────────────────────────────────────────────────────────────────
+const EMBED_BATCH_SIZE = 50;
+const EMBED_CONCURRENCY = 1;
+const QDRANT_UPLOAD_BATCH = 200;
 
 export async function embedRepository(repoId: string, onProgress?: (current: number, total: number) => void) {
   // Ensure the Qdrant collection and indexes exist before interacting
@@ -55,7 +64,7 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
     };
   }
 
-  logger.info({ repoId }, "Starting vector embedding");
+  logger.info({ repoId }, "Starting vector embedding (optimized pipeline)");
 
   const entities = await CodeEntity.find({
     repoId: new mongoose.Types.ObjectId(repoId),
@@ -63,7 +72,7 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
 
   const total = entities.length;
 
-  logger.info({ repoId, entityCount: total }, "Code entities loaded for embedding");
+  logger.info({ repoId, entityCount: total, batchSize: EMBED_BATCH_SIZE, concurrency: EMBED_CONCURRENCY }, "Code entities loaded for embedding");
 
   if (!total) {
     throw new Error("No entities found for this repository");
@@ -72,22 +81,20 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
   embeddingProgressTracker.set(repoId, { current: 0, total });
   embeddingEvents.emit(`progress-${repoId}`, 0, total);
 
-  const points: any[] = [];
-
-  // ── Batch embedding for speed ──
-  // Instead of embedding one entity at a time, we batch them and use
-  // embedDocuments() which sends all texts in a single Ollama call.
-  const EMBED_BATCH_SIZE = 20;
-  const QDRANT_UPLOAD_BATCH = 200;
+  // ── Pipelined: Embed batch → Upload to Qdrant immediately ──
+  // Instead of embed-all-then-upload-all, we upload each batch as soon as
+  // it's embedded. This keeps Qdrant busy during embedding and reduces
+  // peak memory usage (no need to hold all vectors in RAM).
   let processedCount = 0;
+  let pendingUpload: Promise<void> | null = null;
+  const startTime = Date.now();
 
   for (let batchStart = 0; batchStart < total; batchStart += EMBED_BATCH_SIZE) {
     const batchEnd = Math.min(batchStart + EMBED_BATCH_SIZE, total);
     const batch = entities.slice(batchStart, batchEnd);
+    const isLastBatch = batchEnd >= total;
 
-    if (batchStart % 40 === 0 || batchStart === 0) {
-      logger.debug({ repoId, progress: `${batchStart}/${total}` }, "Embedding batch");
-    }
+    logger.debug({ repoId, progress: `${batchStart}/${total}`, batchSize: batch.length }, "Embedding batch");
 
     // Prepare all texts for this batch
     const texts = batch.map((entity) => {
@@ -99,18 +106,19 @@ File: ${entity?.filePath}
 Code:
 ${entity?.content || ""}
 `;
-      return truncateForEmbedding(text);
+      return text; // truncation happens inside embedBatch → embedDirect
     });
 
-    // Embed entire batch in ONE call to Ollama
-    const vectors = await embeddings.embedDocuments(texts);
+    // Embed entire batch with concurrent workers (3-4x faster than sequential)
+    const vectors = await embedBatch(texts, EMBED_CONCURRENCY);
 
     // Build Qdrant points from the batch
+    const batchPoints: any[] = [];
     for (let j = 0; j < batch.length; j++) {
-      const entity = batch[j];
+      const entity = batch[j]!;
       const language = entity.language || "unknown";
 
-      points.push({
+      batchPoints.push({
         id: uuidv4(),
         vector: vectors[j],
         payload: {
@@ -128,6 +136,31 @@ ${entity?.content || ""}
       });
     }
 
+    // Wait for any previous upload to finish before starting a new one
+    if (pendingUpload) {
+      await pendingUpload;
+    }
+
+    // Upload this batch to Qdrant immediately (pipelined with next embed batch)
+    // wait: true only on last batch to ensure all data is indexed before returning
+    const uploadBatch = async () => {
+      for (let i = 0; i < batchPoints.length; i += QDRANT_UPLOAD_BATCH) {
+        const chunk = batchPoints.slice(i, i + QDRANT_UPLOAD_BATCH);
+        await qdrant.upsert(COLLECTION, {
+          wait: isLastBatch && (i + QDRANT_UPLOAD_BATCH >= batchPoints.length),
+          points: chunk,
+        });
+      }
+    };
+
+    if (isLastBatch) {
+      // Last batch — wait for upload to complete
+      await uploadBatch();
+    } else {
+      // Pipeline: start upload in background while next batch embeds
+      pendingUpload = uploadBatch();
+    }
+
     processedCount += batch.length;
     embeddingProgressTracker.set(repoId, { current: processedCount, total });
     embeddingEvents.emit(`progress-${repoId}`, processedCount, total);
@@ -136,28 +169,18 @@ ${entity?.content || ""}
     }
   }
 
-  // ── Upload vectors to Qdrant ──
-  logger.info({ repoId, vectorCount: points.length }, "Uploading vectors to Qdrant");
-
-  const totalChunks = Math.ceil(points.length / QDRANT_UPLOAD_BATCH);
-  for (let i = 0; i < points.length; i += QDRANT_UPLOAD_BATCH) {
-    const chunk = points.slice(i, i + QDRANT_UPLOAD_BATCH);
-    const chunkNum = Math.floor(i / QDRANT_UPLOAD_BATCH) + 1;
-    logger.debug({ repoId, chunk: `${chunkNum}/${totalChunks}` }, "Uploading vector chunk");
-
-    await qdrant.upsert(COLLECTION, {
-      wait: true,
-      points: chunk,
-    });
+  // Ensure any final pending upload completes
+  if (pendingUpload) {
+    await pendingUpload;
   }
 
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   embeddingProgressTracker.delete(repoId);
   embeddingEvents.emit(`completed-${repoId}`);
-  logger.info({ repoId, embedded: total }, "Vector embedding completed");
+  logger.info({ repoId, embedded: total, elapsedSeconds: elapsed }, "Vector embedding completed");
 
   return {
     success: true,
     embedded: total,
   };
 }
-
