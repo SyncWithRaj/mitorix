@@ -88,7 +88,7 @@ export default function DendrogramView() {
           `M${d.source.y},${d.source.x}C${(d.source.y + d.target.y) / 2},${d.source.x} ${(d.source.y + d.target.y) / 2},${d.target.x} ${d.target.y},${d.target.x}`
       )
       .attr("fill", "none")
-      .attr("stroke", "#1a1a1a")
+      .attr("stroke", "#525252")
       .attr("stroke-width", 1.5)
       .attr("stroke-opacity", 0.6);
 
