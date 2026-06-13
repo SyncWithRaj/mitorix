@@ -4,6 +4,7 @@ import api from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Github, Fingerprint, ChevronRight, FlaskConical, ShieldAlert, Cpu } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,10 +20,16 @@ export default function LoginPage() {
     try {
       const res = await api.post("/auth/dev-login");
       if (res.data.success) {
+        toast.success("Dev login successful");
         router.replace("/dashboard");
       }
-    } catch (err) {
-      console.error("Dev login failed:", err);
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        toast.error("Demo user not found. Please run 'npm run seed' in the backend first.");
+      } else {
+        console.error("Dev login failed:", err);
+        toast.error(err.response?.data?.message || "Dev login failed");
+      }
       setDevLoading(false);
     }
   };
