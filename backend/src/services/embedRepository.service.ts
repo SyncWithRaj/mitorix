@@ -1,4 +1,4 @@
-import { embedBatch, truncateForEmbedding } from "./embedding.service.js";
+import { embedBatch } from "./embedding.service.js";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import mongoose from "mongoose";
 import { CodeEntity } from "../models/codeEntity.model.js";

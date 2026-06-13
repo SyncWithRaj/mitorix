@@ -1,4 +1,3 @@
-import { OllamaEmbeddings } from "@langchain/ollama";
 import dotenv from "dotenv";
 import logger from "../lib/logger.js";
 
@@ -12,16 +11,11 @@ const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
  */
 const MAX_EMBED_CHARS = 6000;
 
-export const embeddingModel = new OllamaEmbeddings({
-  model: "nomic-embed-text",
-  baseUrl: OLLAMA_BASE_URL,
-});
-
 /**
  * Truncate text to fit within Nomic's 2048-token context window.
  * Tries to cut at a newline boundary to avoid splitting mid-line.
  */
-export function truncateForEmbedding(text: string): string {
+function truncateForEmbedding(text: string): string {
   if (text.length <= MAX_EMBED_CHARS) return text;
 
   const truncated = text.substring(0, MAX_EMBED_CHARS);
@@ -33,16 +27,10 @@ export function truncateForEmbedding(text: string): string {
     : truncated;
 }
 
-export const embedText = async (text: string) => {
-  const vector = await embeddingModel.embedQuery(truncateForEmbedding(text));
-  return vector;
-};
-
-// ─── High-Performance Concurrent Embedding ──────────────────────────────────
-// LangChain's embedDocuments() calls Ollama one-by-one sequentially.
-// This bypasses LangChain and calls Ollama's /api/embed directly with
-// a concurrent worker pool for 3-4x faster bulk embedding.
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Direct Ollama Embedding ────────────────────────────────────────────────
+// Bypasses LangChain and calls Ollama's /api/embed directly.
+// Used by all embedding and search operations.
+// ────────────────────────────────────────────────────────────────────────────
 
 /**
  * Embed a single text using Ollama's native /api/embed endpoint.
@@ -69,16 +57,15 @@ export async function embedDirect(text: string): Promise<number[]> {
 }
 
 /**
- * Embed multiple texts concurrently using a worker pool.
- * Bypasses LangChain's sequential embedDocuments() for ~3-4x speedup.
+ * Embed multiple texts using a worker pool.
  *
- * @param texts     - Array of raw texts to embed (will be truncated internally)
- * @param concurrency - Number of parallel Ollama requests (default: 4)
+ * @param texts       - Array of raw texts to embed (will be truncated internally)
+ * @param concurrency - Number of parallel Ollama requests (default: 1 for laptop CPUs)
  * @returns Array of embedding vectors in the same order as input texts
  */
 export async function embedBatch(
   texts: string[],
-  concurrency: number = 4
+  concurrency: number = 1
 ): Promise<number[][]> {
   if (texts.length === 0) return [];
 

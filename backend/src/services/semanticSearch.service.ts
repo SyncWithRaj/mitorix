@@ -14,7 +14,7 @@
  */
 
 import { QdrantClient } from "@qdrant/js-client-rest";
-import { embedDirect, truncateForEmbedding } from "./embedding.service.js";
+import { embedDirect } from "./embedding.service.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { Repository } from "../models/repo.model.js";
 import path from "path";
