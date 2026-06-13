@@ -3,36 +3,35 @@
  *
  * Removes all data created by the seed script:
  *   - Demo user
- *   - Seeded repository and all associated data
+ *   - Seeded repository and all associated data (entities, relationships, files)
  *   - Qdrant vectors (if any)
+ *   - Chat history
  *
  * Usage:  npm run unseed
  */
-
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose";
+import { QdrantClient } from "@qdrant/js-client-rest";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const backendRoot = path.resolve(__dirname, "../..");
-dotenv.config({ path: path.join(backendRoot, "../.env"), quiet: true } as any);
+const repoRoot = path.resolve(__dirname, "../../../..");
+dotenv.config({ path: path.join(repoRoot, ".env") } as any);
 
-import { User } from "../../src/models/auth.model.js";
-import { Repository } from "../../src/models/repo.model.js";
-import { CodeEntity } from "../../src/models/codeEntity.model.js";
-import { CodeRelationship } from "../../src/models/relationship.model.js";
-import { FileMetadata } from "../../src/models/fileMetadata.model.js";
-import { FileContent } from "../../src/models/fileContent.model.js";
-import ChatHistory from "../../src/models/chatHistory.model.js";
+import { User } from "../../models/auth.model.js";
+import { Repository } from "../../models/repo.model.js";
+import { CodeEntity } from "../../models/codeEntity.model.js";
+import { CodeRelationship } from "../../models/relationship.model.js";
+import { FileMetadata } from "../../models/fileMetadata.model.js";
+import { FileContent } from "../../models/fileContent.model.js";
+import ChatHistory from "../../models/chatHistory.model.js";
 
 // ─── Constants ───────────────────────────────────────────────
-
 const DEMO_GITHUB_ID = "demo-dev-00000";
 const DEMO_REPO_NAME = "todo-express-app";
 
 // ─── Colors ──────────────────────────────────────────────────
-
 const GREEN = "\x1b[32m";
 const YELLOW = "\x1b[33m";
 const CYAN = "\x1b[36m";
@@ -46,13 +45,12 @@ const warn = (msg: string) => console.log(`${YELLOW}⚠${NC} ${msg}`);
 const error = (msg: string) => console.log(`${RED}✖${NC} ${msg}`);
 
 // ─── Main ────────────────────────────────────────────────────
-
 async function unseed() {
   console.log(`\n${BOLD}${CYAN}━━━ RepoLens Unseed Script ━━━${NC}\n`);
 
   const mongoUri = process.env.MONGO_URI;
   if (!mongoUri) {
-    error("MONGO_URI not set in backend/.env");
+    error("MONGO_URI not set in .env");
     process.exit(1);
   }
 
@@ -62,7 +60,6 @@ async function unseed() {
 
   // 1. Find demo user
   const user = await User.findOne({ githubId: DEMO_GITHUB_ID });
-
   if (!user) {
     warn("Demo user not found — nothing to clean up");
     await mongoose.disconnect();
@@ -100,7 +97,6 @@ async function unseed() {
 
     // 3. Try to clean Qdrant vectors
     try {
-      const { QdrantClient } = await import("@qdrant/js-client-rest");
       const qdrant = new QdrantClient({
         url: process.env.QDRANT_URL || "http://localhost:6333",
       });
