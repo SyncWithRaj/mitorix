@@ -20,6 +20,7 @@ import codeflowRoutes from "./routes/codeflow.routes.js";
 import searchRoutes from "./routes/search.route.js";
 import cloneRoutes from "./routes/clone.route.js";
 import driftRoutes from "./routes/drift.route.js";
+import paymentRoutes from "./routes/payment.route.js";
 
 import { errorHandler } from "./middlewares/error.middleware.js";
 
@@ -61,6 +62,7 @@ app.use("/api/v1/codeflow", codeflowRoutes);
 app.use("/api/v1/search", searchRoutes);
 app.use("/api/v1/clones", cloneRoutes);
 app.use("/api/v1/drift", driftRoutes);
+app.use("/api/v1/payments", paymentRoutes);
 
 app.use(errorHandler);
 
