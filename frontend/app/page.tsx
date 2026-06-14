@@ -28,20 +28,23 @@ import {
   Search,
   Sparkles,
   Loader2,
+  Crown,
+  Infinity,
+  X,
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"chat" | "graph" | "blast">("chat");
-  const [loading, setLoading] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
-  const handlePayment = async () => {
-    setLoading(true);
+  const handlePayment = async (planName: string, amountInPaise: number) => {
+    setLoadingPlan(planName);
     try {
       const createOrderRes = await fetch("http://localhost:5000/api/v1/payments/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: 49900, currency: "INR" }), // 499 INR
+        body: JSON.stringify({ amount: amountInPaise, currency: "INR" }),
       });
 
       if (!createOrderRes.ok) {
@@ -60,8 +63,8 @@ export default function Home() {
         key: keyId,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "RepoLens Pro",
-        description: "Test Transaction",
+        name: `RepoLens ${planName}`,
+        description: `${planName} Plan Subscription`,
         order_id: orderData.order_id,
         handler: async function (response: any) {
           const verifyRes = await fetch("http://localhost:5000/api/v1/payments/verify-payment", {
@@ -87,7 +90,7 @@ export default function Home() {
           contact: "9999999999",
         },
         theme: {
-          color: "#ff6b00", // Orange theme
+          color: "#ff6b00",
         },
       };
 
@@ -103,7 +106,7 @@ export default function Home() {
       console.error(error);
       alert("Error: " + (error.message || "Something went wrong!"));
     } finally {
-      setLoading(false);
+      setLoadingPlan(null);
     }
   };
 
@@ -752,99 +755,232 @@ await client.upsert(collectionName, {
       </section>
 
       {/* Pricing Section */}
-      <section className="w-full max-w-6xl mx-auto py-32 px-6 relative border-t border-[#1a1a1a]">
+      <section id="pricing" className="w-full max-w-7xl mx-auto py-32 px-6 relative border-t border-[#1a1a1a]">
         <Script src="https://checkout.razorpay.com/v1/checkout.js" />
         
-        {/* Glow effect for pricing */}
+        {/* Glow effects for pricing */}
         <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[60vw] max-w-[800px] h-[300px] bg-[#ff6b00] opacity-[0.05] blur-[120px] rounded-full pointer-events-none mix-blend-screen"></div>
+        <div className="absolute bottom-[10%] right-[10%] w-[30vw] max-w-[400px] h-[200px] bg-[#ff8c00] opacity-[0.04] blur-[100px] rounded-full pointer-events-none"></div>
 
         <div className="text-center mb-20 relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/30 text-[#ff6b00] text-xs font-mono uppercase tracking-wider mb-6">
             Pricing
           </div>
-          <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight text-white drop-shadow-md">
-            Simple, Transparent Pricing
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-white">
+            Pick Your Analysis Tier
           </h2>
-          <p className="text-[#a3a3a3] max-w-2xl mx-auto text-lg font-light">
-            Choose the plan that fits your repository mapping needs.
+          <p className="text-[#a3a3a3] max-w-xl mx-auto text-lg font-light leading-relaxed">
+            Start free with 2 repos. Scale up as your codebase grows — no hidden fees, cancel anytime.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto relative z-10">
-          {/* Free Plan */}
-          <div className="bg-[#030303]/80 backdrop-blur-xl border border-[#1a1a1a] rounded-3xl p-10 flex flex-col hover:border-[#ff6b00]/30 transition-all duration-500 relative group overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <h2 className="text-2xl font-bold mb-2 text-white/90">Basic</h2>
-            <div className="text-5xl font-extrabold mb-2 text-white">₹0 <span className="text-xl text-[#737373] font-medium">/month</span></div>
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto relative z-10">
+
+          {/* ─── FREE TIER ─── */}
+          <div className="bg-[#030303]/80 backdrop-blur-xl border border-[#1a1a1a] rounded-3xl p-8 lg:p-10 flex flex-col hover:border-[#ff6b00]/20 transition-all duration-500 relative group overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+            {/* Tier badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1a1a1a] border border-[#262626] text-[#737373] text-[10px] font-bold uppercase tracking-widest mb-5 w-fit">
+              <Zap size={12} />
+              Starter
+            </div>
+
+            <h2 className="text-2xl font-bold mb-1 text-white/90">Free</h2>
+            <div className="text-5xl font-extrabold mb-1 text-white">₹0 <span className="text-xl text-[#737373] font-medium">/month</span></div>
             <p className="text-sm text-[#737373] mb-8 font-light">Perfect for exploring the platform.</p>
-            <ul className="space-y-4 mb-10 flex-1">
-              <li className="flex items-center text-[#a3a3a3]">
-                <CheckCircle2 className="w-5 h-5 mr-3 text-[#737373]" />
-                Basic Codebase Analysis
+
+            {/* Limits highlight */}
+            <div className="grid grid-cols-2 gap-3 mb-8">
+              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3 text-center">
+                <div className="text-2xl font-black text-white">2</div>
+                <div className="text-[10px] text-[#737373] font-medium uppercase tracking-wider">Repos</div>
+              </div>
+              <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3 text-center">
+                <div className="text-2xl font-black text-white">1K</div>
+                <div className="text-[10px] text-[#737373] font-medium uppercase tracking-wider">Msg/Month</div>
+              </div>
+            </div>
+
+            <ul className="space-y-3.5 mb-10 flex-1 relative z-10">
+              <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
+                <span>Basic Codebase Analysis</span>
               </li>
-              <li className="flex items-center text-[#a3a3a3]">
-                <CheckCircle2 className="w-5 h-5 mr-3 text-[#737373]" />
-                Standard Support
+              <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
+                <span>AI Chat — <span className="text-white font-medium">2 msg/min</span> rate limit</span>
               </li>
-              <li className="flex items-center text-[#a3a3a3] opacity-50">
-                <CheckCircle2 className="w-5 h-5 mr-3 text-[#333]" />
-                Advanced Visualizations
+              <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
+                <span>Force-Graph Visualization</span>
               </li>
-              <li className="flex items-center text-[#a3a3a3] opacity-50">
-                <CheckCircle2 className="w-5 h-5 mr-3 text-[#333]" />
-                Priority Support
+              <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
+                <span>Community Support</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Advanced Blast Radius Scans</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Priority Support</span>
               </li>
             </ul>
+
             <button disabled className="w-full py-4 px-6 rounded-xl font-semibold bg-[#0a0a0a] text-[#737373] cursor-not-allowed border border-[#1a1a1a] transition-all">
               Current Plan
             </button>
           </div>
 
-          {/* Pro Plan */}
-          <div className="bg-gradient-to-b from-[#ff6b00]/15 to-[#030303] border border-[#ff6b00]/40 rounded-3xl p-10 flex flex-col relative transform hover:-translate-y-2 transition-transform duration-500 shadow-[0_0_40px_rgba(255,107,0,0.15)] hover:shadow-[0_0_60px_rgba(255,107,0,0.25)] overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#ff6b00]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-            {/* Sparkle decoration */}
-            <Sparkles className="absolute top-6 right-6 text-[#ff8c00]/40 w-24 h-24 -z-10 group-hover:scale-110 transition-transform duration-700" strokeWidth={1} />
-            
-            <div className="absolute top-0 right-8 transform -translate-y-1/2 bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] text-[10px] font-bold px-4 py-1.5 rounded-full text-white uppercase tracking-wider shadow-[0_0_20px_rgba(255,107,0,0.4)]">
-              Most Popular
+          {/* ─── BASIC TIER (₹99) — MOST POPULAR ─── */}
+          <div className="bg-gradient-to-b from-[#ff6b00]/10 to-[#030303] border border-[#ff6b00]/30 rounded-3xl p-8 lg:p-10 flex flex-col relative hover:border-[#ff6b00]/50 transition-all duration-500 shadow-[0_0_30px_rgba(255,107,0,0.1)] overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#ff6b00]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+
+            {/* Most Popular + Tier badge */}
+            <div className="flex items-center gap-2 mb-5 flex-wrap">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] text-[10px] font-bold text-white uppercase tracking-wider">
+                Most Popular
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-bold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70">Basic</h2>
+            <div className="text-5xl font-extrabold mb-1 text-white">
+              ₹99 <span className="text-xl text-[#737373] font-medium">/month</span>
+            </div>
+            <p className="text-sm text-[#ff8c00] mb-8 font-medium">10x more repos, 10x more messages.</p>
+
+            {/* Limits highlight */}
+            <div className="grid grid-cols-2 gap-3 mb-8">
+              <div className="bg-[#0a0a0a]/80 border border-[#ff6b00]/20 rounded-xl p-3 text-center">
+                <div className="text-2xl font-black text-white">10</div>
+                <div className="text-[10px] text-[#ff8c00]/70 font-medium uppercase tracking-wider">Repos</div>
+              </div>
+              <div className="bg-[#0a0a0a]/80 border border-[#ff6b00]/20 rounded-xl p-3 text-center">
+                <div className="text-2xl font-black text-white">10K</div>
+                <div className="text-[10px] text-[#ff8c00]/70 font-medium uppercase tracking-wider">Msg/Month</div>
+              </div>
             </div>
             
-            <h2 className="text-2xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70">Pro</h2>
-            <div className="text-5xl font-extrabold mb-2 text-white">
-              ₹499 <span className="text-xl text-[#737373] font-medium">/month</span>
-            </div>
-            <p className="text-sm text-[#ff8c00] mb-8 font-medium">Everything in Basic, plus unlimited power.</p>
-            
-            <ul className="space-y-4 mb-10 flex-1 relative z-10">
-              <li className="flex items-center text-[#e5e5e5]">
-                <CheckCircle2 className="w-5 h-5 mr-3 text-[#ff6b00]" />
-                Unlimited Codebase Analysis
+            <ul className="space-y-3.5 mb-10 flex-1 relative z-10">
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
+                <span>Full Codebase Analysis</span>
               </li>
-              <li className="flex items-center text-[#e5e5e5]">
-                <CheckCircle2 className="w-5 h-5 mr-3 text-[#ff6b00]" />
-                Advanced Force-Graph Visualizations
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
+                <span>AI Chat — <span className="text-[#ff8c00] font-semibold">No rate limit</span></span>
               </li>
-              <li className="flex items-center text-[#e5e5e5]">
-                <CheckCircle2 className="w-5 h-5 mr-3 text-[#ff6b00]" />
-                Blast Radius & Vulnerability Scans
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
+                <span>Advanced Force-Graph Visualizations</span>
               </li>
-              <li className="flex items-center text-[#e5e5e5]">
-                <CheckCircle2 className="w-5 h-5 mr-3 text-[#ff6b00]" />
-                Priority 24/7 Support
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
+                <span>Blast Radius & Vulnerability Scans</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
+                <span>Standard Support</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Voice-Driven Exploration</span>
               </li>
             </ul>
+
             <button 
-              onClick={handlePayment} 
-              disabled={loading}
+              onClick={() => handlePayment("Basic", 9900)}
+              disabled={loadingPlan === "Basic"}
               className="w-full py-4 px-6 rounded-xl font-bold bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] hover:from-[#ff8c00] hover:to-[#ffa200] text-white transition-all duration-300 shadow-[0_0_25px_rgba(255,107,0,0.35)] hover:shadow-[0_0_40px_rgba(255,107,0,0.5)] flex justify-center items-center active:scale-[0.98] border border-[#ff8c00]/30 relative overflow-hidden group/btn"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-in-out"></div>
               <span className="relative z-10 flex items-center gap-2">
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Upgrade to Pro"}
+                {loadingPlan === "Basic" ? <Loader2 className="w-5 h-5 animate-spin" /> : "Upgrade to Basic"}
               </span>
             </button>
           </div>
+
+          {/* ─── PRO TIER (₹199) ─── */}
+          <div className="bg-[#030303]/80 backdrop-blur-xl border border-[#1a1a1a] rounded-3xl p-8 lg:p-10 flex flex-col hover:border-[#ffa800]/30 transition-all duration-500 relative group overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#ffa800]/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            {/* Subtle sparkle */}
+            <Sparkles className="absolute bottom-6 right-6 text-[#ffa800]/20 w-20 h-20 -z-10 group-hover:scale-110 transition-transform duration-700" strokeWidth={1} />
+
+            {/* Tier badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffa800]/10 border border-[#ffa800]/30 text-[#ffa800] text-[10px] font-bold uppercase tracking-widest mb-5 w-fit">
+              <Sparkles size={12} />
+              Enterprise
+            </div>
+
+            <h2 className="text-2xl font-bold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-[#ffa800] to-[#ff8c00]">Pro</h2>
+            <div className="text-5xl font-extrabold mb-1 text-white">
+              ₹199 <span className="text-xl text-[#737373] font-medium">/month</span>
+            </div>
+            <p className="text-sm text-[#ffa800]/80 mb-8 font-medium">Unlimited everything. No limits.</p>
+
+            {/* Limits highlight */}
+            <div className="grid grid-cols-2 gap-3 mb-8">
+              <div className="bg-[#0a0a0a] border border-[#ffa800]/15 rounded-xl p-3 text-center">
+                <div className="flex items-center justify-center">
+                  <Infinity className="w-7 h-7 text-[#ffa800]" />
+                </div>
+                <div className="text-[10px] text-[#ffa800]/60 font-medium uppercase tracking-wider mt-1">Repos</div>
+              </div>
+              <div className="bg-[#0a0a0a] border border-[#ffa800]/15 rounded-xl p-3 text-center">
+                <div className="flex items-center justify-center">
+                  <Infinity className="w-7 h-7 text-[#ffa800]" />
+                </div>
+                <div className="text-[10px] text-[#ffa800]/60 font-medium uppercase tracking-wider mt-1">Msg/Month</div>
+              </div>
+            </div>
+
+            <ul className="space-y-3.5 mb-10 flex-1 relative z-10">
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Unlimited Codebase Analysis</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>AI Chat — <span className="text-[#ffa800] font-semibold">Unlimited, no rate limit</span></span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Advanced Force-Graph Visualizations</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Blast Radius & Vulnerability Scans</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Voice-Driven Exploration</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Priority 24/7 Support</span>
+              </li>
+            </ul>
+
+            <button 
+              onClick={() => handlePayment("Pro", 19900)}
+              disabled={loadingPlan === "Pro"}
+              className="w-full py-4 px-6 rounded-xl font-bold bg-[#0a0a0a] hover:bg-[#121212] text-[#ffa800] border border-[#ffa800]/30 hover:border-[#ffa800]/60 transition-all duration-300 shadow-md hover:shadow-[0_0_30px_rgba(255,168,0,0.15)] flex justify-center items-center active:scale-[0.98] relative overflow-hidden group/btn"
+            >
+              <div className="absolute inset-0 bg-[#ffa800]/10 translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+              <span className="relative z-10 flex items-center gap-2">
+                {loadingPlan === "Pro" ? <Loader2 className="w-5 h-5 animate-spin" /> : "Upgrade to Pro"}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Pricing footnote */}
+        <div className="text-center mt-12 relative z-10">
+          <p className="text-xs text-[#525252] max-w-xl mx-auto">
+            All plans include access to the core RepoLens engine. Prices are in INR and billed monthly via Razorpay. Cancel anytime.
+          </p>
         </div>
       </section>
 
