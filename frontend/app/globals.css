@@ -188,6 +188,15 @@ body {
   animation: float 6s ease-in-out infinite;
 }
 
+.animate-float-slow {
+  animation: float 8s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 7s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
 .animate-glow-pulse {
   animation: glow-pulse 4s ease-in-out infinite;
 }

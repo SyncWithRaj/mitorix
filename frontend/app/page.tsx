@@ -42,6 +42,8 @@ import Footer from "@/components/layout/Footer";
 import Silk from "@/components/ui/Silk";
 import ScrollVelocity from "@/components/ui/ScrollVelocity";
 import Shuffle from "@/components/ui/Shuffle";
+import VectorIntelligence from "@/components/ui/VectorIntelligence";
+import TimelineSteps from "@/components/ui/TimelineSteps";
 import { SiTypescript, SiJavascript, SiPython, SiGo, SiRust, SiCplusplus, SiRuby, SiPhp } from 'react-icons/si';
 import { FaJava } from 'react-icons/fa';
 import { TbBrandCSharp } from 'react-icons/tb';
@@ -599,7 +601,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Ephemeral Architecture Lifecycle Timeline (Vertical Timeline) */}
+      {/* Ephemeral Architecture Lifecycle Timeline (Scroll-Animated) */}
       <section className="w-full border-y border-[#1a1a1a] py-32 px-6 relative z-10 bg-transparent">
         <div className="max-w-5xl mx-auto relative">
           <div className="text-center mb-24">
@@ -614,85 +616,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="relative">
-            {/* Center Line */}
-            <div className="hidden md:block absolute left-1/2 top-4 bottom-4 w-[2px] bg-gradient-to-b from-[#ff6b00]/0 via-[#ff6b00]/30 to-[#ff6b00]/0 -translate-x-1/2"></div>
-            
-            <div className="space-y-12 md:space-y-0 relative z-10">
-              {/* Step 1 */}
-              <div className="relative flex flex-col md:flex-row items-center justify-center md:justify-between w-full group">
-                <div className="md:w-5/12 flex justify-end md:pr-12 pb-6 md:pb-0 text-center md:text-right w-full">
-                  <div className="bg-[#050505]/80 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-3xl group-hover:border-[#ff6b00]/50 transition-all duration-300 w-full hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(255,107,0,0.15)] relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-40 h-40 bg-[#ff6b00]/10 rounded-full blur-3xl transition-transform group-hover:scale-150"></div>
-                    <div className="text-[#ff6b00] font-mono text-xs font-bold tracking-widest mb-3">STEP 01</div>
-                    <h4 className="text-2xl font-bold text-white mb-3">Queue & Clone</h4>
-                    <p className="text-[#737373] text-sm leading-relaxed">
-                      BullMQ + Redis dispatches a job to clone the repository to an isolated <code className="text-[11px] font-mono px-1 py-0.5 bg-[#1a1a1a] text-white rounded">/tmp</code> directory, checking GitHub credentials.
-                    </p>
-                  </div>
-                </div>
-                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#050505] border-2 border-[#1a1a1a] flex items-center justify-center z-10 hidden md:flex group-hover:border-[#ff6b00] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,107,0,0.4)] transition-all duration-500">
-                  <Terminal className="text-[#737373] group-hover:text-[#ff6b00] w-6 h-6 transition-colors duration-500" />
-                </div>
-                <div className="md:w-5/12 hidden md:block"></div>
-              </div>
-
-              {/* Step 2 */}
-              <div className="relative flex flex-col md:flex-row items-center justify-center md:justify-between w-full group md:mt-24">
-                <div className="md:w-5/12 hidden md:block"></div>
-                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#050505] border-2 border-[#1a1a1a] flex items-center justify-center z-10 hidden md:flex group-hover:border-[#ff8c00] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,140,0,0.4)] transition-all duration-500">
-                  <Cpu className="text-[#737373] group-hover:text-[#ff8c00] w-6 h-6 transition-colors duration-500" />
-                </div>
-                <div className="md:w-5/12 flex justify-start md:pl-12 text-center md:text-left w-full">
-                  <div className="bg-[#050505]/80 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-3xl group-hover:border-[#ff8c00]/50 transition-all duration-300 w-full hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(255,140,0,0.15)] relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-40 h-40 bg-[#ff8c00]/10 rounded-full blur-3xl transition-transform group-hover:scale-150"></div>
-                    <div className="text-[#ff8c00] font-mono text-xs font-bold tracking-widest mb-3">STEP 02</div>
-                    <h4 className="text-2xl font-bold text-white mb-3">AST Extraction</h4>
-                    <p className="text-[#737373] text-sm leading-relaxed">
-                      High-fidelity parsing via **Tree-sitter** spans 11 languages to resolve scopes, functions, parameters, layers, and cyclic dependency calls.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="relative flex flex-col md:flex-row items-center justify-center md:justify-between w-full group md:mt-24">
-                <div className="md:w-5/12 flex justify-end md:pr-12 pb-6 md:pb-0 text-center md:text-right w-full">
-                  <div className="bg-[#050505]/80 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-3xl group-hover:border-[#ffa800]/50 transition-all duration-300 w-full hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(255,168,0,0.15)] relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-40 h-40 bg-[#ffa800]/10 rounded-full blur-3xl transition-transform group-hover:scale-150"></div>
-                    <div className="text-[#ffa800] font-mono text-xs font-bold tracking-widest mb-3">STEP 03</div>
-                    <h4 className="text-2xl font-bold text-white mb-3">Qdrant Embeddings</h4>
-                    <p className="text-[#737373] text-sm leading-relaxed">
-                      Code fragments are converted into high-dimensional vectors via Google Gemini and indexed inside **Qdrant DB** for semantic RAG search context.
-                    </p>
-                  </div>
-                </div>
-                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#050505] border-2 border-[#1a1a1a] flex items-center justify-center z-10 hidden md:flex group-hover:border-[#ffa800] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,168,0,0.4)] transition-all duration-500">
-                  <Database className="text-[#737373] group-hover:text-[#ffa800] w-6 h-6 transition-colors duration-500" />
-                </div>
-                <div className="md:w-5/12 hidden md:block"></div>
-              </div>
-
-              {/* Step 4 */}
-              <div className="relative flex flex-col md:flex-row items-center justify-center md:justify-between w-full group md:mt-24">
-                <div className="md:w-5/12 hidden md:block"></div>
-                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#050505] border-2 border-[#1a1a1a] flex items-center justify-center z-10 hidden md:flex group-hover:border-[#ff6b00] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,107,0,0.4)] transition-all duration-500">
-                  <Shield className="text-[#737373] group-hover:text-[#ff6b00] w-6 h-6 transition-colors duration-500" />
-                </div>
-                <div className="md:w-5/12 flex justify-start md:pl-12 text-center md:text-left w-full">
-                  <div className="bg-[#050505]/80 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-3xl group-hover:border-[#ff6b00]/50 transition-all duration-300 w-full hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(255,107,0,0.15)] relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-40 h-40 bg-[#ff6b00]/10 rounded-full blur-3xl transition-transform group-hover:scale-150"></div>
-                    <div className="text-[#ff6b00] font-mono text-xs font-bold tracking-widest mb-3">STEP 04</div>
-                    <h4 className="text-2xl font-bold text-white mb-3">Wipe & Unlock</h4>
-                    <p className="text-[#737373] text-sm leading-relaxed">
-                      Physical folders are wiped securely. Downstream vector indices and MongoDB metadata are cached to unlock immediate user exploration.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
+          <TimelineSteps />
         </div>
       </section>
 
@@ -784,113 +708,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Feature Section: RepoLabs (Z-Stacked Sticky Cards) */}
-      <section className="w-full max-w-5xl mx-auto pb-48 pt-20 px-6 relative">
-        <div className="text-center mb-20">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#ff8c00]/10 border border-[#ff8c00]/30 text-[#ff8c00] text-xs font-mono uppercase tracking-wider mb-6">
-            Vector Intelligence
-          </div>
-          <h2 className="text-5xl md:text-6xl font-black mb-6 tracking-tighter text-white">
-            RepoLabs: Beyond Grep
-          </h2>
-          <p className="text-[#a3a3a3] max-w-2xl mx-auto text-lg font-light">
-            We repurpose the Qdrant vector embeddings generated during ingestion to unlock deep semantic codebase intelligence features.
-          </p>
-        </div>
-
-        <div className="flex flex-col relative w-full h-[2400px] md:h-[2000px]">
-          {/* Card 1 */}
-          <div className="sticky top-24 w-full rounded-[3rem] bg-[#050505] border border-[#222] shadow-[0_-10px_40px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col md:flex-row items-center justify-between p-12 md:p-16 group z-10 mt-[100px]">
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#ff8c00] via-black to-black transition-opacity duration-700 pointer-events-none"></div>
-            
-            <div className="max-w-md relative z-10 w-full mb-10 md:mb-0">
-              <Search className="w-12 h-12 text-[#ff8c00] mb-8" />
-              <h3 className="text-4xl font-bold text-white mb-4 tracking-tight">Natural Language Search</h3>
-              <p className="text-[#a3a3a3] text-lg leading-relaxed mb-8">
-                Stop guessing variable names. Search your codebase using plain English queries. Qdrant’s Cosine similarity matching retrieves semantically relevant AST blocks even if exact keywords are absent.
-              </p>
-            </div>
-
-            {/* Mock UI Demo */}
-            <div className="w-full md:max-w-sm bg-black border border-[#333] rounded-2xl p-6 shadow-2xl relative z-10 group-hover:scale-105 transition-transform duration-500">
-              <div className="flex items-center gap-3 bg-[#111] border border-[#222] rounded-xl p-3 mb-4">
-                <Search className="w-4 h-4 text-[#888]" />
-                <span className="text-[#ccc] text-sm font-mono whitespace-nowrap overflow-hidden text-ellipsis">Where is the JWT token verified?</span>
-                <div className="ml-auto w-2 h-4 bg-[#ff8c00] animate-pulse"></div>
-              </div>
-              <div className="space-y-3">
-                <div className="w-full h-8 bg-white/5 rounded"></div>
-                <div className="w-3/4 h-8 bg-white/5 rounded"></div>
-                <div className="w-5/6 h-8 bg-white/5 rounded"></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2 */}
-          <div className="sticky top-32 w-full rounded-[3rem] bg-[#0a0a0a] border border-[#2a2a2a] shadow-[0_-10px_40px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col md:flex-row items-center justify-between p-12 md:p-16 group z-20 mt-[500px]">
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#ff6b00] via-black to-black transition-opacity duration-700 pointer-events-none"></div>
-            
-            <div className="max-w-md relative z-10 w-full mb-10 md:mb-0">
-              <GitBranch className="w-12 h-12 text-[#ff6b00] mb-8" />
-              <h3 className="text-4xl font-bold text-white mb-4 tracking-tight">Semantic Clone Detection</h3>
-              <p className="text-[#a3a3a3] text-lg leading-relaxed mb-8">
-                Find hidden code duplication. Our clustering algorithm scans the entire vector space to identify blocks of code that perform identical logic, bypassing differences in formatting or variable nomenclature.
-              </p>
-            </div>
-
-            {/* Mock UI Demo */}
-            <div className="w-full md:max-w-sm flex flex-col gap-4 relative z-10 group-hover:scale-105 transition-transform duration-500">
-              <div className="bg-[#111] border border-[#333] rounded-2xl p-4 shadow-xl">
-                <div className="text-xs text-[#ff6b00] font-mono mb-2">Block A (Python)</div>
-                <div className="space-y-2">
-                  <div className="w-full h-4 bg-white/5 rounded"></div>
-                  <div className="w-2/3 h-4 bg-white/5 rounded ml-4"></div>
-                </div>
-              </div>
-              <div className="flex justify-center -my-3 z-20">
-                <div className="bg-[#ff6b00] text-black text-xs font-bold px-3 py-1 rounded-full border-[3px] border-[#0a0a0a]">99% MATCH</div>
-              </div>
-              <div className="bg-[#111] border border-[#333] rounded-2xl p-4 shadow-xl">
-                <div className="text-xs text-[#ff6b00] font-mono mb-2">Block B (JavaScript)</div>
-                <div className="space-y-2">
-                  <div className="w-full h-4 bg-white/5 rounded"></div>
-                  <div className="w-2/3 h-4 bg-white/5 rounded ml-4"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3 */}
-          <div className="sticky top-40 w-full rounded-[3rem] bg-[#111] border border-[#333] shadow-[0_-20px_50px_rgba(0,0,0,1)] overflow-hidden flex flex-col md:flex-row items-center justify-between p-12 md:p-16 group z-30 mt-[500px]">
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#ffa800] via-black to-black transition-opacity duration-700 pointer-events-none"></div>
-            
-            <div className="max-w-md relative z-10 w-full mb-10 md:mb-0">
-              <Activity className="w-12 h-12 text-[#ffa800] mb-8" />
-              <h3 className="text-4xl font-bold text-white mb-4 tracking-tight">Version Drift Tracking</h3>
-              <p className="text-[#a3a3a3] text-lg leading-relaxed mb-8">
-                Track semantic evolution across time. By computing vector distances between indexed versions, RepoLabs highlights true behavioral drift and structural deviations that standard text diffs completely miss.
-              </p>
-            </div>
-
-            {/* Mock UI Demo */}
-            <div className="w-full md:max-w-sm bg-black border border-[#444] rounded-2xl p-6 shadow-2xl relative z-10 group-hover:scale-105 transition-transform duration-500">
-              <div className="flex items-center justify-between mb-4 pb-4 border-b border-[#333]">
-                <span className="text-xs font-mono text-[#888]">v1.0.0</span>
-                <ArrowRight className="w-4 h-4 text-[#ffa800]" />
-                <span className="text-xs font-mono text-white">v1.1.0</span>
-              </div>
-              <div className="space-y-3 font-mono text-xs">
-                <div className="flex items-center gap-2 text-[#ff4500] bg-[#ff4500]/10 px-2 py-1 rounded">
-                  <span>-</span><span>Legacy Auth Module Removed</span>
-                </div>
-                <div className="flex items-center gap-2 text-[#00ff9d] bg-[#00ff9d]/10 px-2 py-1 rounded">
-                  <span>+</span><span>OAuth2.0 Flow Implemented</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Feature Section: Vector Intelligence — Horizontal Accordion */}
+      <VectorIntelligence />
 
       {/* Language Support Matrix Grid */}
       <section className="w-full border-y border-[#1a1a1a] py-32 px-6 relative z-10">
