@@ -38,7 +38,7 @@ import {
   LineChart,
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
-import { Silk } from "@/components/ui/Silk";
+import Silk from "@/components/ui/Silk";
 import ScrollVelocity from "@/components/ui/ScrollVelocity";
 import Shuffle from "@/components/ui/Shuffle";
 
