@@ -1,60 +1,208 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Script from "next/script";
+import api from "@/lib/axios";
 import {
   ArrowRight,
   ArrowUpRight,
-  Code2,
-  Database,
-  MessageSquare,
-  Zap,
-  Shield,
-  Globe,
-  Network,
   ChevronRight,
-  Layers,
-  Workflow,
-  Bot,
+  Code2,
   Cpu,
-  GitBranch,
-  Terminal,
-  Flame,
-  Activity,
-  CheckCircle2,
-  AlertTriangle,
-  LineChart,
+  Database,
+  Globe,
+  Layout,
+  MessageSquare,
+  Network,
+  Rocket,
   Search,
+  Server,
+  Shield,
+  Smartphone,
   Sparkles,
   Loader2,
   Crown,
   Infinity,
   X,
+  Flame,
+  CheckCircle2,
+  Zap,
+  Layers,
+  Workflow,
+  Bot,
+  GitBranch,
+  Terminal,
+  Activity,
+  AlertTriangle,
+  LineChart,
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
+import Silk from "@/components/ui/Silk";
+import Shuffle from "@/components/ui/Shuffle";
+
+const LiveChatMock = () => {
+  const [hasSent, setHasSent] = useState(false);
+  const [inputValue, setInputValue] = useState("Where do we initialize the vector database client and index semantic chunks?");
+  const [sentMessage, setSentMessage] = useState("");
+  
+  const [displayedText, setDisplayedText] = useState("");
+  const [showCode, setShowCode] = useState(false);
+  const [showTip, setShowTip] = useState(false);
+  
+  const fullText = "The vector DB is initialized inside qdrant.service.ts. Chunks are ingested asynchronously:";
+  
+  useEffect(() => {
+    if (!hasSent) return;
+    
+    let i = 0;
+    const timer = setInterval(() => {
+      if (i < fullText.length) {
+        setDisplayedText(fullText.substring(0, i + 1));
+        i++;
+      } else {
+        clearInterval(timer);
+        setTimeout(() => setShowCode(true), 400);
+        setTimeout(() => setShowTip(true), 1200);
+      }
+    }, 25);
+    return () => clearInterval(timer);
+  }, [hasSent]);
+
+  const handleSend = () => {
+    if (inputValue.trim()) {
+      setSentMessage(inputValue);
+      setInputValue("");
+      setHasSent(true);
+    }
+  };
+
+  return (
+    <div className="flex-1 flex flex-col justify-between p-6">
+      <div className="space-y-4 overflow-y-auto max-h-[340px] pr-2 custom-scrollbar">
+        {hasSent ? (
+          <>
+            <div className="flex gap-3">
+              <div className="w-7 h-7 rounded-full bg-[#1a1a1a] flex items-center justify-center text-[10px] font-bold text-white shrink-0 border border-[#ff8c00]/30 shadow-md">
+                UR
+              </div>
+              <div className="bg-[#050505] border border-[#1a1a1a] rounded-2xl p-4 text-sm max-w-[85%] text-[#e5e5e5] animate-fadeIn">
+                {sentMessage}
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <div className="w-7 h-7 rounded-full bg-[#ff6b00] flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-md shadow-[#ff6b00]/20 animate-fadeIn" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
+                RL
+              </div>
+              <div className="bg-[#0a0a0a] border border-[#ff6b00]/10 rounded-2xl p-4 text-sm max-w-[85%] space-y-3 animate-fadeIn w-full" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
+                <p className="text-[#e5e5e5] min-h-[20px]">
+                  {displayedText}
+                  {displayedText.length < fullText.length && <span className="inline-block w-1.5 h-3.5 bg-[#ff6b00] ml-1 animate-pulse align-middle"></span>}
+                </p>
+                {showCode && (
+                  <pre className="text-xs font-mono bg-[#030303] border border-[#1a1a1a] p-3 rounded-lg text-[#ffaa00] overflow-x-auto animate-fadeIn">
+                    {`// Initialize Qdrant Client
+const client = new QdrantClient({
+  url: process.env.QDRANT_URL
+});
+// Upsert embedded code nodes
+await client.upsert(collectionName, {
+  points: pointsData
+});`}
+                  </pre>
+                )}
+                {showTip && (
+                  <p className="text-[#737373] text-xs animate-fadeIn">
+                    💡 Cloned files are parsed with Tree-sitter and deleted immediately after embedding.
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-[#737373] text-sm space-y-4 pt-10 animate-fadeIn">
+            <div className="w-12 h-12 rounded-full border border-[#1a1a1a] bg-[#050505] flex items-center justify-center">
+              <MessageSquare size={20} className="text-[#a3a3a3]" />
+            </div>
+            <p>Ask anything about your codebase architecture.</p>
+          </div>
+        )}
+      </div>
+      
+      {/* Fake prompt input */}
+      <div className="relative mt-4">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSend();
+          }}
+          disabled={hasSent}
+          placeholder="Search RepoSpace index or query architecture..."
+          className="w-full bg-[#050505] border border-[#1a1a1a] rounded-xl px-4 py-3 text-xs text-[#a3a3a3] outline-none focus:border-[#ff6b00]/50 transition-colors"
+        />
+        <button 
+          onClick={handleSend}
+          disabled={hasSent || !inputValue.trim()}
+          className={`absolute right-2 top-2 p-1.5 rounded-lg flex items-center justify-center transition-all duration-300 ${
+            hasSent 
+              ? "bg-[#1a1a1a] text-[#ff6b00]"
+              : inputValue.trim()
+                ? "bg-[#ff6b00] text-white hover:bg-[#ff8c00] hover:scale-105 active:scale-95 shadow-[0_0_10px_rgba(255,107,0,0.3)]"
+                : "bg-[#1a1a1a] text-[#737373]"
+          }`}
+        >
+          {hasSent ? (
+            <CheckCircle2 size={16} />
+          ) : (
+            <ArrowUpRight size={16} className={`transition-transform duration-300 ${inputValue.trim() ? "translate-x-0.5 -translate-y-0.5" : ""}`} />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"chat" | "graph" | "blast">("chat");
+  const [activeTab, setActiveTab] = useState<"chat" | "graph" | "blast" | "security" | "voice">("chat");
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [userTier, setUserTier] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await api.get("/auth/me");
+        if (res.data.success && res.data.user) {
+          setUserTier(res.data.user.subscriptionTier || "FREE");
+        }
+      } catch (err) {
+        // User not logged in, ignore
+      }
+    };
+    checkAuth();
+  }, []);
 
   const handlePayment = async (planName: string, amountInPaise: number) => {
+    if (!userTier) {
+      alert("Please sign in first to upgrade.");
+      return;
+    }
+
     setLoadingPlan(planName);
     try {
-      const createOrderRes = await fetch("http://localhost:5000/api/v1/payments/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: amountInPaise, currency: "INR" }),
+      const createOrderRes = await api.post("/payments/create-subscription", {
+        planId: planName.toUpperCase(),
       });
 
-      if (!createOrderRes.ok) {
-        const errText = await createOrderRes.text();
-        throw new Error(`Failed to create order: ${errText}`);
+      if (!createOrderRes.data.success) {
+        throw new Error(createOrderRes.data.error?.message || "Failed to create order");
       }
 
-      const orderData = await createOrderRes.json();
+      const orderData = createOrderRes.data;
       const keyId = orderData.key_id;
-      
+
       if (!keyId) {
         throw new Error("Razorpay Key ID is not returned from the server.");
       }
@@ -67,44 +215,41 @@ export default function Home() {
         description: `${planName} Plan Subscription`,
         order_id: orderData.order_id,
         handler: async function (response: any) {
-          const verifyRes = await fetch("http://localhost:5000/api/v1/payments/verify-payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          try {
+            const verifyRes = await api.post("/payments/verify-payment", {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-            }),
-          });
+              planId: planName.toUpperCase(),
+            });
 
-          const verifyData = await verifyRes.json();
-          if (verifyData.success) {
-            alert("Payment successful!");
-          } else {
+            if (verifyRes.data.success) {
+              alert("Payment successful! Your subscription is now active.");
+              setUserTier(planName.toUpperCase());
+            } else {
+              alert("Payment verification failed.");
+            }
+          } catch (err) {
+            console.error("Verification Error:", err);
             alert("Payment verification failed.");
           }
         },
         prefill: {
-          name: "Test User",
-          email: "test@example.com",
-          contact: "9999999999",
+          name: "User", // Should dynamically come from auth if available
         },
         theme: {
-          color: "#ff6b00",
+          color: planName === "Pro" ? "#ffa800" : "#ff6b00",
         },
       };
 
-      if (!(window as any).Razorpay) {
-        throw new Error("Razorpay script not loaded. Please check your internet connection.");
-      }
       const rzp = new (window as any).Razorpay(options);
       rzp.on("payment.failed", function (response: any) {
-        alert("Payment failed: " + response.error.description);
+        alert(`Payment failed: ${response.error.description}`);
       });
       rzp.open();
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      alert("Error: " + (error.message || "Something went wrong!"));
+      alert("Failed to initialize payment.");
     } finally {
       setLoadingPlan(null);
     }
@@ -125,14 +270,14 @@ export default function Home() {
   ];
 
   return (
-    <div className="flex flex-col flex-grow items-center w-full overflow-hidden selection:bg-[#ff6b00] selection:text-white bg-[#000000] text-[#e5e5e5]">
-      {/* Hero Section */}
-      <section className="relative w-full min-h-[95vh] flex flex-col items-center justify-center pt-36 pb-24 px-6 overflow-hidden">
-        {/* Ambient Glows */}
-        <div className="absolute top-[-10%] left-[-5%] w-[70vw] h-[70vw] max-w-[900px] bg-gradient-to-br from-[#ff6b00] to-[#ff4500] opacity-[0.07] blur-[140px] rounded-full pointer-events-none mix-blend-screen animate-glow-pulse"></div>
-        <div className="absolute bottom-[5%] right-[-5%] w-[50vw] h-[50vw] max-w-[700px] bg-gradient-to-tl from-[#ff8c00] to-[#ffa800] opacity-[0.06] blur-[150px] rounded-full pointer-events-none mix-blend-screen animate-float"></div>
-        <div className="absolute top-[30%] right-[15%] w-[350px] h-[350px] bg-[#ffaa00] opacity-[0.04] blur-[100px] rounded-full pointer-events-none animate-pulse-slow"></div>
+    <div className="flex flex-col flex-grow items-center w-full overflow-hidden selection:bg-[#ff6b00] selection:text-white bg-transparent text-[#e5e5e5]">
+      {/* Silk Animated Background - Fixed to viewport */}
+      <div className="fixed inset-0 z-0 opacity-[0.25] pointer-events-none">
+        <Silk color="#ff6b00" speed={4} scale={1.5} noiseIntensity={2} />
+      </div>
 
+      {/* Hero Section */}
+      <section className="relative w-full min-h-[95vh] flex flex-col items-center justify-center pt-36 pb-24 px-6 overflow-hidden z-10">
         {/* Noise overlay */}
         <div
           className="absolute inset-0 opacity-[0.015] pointer-events-none"
@@ -142,19 +287,15 @@ export default function Home() {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_20%,transparent_100%)] pointer-events-none"></div>
 
         <div className="max-w-6xl w-full text-center relative z-10 flex flex-col items-center">
-          {/* Version badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#050505] border border-[#1a1a1a] text-xs font-semibold text-[#737373] mb-8 shadow-sm hover:border-[#ff6b00]/50 hover:text-[#e5e5e5] transition-all cursor-pointer group">
-            <span className="flex h-2 w-2 rounded-full bg-[#ff6b00] animate-pulse"></span>
-            <span>RepoLens AI v2.5: Qdrant Vector & Tree-sitter AST Core</span>
-            <ArrowRight className="w-3 h-3 ml-1 text-[#737373] group-hover:text-white transform group-hover:translate-x-0.5 transition-transform" />
-          </div>
+          
 
           {/* Headline */}
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter mb-8 leading-[1.05] pb-2 text-white">
-            Understand your codebase. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b00] via-[#ffaa00] to-[#ff4500] drop-shadow-[0_0_35px_rgba(255,107,0,0.25)]">
-              Faster than ever.
-            </span>
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter mb-8 leading-[1.05] pb-2 text-white flex flex-col items-center">
+            <Shuffle text="Understand your codebase." />
+            <Shuffle 
+              text="Faster than ever." 
+              className="text-[#ff6b00] drop-shadow-[0_0_35px_rgba(255,107,0,0.25)]" 
+            />
           </h1>
 
           {/* Subtitle */}
@@ -166,24 +307,27 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full px-6 sm:w-auto mb-16">
             <Link
               href="/dashboard"
-              className="group relative flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] hover:from-[#ff8c00] hover:to-[#ffa200] text-white overflow-hidden transition-all duration-300 active:scale-[0.98] w-full sm:w-64 shadow-[0_0_25px_rgba(255,107,0,0.25)] hover:shadow-[0_0_40px_rgba(255,107,0,0.45)] border border-[#ff8c00]/30"
+              className="group relative flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] text-white overflow-hidden transition-all duration-300 active:scale-[0.98] w-full sm:w-64 shadow-[0_0_25px_rgba(255,107,0,0.25)] hover:shadow-[0_0_40px_rgba(255,255,255,0.45)] border border-[#ff8c00]/30 hover:border-white"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-              <span className="relative z-10 flex items-center gap-2">
+              <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out z-0"></div>
+              <span className="relative z-10 flex items-center gap-2 group-hover:text-[#ff6b00] transition-colors duration-300">
                 Launch RepoSpace
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </span>
             </Link>
             <Link
               href="/about"
-              className="group flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-[#080808] hover:bg-[#121212] text-[#e5e5e5] border border-[#1a1a1a] hover:border-[#ff6b00]/40 transition-all duration-300 active:scale-[0.98] w-full sm:w-56 shadow-md"
+              className="group relative flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-[#080808] text-[#e5e5e5] border border-[#1a1a1a] hover:border-[#ff6b00] overflow-hidden transition-all duration-300 active:scale-[0.98] w-full sm:w-64 shadow-md hover:shadow-[0_0_40px_rgba(255,107,0,0.45)]"
             >
-              System Architecture
+              <div className="absolute inset-0 bg-[#ff6b00] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out z-0"></div>
+              <span className="relative z-10 group-hover:text-white transition-colors duration-300">
+                System Architecture
+              </span>
             </Link>
           </div>
 
           {/* Premium UI Mockup Mock Preview */}
-          <div className="w-full max-w-5xl mx-auto border border-[#1a1a1a] rounded-2xl bg-[#030303] shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden transition-all duration-500 hover:border-[#ff6b00]/20">
+          <div className="w-full max-w-5xl mx-auto border border-[#1a1a1a] rounded-2xl bg-[#030303]/40 backdrop-blur-md shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden transition-all duration-500 hover:border-[#ff6b00]/20">
             {/* Header / Tab Selector */}
             <div className="bg-[#050505] border-b border-[#1a1a1a] px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
@@ -195,39 +339,56 @@ export default function Home() {
                 <div className="h-4 w-[1px] bg-[#1a1a1a] hidden sm:block"></div>
                 <span className="text-xs font-mono text-[#737373] hidden sm:block">REPOSPACE_SANDBOX</span>
               </div>
-              <div className="flex bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-0.5">
+              <div className="flex flex-wrap sm:flex-nowrap bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-0.5 overflow-x-auto custom-scrollbar">
                 <button
                   onClick={() => setActiveTab("chat")}
-                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                    activeTab === "chat"
+                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${activeTab === "chat"
                       ? "bg-[#ff6b00] text-white shadow-md"
                       : "text-[#737373] hover:text-[#e5e5e5]"
-                  }`}
+                    }`}
                 >
                   <MessageSquare size={13} />
                   Codebase Chat
                 </button>
                 <button
                   onClick={() => setActiveTab("graph")}
-                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                    activeTab === "graph"
+                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${activeTab === "graph"
                       ? "bg-[#ff6b00] text-white shadow-md"
                       : "text-[#737373] hover:text-[#e5e5e5]"
-                  }`}
+                    }`}
                 >
                   <Network size={13} />
                   Force-Graph
                 </button>
                 <button
                   onClick={() => setActiveTab("blast")}
-                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                    activeTab === "blast"
+                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${activeTab === "blast"
                       ? "bg-[#ff6b00] text-white shadow-md"
                       : "text-[#737373] hover:text-[#e5e5e5]"
-                  }`}
+                    }`}
                 >
                   <Flame size={13} />
                   Blast Radius
+                </button>
+                <button
+                  onClick={() => setActiveTab("security")}
+                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${activeTab === "security"
+                      ? "bg-[#ff6b00] text-white shadow-md"
+                      : "text-[#737373] hover:text-[#e5e5e5]"
+                    }`}
+                >
+                  <Shield size={13} />
+                  Security Scan
+                </button>
+                <button
+                  onClick={() => setActiveTab("voice")}
+                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${activeTab === "voice"
+                      ? "bg-[#ff6b00] text-white shadow-md"
+                      : "text-[#737373] hover:text-[#e5e5e5]"
+                    }`}
+                >
+                  <Bot size={13} />
+                  Voice Copilot
                 </button>
               </div>
             </div>
@@ -235,7 +396,7 @@ export default function Home() {
             {/* Sandbox Body Content */}
             <div className="h-[460px] bg-[#000000] relative flex overflow-hidden text-left">
               {activeTab === "chat" && (
-                <div className="flex-1 flex flex-col md:flex-row h-full">
+                <div className="flex-1 flex flex-col md:flex-row h-full animate-fadeIn">
                   {/* File tree */}
                   <div className="w-1/3 border-r border-[#1a1a1a] bg-[#030303] p-4 hidden md:block">
                     <span className="text-[10px] font-bold text-[#737373] uppercase tracking-widest block mb-4">REPOSPACE FILES</span>
@@ -259,61 +420,15 @@ export default function Home() {
                     </div>
                   </div>
                   {/* Chat messages */}
-                  <div className="flex-1 flex flex-col justify-between p-6">
-                    <div className="space-y-4 overflow-y-auto max-h-[340px] pr-2 custom-scrollbar">
-                      <div className="flex gap-3">
-                        <div className="w-7 h-7 rounded-full bg-[#1a1a1a] flex items-center justify-center text-[10px] font-bold text-white shrink-0 border border-[#ff8c00]/30 shadow-md">
-                          UR
-                        </div>
-                        <div className="bg-[#050505] border border-[#1a1a1a] rounded-2xl p-4 text-sm max-w-[85%] text-[#e5e5e5]">
-                          Where do we initialize the vector database client and index semantic chunks?
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <div className="w-7 h-7 rounded-full bg-[#ff6b00] flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-md shadow-[#ff6b00]/20">
-                          RL
-                        </div>
-                        <div className="bg-[#0a0a0a] border border-[#ff6b00]/10 rounded-2xl p-4 text-sm max-w-[85%] space-y-3">
-                          <p className="text-[#e5e5e5]">
-                            The vector DB is initialized inside <code className="text-[#ff8c00] font-mono bg-[#1a1a1a] px-1 py-0.5 rounded text-xs">qdrant.service.ts</code>. Chunks are ingested asynchronously:
-                          </p>
-                          <pre className="text-xs font-mono bg-[#030303] border border-[#1a1a1a] p-3 rounded-lg text-[#ffaa00] overflow-x-auto">
-{`// Initialize Qdrant Client
-const client = new QdrantClient({
-  url: process.env.QDRANT_URL
-});
-// Upsert embedded code nodes
-await client.upsert(collectionName, {
-  points: pointsData
-});`}
-                          </pre>
-                          <p className="text-[#737373] text-xs">
-                            💡 Cloned files are parsed with Tree-sitter and deleted immediately after embedding.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Fake prompt input */}
-                    <div className="relative mt-4">
-                      <input
-                        type="text"
-                        disabled
-                        placeholder="Search RepoSpace index or query architecture..."
-                        className="w-full bg-[#050505] border border-[#1a1a1a] rounded-xl px-4 py-3 text-xs text-[#a3a3a3] outline-none"
-                      />
-                      <div className="absolute right-3 top-2.5 flex items-center gap-2">
-                        <span className="text-[10px] text-[#737373] bg-[#1a1a1a] px-2 py-1 rounded border border-[#1a1a1a]">Enter</span>
-                      </div>
-                    </div>
-                  </div>
+                  <LiveChatMock />
                 </div>
               )}
 
               {activeTab === "graph" && (
-                <div className="flex-1 relative bg-[#010101] overflow-hidden flex items-center justify-center p-6">
+                <div className="flex-1 relative bg-[#010101] overflow-hidden flex items-center justify-center p-6 animate-fadeIn">
                   {/* Glowing core */}
                   <div className="absolute w-[200px] h-[200px] bg-[#ff6b00]/10 rounded-full blur-[80px]"></div>
-                  
+
                   {/* SVG Mock Graph */}
                   <svg className="w-full h-full max-w-[600px] max-h-[350px] relative z-10" viewBox="0 0 600 350">
                     <line x1="150" y1="120" x2="300" y2="175" stroke="#ff6b00" strokeWidth="2" strokeDasharray="4 2" opacity="0.7" />
@@ -352,7 +467,7 @@ await client.upsert(collectionName, {
               )}
 
               {activeTab === "blast" && (
-                <div className="flex-1 flex flex-col md:flex-row h-full">
+                <div className="flex-1 flex flex-col md:flex-row h-full animate-fadeIn">
                   {/* Left list */}
                   <div className="w-1/3 border-r border-[#1a1a1a] bg-[#030303] p-4 hidden md:block">
                     <span className="text-[10px] font-bold text-[#737373] uppercase tracking-widest block mb-4">CRITICAL IMPACT FILES</span>
@@ -380,7 +495,7 @@ await client.upsert(collectionName, {
                       <p className="text-xs text-[#a3a3a3] leading-relaxed">
                         Simulating modification risk analysis for <code className="text-white bg-[#1a1a1a] px-1 rounded">auth.service.ts</code>. The modification modifies security tokens and user metadata, propagating changes to downstream components.
                       </p>
-                      
+
                       {/* Downstream tree visual */}
                       <div className="border border-[#1a1a1a] rounded-xl p-4 bg-[#030303] space-y-3 font-mono text-xs">
                         <div className="flex items-center gap-2 text-white">
@@ -409,10 +524,67 @@ await client.upsert(collectionName, {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="text-xs text-[#737373] bg-[#050505] p-3 rounded-lg border border-[#1a1a1a] flex justify-between items-center">
                       <span>Total blast impact: <b>4 files affected</b></span>
                       <span className="text-[#ff6b00] font-bold">Risk Level: High</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {activeTab === "security" && (
+                <div className="flex-1 flex flex-col p-6 animate-fadeIn h-full bg-[#030303]/40 backdrop-blur-md">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Shield className="text-[#ff8c00]" size={20} />
+                    <h4 className="text-lg font-bold text-white">Vulnerability Scan Results</h4>
+                  </div>
+                  <div className="space-y-3 overflow-y-auto custom-scrollbar pr-2 flex-1">
+                    <div className="border border-[#ff4500]/30 bg-[#ff4500]/5 rounded-xl p-4 flex justify-between items-start">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-[10px] bg-[#ff4500] text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">High</span>
+                          <span className="text-white font-semibold text-sm">Hardcoded JWT Secret</span>
+                        </div>
+                        <p className="text-xs text-[#a3a3a3] font-mono">auth.service.ts : Line 45</p>
+                      </div>
+                      <button className="text-[10px] bg-[#1a1a1a] hover:bg-[#262626] border border-[#333] text-white px-3 py-1.5 rounded transition-colors">Fix with AI</button>
+                    </div>
+                    <div className="border border-[#ffa800]/30 bg-[#ffa800]/5 rounded-xl p-4 flex justify-between items-start">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-[10px] bg-[#ffa800] text-black px-2 py-0.5 rounded font-bold uppercase tracking-wider">Medium</span>
+                          <span className="text-white font-semibold text-sm">Missing Rate Limiting</span>
+                        </div>
+                        <p className="text-xs text-[#a3a3a3] font-mono">user.routes.ts : Line 12</p>
+                      </div>
+                      <button className="text-[10px] bg-[#1a1a1a] hover:bg-[#262626] border border-[#333] text-white px-3 py-1.5 rounded transition-colors">Fix with AI</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "voice" && (
+                <div className="flex-1 flex flex-col items-center justify-center p-6 animate-fadeIn h-full relative overflow-hidden bg-[#030303]/40 backdrop-blur-md">
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                    <div className="w-64 h-64 bg-[#ff6b00] rounded-full blur-[100px] animate-pulse"></div>
+                  </div>
+                  
+                  <div className="relative z-10 flex flex-col items-center">
+                    <div className="w-24 h-24 rounded-full border-2 border-[#ff6b00] flex items-center justify-center mb-6 relative">
+                      <div className="absolute inset-0 rounded-full border border-[#ff6b00] animate-ping opacity-25"></div>
+                      <Bot className="w-10 h-10 text-[#ff6b00]" />
+                    </div>
+                    
+                    <div className="text-center space-y-2 mb-8">
+                      <h4 className="text-xl font-bold text-white">Listening...</h4>
+                      <p className="text-sm text-[#737373]">"Explain the authentication flow in auth.service.ts"</p>
+                    </div>
+                    
+                    <div className="flex items-center gap-1 h-8">
+                      {[1, 2, 3, 4, 5, 4, 3, 2, 1].map((h, i) => (
+                        <div key={i} className="w-1.5 bg-[#ff6b00] rounded-full animate-bounce" style={{ height: `${h * 6}px`, animationDelay: `${i * 0.1}s` }}></div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -423,7 +595,7 @@ await client.upsert(collectionName, {
       </section>
 
       {/* Ephemeral Architecture Lifecycle Timeline */}
-      <section className="w-full bg-[#050505] border-y border-[#1a1a1a] py-32 px-6 relative">
+      <section className="w-full border-y border-[#1a1a1a] py-32 px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-24">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/30 text-[#ff6b00] text-xs font-mono uppercase tracking-wider mb-6">
@@ -442,7 +614,7 @@ await client.upsert(collectionName, {
             <div className="hidden md:block absolute top-[40px] left-[12%] right-[12%] h-[1px] bg-gradient-to-r from-transparent via-[#1a1a1a] to-transparent -z-10"></div>
 
             {/* Step 1 */}
-            <div className="group flex flex-col items-center text-center p-4 bg-black/40 border border-[#1a1a1a] rounded-2xl hover:border-[#ff6b00]/40 transition-all duration-300">
+            <div className="group flex flex-col items-center text-center p-4 bg-black/40 backdrop-blur-md border border-[#1a1a1a] rounded-2xl hover:border-[#ff6b00]/40 transition-all duration-300">
               <div className="w-20 h-20 rounded-2xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 shadow-lg group-hover:scale-105 transition-transform group-hover:shadow-[0_0_20px_rgba(255,107,0,0.15)] relative">
                 <Terminal className="text-[#ff6b00] w-8 h-8" />
                 <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#ff6b00] text-[10px] font-bold text-white flex items-center justify-center border border-black shadow">01</span>
@@ -454,7 +626,7 @@ await client.upsert(collectionName, {
             </div>
 
             {/* Step 2 */}
-            <div className="group flex flex-col items-center text-center p-4 bg-black/40 border border-[#1a1a1a] rounded-2xl hover:border-[#ff8c00]/40 transition-all duration-300">
+            <div className="group flex flex-col items-center text-center p-4 bg-black/40 backdrop-blur-md border border-[#1a1a1a] rounded-2xl hover:border-[#ff8c00]/40 transition-all duration-300">
               <div className="w-20 h-20 rounded-2xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 shadow-lg group-hover:scale-105 transition-transform group-hover:shadow-[0_0_20px_rgba(255,140,0,0.15)] relative">
                 <Cpu className="text-[#ff8c00] w-8 h-8" />
                 <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#ff8c00] text-[10px] font-bold text-white flex items-center justify-center border border-black shadow">02</span>
@@ -466,7 +638,7 @@ await client.upsert(collectionName, {
             </div>
 
             {/* Step 3 */}
-            <div className="group flex flex-col items-center text-center p-4 bg-black/40 border border-[#1a1a1a] rounded-2xl hover:border-[#ffa800]/40 transition-all duration-300">
+            <div className="group flex flex-col items-center text-center p-4 bg-black/40 backdrop-blur-md border border-[#1a1a1a] rounded-2xl hover:border-[#ffa800]/40 transition-all duration-300">
               <div className="w-20 h-20 rounded-2xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 shadow-lg group-hover:scale-105 transition-transform group-hover:shadow-[0_0_20px_rgba(255,168,0,0.15)] relative">
                 <Database className="text-[#ffa800] w-8 h-8" />
                 <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#ffa800] text-[10px] font-bold text-white flex items-center justify-center border border-black shadow">03</span>
@@ -478,7 +650,7 @@ await client.upsert(collectionName, {
             </div>
 
             {/* Step 4 */}
-            <div className="group flex flex-col items-center text-center p-4 bg-black/40 border border-[#1a1a1a] rounded-2xl hover:border-[#ff6b00]/40 transition-all duration-300">
+            <div className="group flex flex-col items-center text-center p-4 bg-black/40 backdrop-blur-md border border-[#1a1a1a] rounded-2xl hover:border-[#ff6b00]/40 transition-all duration-300">
               <div className="w-20 h-20 rounded-2xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 shadow-lg group-hover:scale-105 transition-transform group-hover:shadow-[0_0_20px_rgba(255,107,0,0.15)] relative">
                 <Shield className="text-[#ff6b00] w-8 h-8" />
                 <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#ff6b00] text-[10px] font-bold text-white flex items-center justify-center border border-black shadow">04</span>
@@ -508,7 +680,7 @@ await client.upsert(collectionName, {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Card 1 */}
-          <div className="group bg-[#030303] border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff6b00]/30 transition-all duration-300 relative overflow-hidden">
+          <div className="group bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff6b00]/30 transition-all duration-300 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
               <Code2 size={130} className="text-[#ff6b00]" />
             </div>
@@ -522,7 +694,7 @@ await client.upsert(collectionName, {
           </div>
 
           {/* Card 2 */}
-          <div className="group bg-[#030303] border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff8c00]/30 transition-all duration-300 relative overflow-hidden">
+          <div className="group bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff8c00]/30 transition-all duration-300 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
               <Shield size={130} className="text-[#ff8c00]" />
             </div>
@@ -536,7 +708,7 @@ await client.upsert(collectionName, {
           </div>
 
           {/* Card 3 */}
-          <div className="group bg-[#030303] border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ffa800]/30 transition-all duration-300 relative overflow-hidden">
+          <div className="group bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ffa800]/30 transition-all duration-300 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
               <Layers size={130} className="text-[#ffa800]" />
             </div>
@@ -550,7 +722,7 @@ await client.upsert(collectionName, {
           </div>
 
           {/* Card 4 */}
-          <div className="group bg-[#030303] border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ffa800]/30 transition-all duration-300 relative overflow-hidden">
+          <div className="group bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ffa800]/30 transition-all duration-300 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
               <Bot size={130} className="text-[#ffa800]" />
             </div>
@@ -564,7 +736,7 @@ await client.upsert(collectionName, {
           </div>
 
           {/* Card 5 */}
-          <div className="group bg-[#030303] border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff6b00]/30 transition-all duration-300 relative overflow-hidden">
+          <div className="group bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff6b00]/30 transition-all duration-300 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
               <Sparkles size={130} className="text-[#ff6b00]" />
             </div>
@@ -578,7 +750,7 @@ await client.upsert(collectionName, {
           </div>
 
           {/* Card 6 */}
-          <div className="group bg-[#030303] border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff8c00]/30 transition-all duration-300 relative overflow-hidden">
+          <div className="group bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff8c00]/30 transition-all duration-300 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
               <LineChart size={130} className="text-[#ff8c00]" />
             </div>
@@ -609,7 +781,7 @@ await client.upsert(collectionName, {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Feature 1 */}
-          <div className="group bg-[#050505] border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff8c00]/40 transition-all duration-300 relative overflow-hidden">
+          <div className="group bg-[#050505]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff8c00]/40 transition-all duration-300 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
               <Search size={120} className="text-[#ff8c00]" />
             </div>
@@ -623,7 +795,7 @@ await client.upsert(collectionName, {
           </div>
 
           {/* Feature 2 */}
-          <div className="group bg-[#050505] border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff6b00]/40 transition-all duration-300 relative overflow-hidden">
+          <div className="group bg-[#050505]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff6b00]/40 transition-all duration-300 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
               <Layers size={120} className="text-[#ff6b00]" />
             </div>
@@ -637,7 +809,7 @@ await client.upsert(collectionName, {
           </div>
 
           {/* Feature 3 */}
-          <div className="group bg-[#050505] border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ffa800]/40 transition-all duration-300 relative overflow-hidden">
+          <div className="group bg-[#050505]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ffa800]/40 transition-all duration-300 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
               <Activity size={120} className="text-[#ffa800]" />
             </div>
@@ -653,7 +825,7 @@ await client.upsert(collectionName, {
       </section>
 
       {/* Language Support Matrix Grid */}
-      <section className="w-full bg-[#050505] border-y border-[#1a1a1a] py-32 px-6 relative">
+      <section className="w-full border-y border-[#1a1a1a] py-32 px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff8c00]/10 border border-[#ff8c00]/30 text-[#ff8c00] text-xs font-mono uppercase tracking-wider mb-6">
@@ -671,7 +843,7 @@ await client.upsert(collectionName, {
             {languages.map((lang, idx) => (
               <div
                 key={idx}
-                className="group relative bg-[#0a0a0a] border border-[#1a1a1a] p-5 rounded-xl hover:border-[#ff6b00]/35 transition-all duration-300 hover:shadow-[0_4px_20px_rgba(255,107,0,0.1)] flex flex-col justify-between items-center text-center overflow-hidden"
+                className="group relative bg-[#0a0a0a]/40 backdrop-blur-md border border-[#1a1a1a] p-5 rounded-xl hover:border-[#ff6b00]/35 transition-all duration-300 hover:shadow-[0_4px_20px_rgba(255,107,0,0.1)] flex flex-col justify-between items-center text-center overflow-hidden"
               >
                 <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${lang.color} flex items-center justify-center font-bold text-xs shadow-md shrink-0 mb-3`} style={{ color: lang.text }}>
                   {lang.name.substring(0, 2)}
@@ -680,7 +852,7 @@ await client.upsert(collectionName, {
                 <div className="text-[10px] text-[#737373] mt-1 font-mono">{lang.ext}</div>
               </div>
             ))}
-            <div className="group bg-[#030303] border border-dashed border-[#262626] p-5 rounded-xl flex flex-col items-center justify-center text-center">
+            <div className="group bg-[#030303]/40 backdrop-blur-md border border-dashed border-[#262626] p-5 rounded-xl flex flex-col items-center justify-center text-center">
               <span className="text-xs text-[#737373] font-medium uppercase tracking-widest mb-1">Coming Soon</span>
               <span className="text-[11px] text-[#525252] font-mono">Scala, Swift, Kotlin</span>
             </div>
@@ -702,7 +874,7 @@ await client.upsert(collectionName, {
           </p>
         </div>
 
-        <div className="overflow-x-auto border border-[#1a1a1a] rounded-2xl bg-[#030303]">
+        <div className="overflow-x-auto border border-[#1a1a1a] rounded-2xl bg-[#030303]/40 backdrop-blur-md">
           <table className="w-full text-left border-collapse text-sm">
             <thead>
               <tr className="border-b border-[#1a1a1a] bg-[#050505] text-[#737373] font-mono text-xs uppercase">
@@ -757,7 +929,7 @@ await client.upsert(collectionName, {
       {/* Pricing Section */}
       <section id="pricing" className="w-full max-w-7xl mx-auto py-32 px-6 relative border-t border-[#1a1a1a]">
         <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-        
+
         {/* Glow effects for pricing */}
         <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[60vw] max-w-[800px] h-[300px] bg-[#ff6b00] opacity-[0.05] blur-[120px] rounded-full pointer-events-none mix-blend-screen"></div>
         <div className="absolute bottom-[10%] right-[10%] w-[30vw] max-w-[400px] h-[200px] bg-[#ff8c00] opacity-[0.04] blur-[100px] rounded-full pointer-events-none"></div>
@@ -777,7 +949,7 @@ await client.upsert(collectionName, {
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto relative z-10">
 
           {/* ─── FREE TIER ─── */}
-          <div className="bg-[#030303]/80 backdrop-blur-xl border border-[#1a1a1a] rounded-3xl p-8 lg:p-10 flex flex-col hover:border-[#ff6b00]/20 transition-all duration-500 relative group overflow-hidden">
+          <div className="bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] rounded-3xl p-8 lg:p-10 flex flex-col hover:border-[#ff6b00]/20 transition-all duration-500 relative group overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
             {/* Tier badge */}
@@ -793,12 +965,12 @@ await client.upsert(collectionName, {
             {/* Limits highlight */}
             <div className="grid grid-cols-2 gap-3 mb-8">
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3 text-center">
-                <div className="text-2xl font-black text-white">2</div>
-                <div className="text-[10px] text-[#737373] font-medium uppercase tracking-wider">Repos</div>
+                <div className="text-2xl font-black text-white">1</div>
+                <div className="text-[10px] text-[#737373] font-medium uppercase tracking-wider">Repo</div>
               </div>
               <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3 text-center">
-                <div className="text-2xl font-black text-white">1K</div>
-                <div className="text-[10px] text-[#737373] font-medium uppercase tracking-wider">Msg/Month</div>
+                <div className="text-2xl font-black text-white">5</div>
+                <div className="text-[10px] text-[#737373] font-medium uppercase tracking-wider">Msg/Day</div>
               </div>
             </div>
 
@@ -809,33 +981,47 @@ await client.upsert(collectionName, {
               </li>
               <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
-                <span>AI Chat — <span className="text-white font-medium">2 msg/min</span> rate limit</span>
+                <span>AI Chat — <span className="text-white font-medium">5 msg/day</span></span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
-                <span>Force-Graph Visualization</span>
+                <span>Force-Graph & Semantic Search</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
-                <span>Community Support</span>
+                <span>Security & Architecture Scans</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
+                <span>Unused Function Detection</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#525252]">
                 <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
-                <span>Advanced Blast Radius Scans</span>
+                <span>Local Folder/ZIP Upload</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#525252]">
                 <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
-                <span>Priority Support</span>
+                <span>Blast Radius & Export Data</span>
               </li>
             </ul>
 
-            <button disabled className="w-full py-4 px-6 rounded-xl font-semibold bg-[#0a0a0a] text-[#737373] cursor-not-allowed border border-[#1a1a1a] transition-all">
-              Current Plan
-            </button>
+            {!userTier ? (
+              <a href="http://localhost:5000/api/v1/auth/github" className="w-full py-4 px-6 rounded-xl font-semibold bg-[#0a0a0a] hover:bg-[#121212] text-[#e5e5e5] border border-[#1a1a1a] hover:border-[#ff6b00]/40 transition-all text-center block shadow-md">
+                Start for Free
+              </a>
+            ) : userTier === "FREE" ? (
+              <button disabled className="w-full py-4 px-6 rounded-xl font-semibold bg-[#0a0a0a] text-[#ff6b00] cursor-not-allowed border border-[#ff6b00]/20 transition-all shadow-[inset_0_0_15px_rgba(255,107,0,0.1)]">
+                Current Plan
+              </button>
+            ) : (
+              <button disabled className="w-full py-4 px-6 rounded-xl font-semibold bg-[#050505] text-[#525252] cursor-not-allowed border border-[#1a1a1a] transition-all">
+                Included in your plan
+              </button>
+            )}
           </div>
 
           {/* ─── BASIC TIER (₹99) — MOST POPULAR ─── */}
-          <div className="bg-gradient-to-b from-[#ff6b00]/10 to-[#030303] border border-[#ff6b00]/30 rounded-3xl p-8 lg:p-10 flex flex-col relative hover:border-[#ff6b00]/50 transition-all duration-500 shadow-[0_0_30px_rgba(255,107,0,0.1)] overflow-hidden group">
+          <div className="bg-gradient-to-b from-[#ff6b00]/10 to-[#030303]/40 backdrop-blur-md border border-[#ff6b00]/30 rounded-3xl p-8 lg:p-10 flex flex-col relative hover:border-[#ff6b00]/50 transition-all duration-500 shadow-[0_0_30px_rgba(255,107,0,0.1)] overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-[#ff6b00]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
             {/* Most Popular + Tier badge */}
@@ -849,61 +1035,75 @@ await client.upsert(collectionName, {
             <div className="text-5xl font-extrabold mb-1 text-white">
               ₹99 <span className="text-xl text-[#737373] font-medium">/month</span>
             </div>
-            <p className="text-sm text-[#ff8c00] mb-8 font-medium">10x more repos, 10x more messages.</p>
+            <p className="text-sm text-[#ff8c00] mb-8 font-medium">Local uploads, deep scans, and more context.</p>
 
             {/* Limits highlight */}
             <div className="grid grid-cols-2 gap-3 mb-8">
               <div className="bg-[#0a0a0a]/80 border border-[#ff6b00]/20 rounded-xl p-3 text-center">
-                <div className="text-2xl font-black text-white">10</div>
+                <div className="text-2xl font-black text-white">5</div>
                 <div className="text-[10px] text-[#ff8c00]/70 font-medium uppercase tracking-wider">Repos</div>
               </div>
               <div className="bg-[#0a0a0a]/80 border border-[#ff6b00]/20 rounded-xl p-3 text-center">
-                <div className="text-2xl font-black text-white">10K</div>
-                <div className="text-[10px] text-[#ff8c00]/70 font-medium uppercase tracking-wider">Msg/Month</div>
+                <div className="text-2xl font-black text-white">50</div>
+                <div className="text-[10px] text-[#ff8c00]/70 font-medium uppercase tracking-wider">Msg/Day</div>
               </div>
             </div>
-            
+
             <ul className="space-y-3.5 mb-10 flex-1 relative z-10">
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
-                <span>Full Codebase Analysis</span>
+                <span>Everything in FREE</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
-                <span>AI Chat — <span className="text-[#ff8c00] font-semibold">No rate limit</span></span>
+                <span>Local Folder/ZIP Upload</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
-                <span>Advanced Force-Graph Visualizations</span>
+                <span>All 8 Visualizations</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
-                <span>Blast Radius & Vulnerability Scans</span>
+                <span>Blast Radius & Action Items</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
-                <span>Standard Support</span>
+                <span>Export Analysis Data</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#525252]">
                 <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
-                <span>Voice-Driven Exploration</span>
+                <span>Voice Chat & Docs Generation</span>
               </li>
             </ul>
 
-            <button 
-              onClick={() => handlePayment("Basic", 9900)}
-              disabled={loadingPlan === "Basic"}
-              className="w-full py-4 px-6 rounded-xl font-bold bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] hover:from-[#ff8c00] hover:to-[#ffa200] text-white transition-all duration-300 shadow-[0_0_25px_rgba(255,107,0,0.35)] hover:shadow-[0_0_40px_rgba(255,107,0,0.5)] flex justify-center items-center active:scale-[0.98] border border-[#ff8c00]/30 relative overflow-hidden group/btn"
-            >
-              <div className="absolute inset-0 bg-white/20 translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-in-out"></div>
-              <span className="relative z-10 flex items-center gap-2">
-                {loadingPlan === "Basic" ? <Loader2 className="w-5 h-5 animate-spin" /> : "Upgrade to Basic"}
-              </span>
-            </button>
+            {!userTier ? (
+              <a href="http://localhost:5000/api/v1/auth/github" className="w-full py-4 px-6 rounded-xl font-bold bg-[#1a1a1a] text-white hover:bg-[#262626] transition-all text-center block border border-[#333]">
+                Sign in to Upgrade
+              </a>
+            ) : userTier === "BASIC" ? (
+              <button disabled className="w-full py-4 px-6 rounded-xl font-semibold bg-gradient-to-r from-[#ff6b00]/10 to-[#ff8c00]/10 text-[#ff6b00] cursor-not-allowed border border-[#ff6b00]/30 transition-all shadow-[inset_0_0_15px_rgba(255,107,0,0.15)]">
+                Current Plan
+              </button>
+            ) : userTier === "PRO" ? (
+              <button disabled className="w-full py-4 px-6 rounded-xl font-semibold bg-[#050505] text-[#525252] cursor-not-allowed border border-[#1a1a1a] transition-all">
+                Included in your plan
+              </button>
+            ) : (
+              <button
+                onClick={() => handlePayment("Basic", 9900)}
+                disabled={loadingPlan === "Basic"}
+                className="w-full py-4 px-6 rounded-xl font-bold bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] hover:from-[#ff8c00] hover:to-[#ffa200] text-white transition-all duration-300 shadow-[0_0_25px_rgba(255,107,0,0.35)] hover:shadow-[0_0_40px_rgba(255,107,0,0.5)] flex justify-center items-center active:scale-[0.98] border border-[#ff8c00]/30 relative overflow-hidden group/btn"
+              >
+                <div className="absolute inset-0 bg-white/20 translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+                <span className="relative z-10 flex items-center gap-2">
+                  {loadingPlan === "Basic" ? <Loader2 className="w-5 h-5 animate-spin" /> : "Upgrade to Basic"}
+                </span>
+              </button>
+            )}
           </div>
 
           {/* ─── PRO TIER (₹199) ─── */}
-          <div className="bg-[#030303]/80 backdrop-blur-xl border border-[#1a1a1a] rounded-3xl p-8 lg:p-10 flex flex-col hover:border-[#ffa800]/30 transition-all duration-500 relative group overflow-hidden">
+          <div className="bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] rounded-3xl p-8 lg:p-10 flex flex-col hover:border-[#ffa800]/30 transition-all duration-500 relative group overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-[#ffa800]/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             {/* Subtle sparkle */}
             <Sparkles className="absolute bottom-6 right-6 text-[#ffa800]/20 w-20 h-20 -z-10 group-hover:scale-110 transition-transform duration-700" strokeWidth={1} />
@@ -914,9 +1114,10 @@ await client.upsert(collectionName, {
               Enterprise
             </div>
 
-            <h2 className="text-2xl font-bold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-[#ffa800] to-[#ff8c00]">Pro</h2>
+            <h2 className="text-2xl font-bold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-[#ffa800] to-[#ffc85a]">Enterprise</h2>
+
             <div className="text-5xl font-extrabold mb-1 text-white">
-              ₹199 <span className="text-xl text-[#737373] font-medium">/month</span>
+              ₹299 <span className="text-xl text-[#737373] font-medium">/month</span>
             </div>
             <p className="text-sm text-[#ffa800]/80 mb-8 font-medium">Unlimited everything. No limits.</p>
 
@@ -932,47 +1133,57 @@ await client.upsert(collectionName, {
                 <div className="flex items-center justify-center">
                   <Infinity className="w-7 h-7 text-[#ffa800]" />
                 </div>
-                <div className="text-[10px] text-[#ffa800]/60 font-medium uppercase tracking-wider mt-1">Msg/Month</div>
+                <div className="text-[10px] text-[#ffa800]/60 font-medium uppercase tracking-wider mt-1">Msg/Day</div>
               </div>
             </div>
 
             <ul className="space-y-3.5 mb-10 flex-1 relative z-10">
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
-                <span>Unlimited Codebase Analysis</span>
+                <span>Everything in BASIC</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
-                <span>AI Chat — <span className="text-[#ffa800] font-semibold">Unlimited, no rate limit</span></span>
+                <span>System Design & Onboarding Docs</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
-                <span>Advanced Force-Graph Visualizations</span>
+                <span>PR Risk Analysis</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
-                <span>Blast Radius & Vulnerability Scans</span>
+                <span>Voice Call Mode (STT + TTS)</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
-                <span>Voice-Driven Exploration</span>
+                <span>Semantic Clone Detection</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
-                <span>Priority 24/7 Support</span>
+                <span>Codebase Drift Detection</span>
               </li>
             </ul>
 
-            <button 
-              onClick={() => handlePayment("Pro", 19900)}
-              disabled={loadingPlan === "Pro"}
-              className="w-full py-4 px-6 rounded-xl font-bold bg-[#0a0a0a] hover:bg-[#121212] text-[#ffa800] border border-[#ffa800]/30 hover:border-[#ffa800]/60 transition-all duration-300 shadow-md hover:shadow-[0_0_30px_rgba(255,168,0,0.15)] flex justify-center items-center active:scale-[0.98] relative overflow-hidden group/btn"
-            >
-              <div className="absolute inset-0 bg-[#ffa800]/10 translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-in-out"></div>
-              <span className="relative z-10 flex items-center gap-2">
-                {loadingPlan === "Pro" ? <Loader2 className="w-5 h-5 animate-spin" /> : "Upgrade to Pro"}
-              </span>
-            </button>
+            {!userTier ? (
+              <a href="http://localhost:5000/api/v1/auth/github" className="w-full py-4 px-6 rounded-xl font-bold bg-[#1a1a1a] text-white hover:bg-[#262626] transition-all text-center block border border-[#333]">
+                Sign in to Upgrade
+              </a>
+            ) : userTier === "PRO" ? (
+              <button disabled className="w-full py-4 px-6 rounded-xl font-semibold bg-[#ffa800]/10 text-[#ffa800] cursor-not-allowed border border-[#ffa800]/30 transition-all shadow-[inset_0_0_15px_rgba(255,168,0,0.15)]">
+                Current Plan
+              </button>
+            ) : (
+              <button
+                onClick={() => handlePayment("Pro", 29900)}
+                disabled={loadingPlan === "Pro"}
+                className="w-full py-4 px-6 rounded-xl font-bold bg-[#0a0a0a] hover:bg-[#121212] text-[#ffa800] border border-[#ffa800]/30 hover:border-[#ffa800]/60 transition-all duration-300 shadow-md hover:shadow-[0_0_30px_rgba(255,168,0,0.15)] flex justify-center items-center active:scale-[0.98] relative overflow-hidden group/btn"
+              >
+                <div className="absolute inset-0 bg-[#ffa800]/10 translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+                <span className="relative z-10 flex items-center gap-2">
+                  {loadingPlan === "Pro" ? <Loader2 className="w-5 h-5 animate-spin" /> : "Upgrade to Pro"}
+                </span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -985,7 +1196,7 @@ await client.upsert(collectionName, {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full bg-[#050505] py-32 px-6 text-center relative overflow-hidden border-t border-[#1a1a1a]">
+      <section className="w-full py-32 px-6 text-center relative overflow-hidden border-t border-[#1a1a1a] z-10">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl bg-gradient-to-b from-[#ff6b00]/10 to-transparent blur-[110px] pointer-events-none"></div>
         <div className="relative z-10 max-w-4xl mx-auto">
           <h2 className="text-5xl md:text-6xl font-black text-white mb-8 tracking-tighter">
