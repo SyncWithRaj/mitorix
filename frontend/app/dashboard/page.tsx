@@ -24,10 +24,12 @@ import {
   Cpu,
   Layers,
   FileCode,
+  Info,
 } from "lucide-react";
 import JSZip from "jszip";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
+import { useSubscription } from "@/context/SubscriptionContext";
 
 function RepoProgressTracker({ jobId, onComplete }: { jobId: string; onComplete: () => void }) {
   const [status, setStatus] = useState("connecting...");
@@ -93,6 +95,10 @@ export default function Dashboard() {
   const [embeddingStates, setEmbeddingStates] = useState<Record<string, { current: number; total: number; completed: boolean }>>({});
   const activeEventSources = useRef<Set<string>>(new Set());
 
+  const { tier, subscription } = useSubscription();
+  const repoLimit = subscription?.limits?.repos || 1;
+  const isAtLimit = repoLimit !== -1 && repos.length >= repoLimit;
+
   const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -126,7 +132,7 @@ export default function Dashboard() {
       }
     } catch (err: any) {
       console.error("Folder upload failed:", err);
-      toast.error(err.response?.data?.message || err.message || "Failed to upload folder.");
+      toast.error(err.response?.data?.error?.message || err.response?.data?.message || err.message || "Failed to upload folder.");
     } finally {
       setUploading(false);
       setUploadProgress("");
@@ -156,7 +162,7 @@ export default function Dashboard() {
       }
     } catch (err: any) {
       console.error("ZIP upload failed:", err);
-      toast.error(err.response?.data?.message || err.message || "Failed to upload ZIP.");
+      toast.error(err.response?.data?.error?.message || err.response?.data?.message || err.message || "Failed to upload ZIP.");
     } finally {
       setUploading(false);
       setUploadProgress("");
@@ -196,7 +202,15 @@ export default function Dashboard() {
   }, [repos]);
 
   const processRepo = async () => {
-    if (!githubUrl) return;
+    if (!githubUrl) {
+      toast.error("Please enter a GitHub URL");
+      return;
+    }
+    if (isAtLimit) {
+      toast.error(`📦 Repository limit reached (${repoLimit}). Upgrade your plan to add more.`, { id: "repo-limit" });
+      return;
+    }
+
     let toastId;
     try {
       setLoading(true);
@@ -208,7 +222,7 @@ export default function Dashboard() {
     } catch (err: any) {
       console.error("Process repo error:", err);
       toast.error(
-        err.response?.data?.message || "Failed to start analysis. Check the URL and try again.",
+        err.response?.data?.error?.message || err.response?.data?.message || "Failed to start analysis. Check the URL and try again.",
         { id: toastId }
       );
     } finally {
@@ -217,9 +231,13 @@ export default function Dashboard() {
   };
 
   const deleteRepo = async (repoId: string) => {
-    const confirmDelete = confirm(
-      "NUCLEAR OPTION: Are you sure you want to nuke this repository? This will instantly and irreversibly delete all your code data, vectors, and chat history."
-    );
+    let warningMsg = "NUCLEAR OPTION: Are you sure you want to nuke this repository? This will instantly and irreversibly delete all your code data, vectors, and chat history.";
+    
+    if (tier === "FREE" || tier === "BASIC") {
+      warningMsg += `\n\n⚠️ RATE LIMIT WARNING:\nDeleting this repository DOES NOT reset your creation limit. You are allowed to provision up to ${repoLimit} repositor${repoLimit === 1 ? 'y' : 'ies'} every 3 days on the ${tier} plan. If you have reached this limit, you must wait before adding another one.`;
+    }
+
+    const confirmDelete = confirm(warningMsg);
     if (!confirmDelete) return;
 
     try {
@@ -325,8 +343,17 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-[#18181b] pb-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/20 text-[#ff6b00] text-xs font-mono uppercase tracking-wider mb-4 shadow-[0_0_15px_rgba(255,107,0,0.1)]">
-              <Server size={13} className="animate-pulse" /> Active Workspace Hub
+            <div className="flex items-center gap-3 mb-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/20 text-[#ff6b00] text-xs font-mono uppercase tracking-wider shadow-[0_0_15px_rgba(255,107,0,0.1)]">
+                <Server size={13} className="animate-pulse" /> Active Workspace Hub
+              </div>
+              <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wider ${
+                tier === 'PRO' ? 'bg-[#a371f7]/10 border-[#a371f7]/30 text-[#a371f7] shadow-[0_0_10px_rgba(163,113,247,0.2)]' :
+                tier === 'BASIC' ? 'bg-[#58a6ff]/10 border-[#58a6ff]/30 text-[#58a6ff] shadow-[0_0_10px_rgba(88,166,255,0.2)]' :
+                'bg-[#30363d] border-[#484f58] text-[#c9d1d9]'
+              }`}>
+                <Sparkles size={13} /> {tier} PLAN
+              </div>
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none">
               Workspace Dashboard
@@ -386,8 +413,8 @@ export default function Dashboard() {
               </div>
               <button
                 onClick={processRepo}
-                disabled={loading || !githubUrl}
-                className="group/btn relative cursor-pointer text-xs text-white font-bold px-7 py-2.5 rounded-xl transition-all duration-300 active:scale-[0.98] border border-[#ff8c00]/30 shadow-[0_4px_20px_rgba(255,107,0,0.2)] hover:shadow-[0_0_35px_rgba(255,107,0,0.45)] flex items-center justify-center min-w-[160px] overflow-hidden disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-[#ff6b00] via-[#ff8c00] to-[#ffa800]"
+                className="group/btn relative cursor-pointer text-xs text-white font-bold px-7 py-2.5 rounded-xl transition-all duration-300 active:scale-[0.98] border border-[#ff8c00]/30 shadow-[0_4px_20px_rgba(255,107,0,0.2)] hover:shadow-[0_0_35px_rgba(255,107,0,0.45)] flex items-center justify-center min-w-[160px] overflow-hidden bg-gradient-to-r from-[#ff6b00] via-[#ff8c00] to-[#ffa800]"
+                title={isAtLimit ? "Repository limit reached" : ""}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
                 <span className="relative z-10 flex items-center gap-2">
@@ -424,9 +451,19 @@ export default function Dashboard() {
                 directory=""
               />
               <button
-                onClick={() => document.getElementById("folder-upload-input")?.click()}
-                disabled={loading || uploading}
-                className="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-[#0c0c0e] hover:bg-[#141416] border border-[#1f1f23] text-white text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:border-[#ff6b00]/40 shadow-md group/upload"
+                onClick={() => {
+                  if (tier === "FREE") {
+                    toast.error("🔒 Folder upload requires the BASIC plan. Upgrade to unlock.", { id: "upload-locked" });
+                    return;
+                  }
+                  if (isAtLimit) {
+                    toast.error(`📦 Repository limit reached (${repoLimit}). Upgrade your plan to add more.`, { id: "repo-limit" });
+                    return;
+                  }
+                  document.getElementById("folder-upload-input")?.click();
+                }}
+                className="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-[#0c0c0e] hover:bg-[#141416] border border-[#1f1f23] text-white text-xs font-semibold transition-all active:scale-95 cursor-pointer hover:border-[#ff6b00]/40 shadow-md group/upload"
+                title={tier === "FREE" ? "Requires Basic Plan" : isAtLimit ? "Repository limit reached" : ""}
               >
                 <Folder size={14} className="text-[#ff6b00] group-hover/upload:scale-105 transition-transform" />
                 Upload Folder
@@ -440,14 +477,32 @@ export default function Dashboard() {
                 onChange={handleZipUpload}
               />
               <button
-                onClick={() => document.getElementById("zip-upload-input")?.click()}
-                disabled={loading || uploading}
-                className="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-[#0c0c0e] hover:bg-[#141416] border border-[#1f1f23] text-white text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:border-[#ffa800]/40 shadow-md group/zip"
+                onClick={() => {
+                  if (tier === "FREE") {
+                    toast.error("🔒 ZIP upload requires the BASIC plan. Upgrade to unlock.", { id: "upload-locked" });
+                    return;
+                  }
+                  if (isAtLimit) {
+                    toast.error(`📦 Repository limit reached (${repoLimit}). Upgrade your plan to add more.`, { id: "repo-limit" });
+                    return;
+                  }
+                  document.getElementById("zip-upload-input")?.click();
+                }}
+                className="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-[#0c0c0e] hover:bg-[#141416] border border-[#1f1f23] text-white text-xs font-semibold transition-all active:scale-95 cursor-pointer hover:border-[#ffa800]/40 shadow-md group/zip"
+                title={tier === "FREE" ? "Requires Basic Plan" : isAtLimit ? "Repository limit reached" : ""}
               >
                 <Archive size={14} className="text-[#ffa800] group-hover/zip:scale-105 transition-transform" />
                 Upload ZIP
               </button>
             </div>
+          </div>
+
+          {/* Rate Limit Note */}
+          <div className="mt-5 px-4 py-3 bg-[#18181b]/50 border border-[#27272a] rounded-lg relative z-10 flex items-start gap-3">
+            <Info size={16} className="text-[#a1a1aa] mt-0.5 shrink-0" />
+            <p className="text-xs text-[#a1a1aa] leading-relaxed">
+              <strong className="text-[#e4e4e7]">Rate Limits:</strong> <span className="text-[#ff6b00]">FREE</span> tier can provision 1 repository every 3 days. <span className="text-[#ff6b00]">BASIC</span> tier can provision 5 repositories every 3 days. Deleting a repository does not reset your provisioning limit. Upgrade to <span className="text-[#ff6b00]">PRO</span> for unlimited provisions.
+            </p>
           </div>
         </div>
 
