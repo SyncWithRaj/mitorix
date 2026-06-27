@@ -19,6 +19,8 @@
   --color-gh-accent: #ff6b00;
   --color-gh-danger: #ff4500;
   --color-gh-danger-hover: #ff5f00;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
 
 /* CodeFlow Theme Variables - Dark (Default) */
@@ -85,9 +87,6 @@ html {
 body {
   background: var(--color-gh-bg);
   color: var(--color-gh-text);
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 .highlight-line {
@@ -198,9 +197,27 @@ body {
   animation: toastIn 0.3s ease-out both;
 }
 
-/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 107, 0, 0.5);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 107, 0, 0.8);
+}
+
 .custom-scrollbar::-webkit-scrollbar {
-  width: 4px; /* Thinner, sleeker scrollbar */
+  width: 4px;
   height: 4px;
 }
 
@@ -210,13 +227,13 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 107, 0, 0.2); /* High transparency for a glassy feel */
+  background: rgba(255, 107, 0, 0.2);
   border-radius: 10px;
   transition: background 0.3s ease;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 107, 0, 0.4); /* Subtle orange glow on hover */
+  background: rgba(255, 107, 0, 0.4);
 }
 
 /* Base Glassmorphism utility */
