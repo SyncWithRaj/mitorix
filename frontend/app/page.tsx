@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import BorderGlow from "@/components/ui/BorderGlow";
 import { useState, useEffect } from "react";
 import Script from "next/script";
 import api from "@/lib/axios";
@@ -598,9 +599,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Ephemeral Architecture Lifecycle Timeline */}
-      <section className="w-full border-y border-[#1a1a1a] py-32 px-6 relative z-10">
-        <div className="max-w-6xl mx-auto">
+      {/* Ephemeral Architecture Lifecycle Timeline (Vertical Timeline) */}
+      <section className="w-full border-y border-[#1a1a1a] py-32 px-6 relative z-10 bg-transparent">
+        <div className="max-w-5xl mx-auto relative">
           <div className="text-center mb-24">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/30 text-[#ff6b00] text-xs font-mono uppercase tracking-wider mb-6">
               Pipeline Flow
@@ -613,217 +614,280 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
-            {/* Steps line */}
-            <div className="hidden md:block absolute top-[40px] left-[12%] right-[12%] h-[1px] bg-gradient-to-r from-transparent via-[#1a1a1a] to-transparent -z-10"></div>
-
-            {/* Step 1 */}
-            <div className="group flex flex-col items-center text-center p-4 bg-black/40 backdrop-blur-md border border-[#1a1a1a] rounded-2xl hover:border-[#ff6b00]/40 transition-all duration-300">
-              <div className="w-20 h-20 rounded-2xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 shadow-lg group-hover:scale-105 transition-transform group-hover:shadow-[0_0_20px_rgba(255,107,0,0.15)] relative">
-                <Terminal className="text-[#ff6b00] w-8 h-8" />
-                <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#ff6b00] text-[10px] font-bold text-white flex items-center justify-center border border-black shadow">01</span>
+          <div className="relative">
+            {/* Center Line */}
+            <div className="hidden md:block absolute left-1/2 top-4 bottom-4 w-[2px] bg-gradient-to-b from-[#ff6b00]/0 via-[#ff6b00]/30 to-[#ff6b00]/0 -translate-x-1/2"></div>
+            
+            <div className="space-y-12 md:space-y-0 relative z-10">
+              {/* Step 1 */}
+              <div className="relative flex flex-col md:flex-row items-center justify-center md:justify-between w-full group">
+                <div className="md:w-5/12 flex justify-end md:pr-12 pb-6 md:pb-0 text-center md:text-right w-full">
+                  <div className="bg-[#050505]/80 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-3xl group-hover:border-[#ff6b00]/50 transition-all duration-300 w-full hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(255,107,0,0.15)] relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-[#ff6b00]/10 rounded-full blur-3xl transition-transform group-hover:scale-150"></div>
+                    <div className="text-[#ff6b00] font-mono text-xs font-bold tracking-widest mb-3">STEP 01</div>
+                    <h4 className="text-2xl font-bold text-white mb-3">Queue & Clone</h4>
+                    <p className="text-[#737373] text-sm leading-relaxed">
+                      BullMQ + Redis dispatches a job to clone the repository to an isolated <code className="text-[11px] font-mono px-1 py-0.5 bg-[#1a1a1a] text-white rounded">/tmp</code> directory, checking GitHub credentials.
+                    </p>
+                  </div>
+                </div>
+                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#050505] border-2 border-[#1a1a1a] flex items-center justify-center z-10 hidden md:flex group-hover:border-[#ff6b00] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,107,0,0.4)] transition-all duration-500">
+                  <Terminal className="text-[#737373] group-hover:text-[#ff6b00] w-6 h-6 transition-colors duration-500" />
+                </div>
+                <div className="md:w-5/12 hidden md:block"></div>
               </div>
-              <h4 className="text-lg font-bold text-white mb-2">Queue & Clone</h4>
-              <p className="text-[#737373] text-sm leading-relaxed">
-                BullMQ + Redis dispatches a job to clone the repository to an isolated <code className="text-[11px] font-mono px-1 py-0.2 bg-[#1a1a1a] text-white">/tmp</code> directory, checking GitHub credentials.
-              </p>
-            </div>
 
-            {/* Step 2 */}
-            <div className="group flex flex-col items-center text-center p-4 bg-black/40 backdrop-blur-md border border-[#1a1a1a] rounded-2xl hover:border-[#ff8c00]/40 transition-all duration-300">
-              <div className="w-20 h-20 rounded-2xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 shadow-lg group-hover:scale-105 transition-transform group-hover:shadow-[0_0_20px_rgba(255,140,0,0.15)] relative">
-                <Cpu className="text-[#ff8c00] w-8 h-8" />
-                <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#ff8c00] text-[10px] font-bold text-white flex items-center justify-center border border-black shadow">02</span>
+              {/* Step 2 */}
+              <div className="relative flex flex-col md:flex-row items-center justify-center md:justify-between w-full group md:mt-24">
+                <div className="md:w-5/12 hidden md:block"></div>
+                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#050505] border-2 border-[#1a1a1a] flex items-center justify-center z-10 hidden md:flex group-hover:border-[#ff8c00] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,140,0,0.4)] transition-all duration-500">
+                  <Cpu className="text-[#737373] group-hover:text-[#ff8c00] w-6 h-6 transition-colors duration-500" />
+                </div>
+                <div className="md:w-5/12 flex justify-start md:pl-12 text-center md:text-left w-full">
+                  <div className="bg-[#050505]/80 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-3xl group-hover:border-[#ff8c00]/50 transition-all duration-300 w-full hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(255,140,0,0.15)] relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-40 h-40 bg-[#ff8c00]/10 rounded-full blur-3xl transition-transform group-hover:scale-150"></div>
+                    <div className="text-[#ff8c00] font-mono text-xs font-bold tracking-widest mb-3">STEP 02</div>
+                    <h4 className="text-2xl font-bold text-white mb-3">AST Extraction</h4>
+                    <p className="text-[#737373] text-sm leading-relaxed">
+                      High-fidelity parsing via **Tree-sitter** spans 11 languages to resolve scopes, functions, parameters, layers, and cyclic dependency calls.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <h4 className="text-lg font-bold text-white mb-2">AST Extraction</h4>
-              <p className="text-[#737373] text-sm leading-relaxed">
-                High-fidelity parsing via **Tree-sitter** spans 11 languages to resolve scopes, functions, parameters, layers, and cyclic dependency calls.
-              </p>
-            </div>
 
-            {/* Step 3 */}
-            <div className="group flex flex-col items-center text-center p-4 bg-black/40 backdrop-blur-md border border-[#1a1a1a] rounded-2xl hover:border-[#ffa800]/40 transition-all duration-300">
-              <div className="w-20 h-20 rounded-2xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 shadow-lg group-hover:scale-105 transition-transform group-hover:shadow-[0_0_20px_rgba(255,168,0,0.15)] relative">
-                <Database className="text-[#ffa800] w-8 h-8" />
-                <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#ffa800] text-[10px] font-bold text-white flex items-center justify-center border border-black shadow">03</span>
+              {/* Step 3 */}
+              <div className="relative flex flex-col md:flex-row items-center justify-center md:justify-between w-full group md:mt-24">
+                <div className="md:w-5/12 flex justify-end md:pr-12 pb-6 md:pb-0 text-center md:text-right w-full">
+                  <div className="bg-[#050505]/80 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-3xl group-hover:border-[#ffa800]/50 transition-all duration-300 w-full hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(255,168,0,0.15)] relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-[#ffa800]/10 rounded-full blur-3xl transition-transform group-hover:scale-150"></div>
+                    <div className="text-[#ffa800] font-mono text-xs font-bold tracking-widest mb-3">STEP 03</div>
+                    <h4 className="text-2xl font-bold text-white mb-3">Qdrant Embeddings</h4>
+                    <p className="text-[#737373] text-sm leading-relaxed">
+                      Code fragments are converted into high-dimensional vectors via Google Gemini and indexed inside **Qdrant DB** for semantic RAG search context.
+                    </p>
+                  </div>
+                </div>
+                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#050505] border-2 border-[#1a1a1a] flex items-center justify-center z-10 hidden md:flex group-hover:border-[#ffa800] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,168,0,0.4)] transition-all duration-500">
+                  <Database className="text-[#737373] group-hover:text-[#ffa800] w-6 h-6 transition-colors duration-500" />
+                </div>
+                <div className="md:w-5/12 hidden md:block"></div>
               </div>
-              <h4 className="text-lg font-bold text-white mb-2">Qdrant Embeddings</h4>
-              <p className="text-[#737373] text-sm leading-relaxed">
-                Code fragments are converted into high-dimensional vectors via Google Gemini and indexed inside **Qdrant DB** for semantic RAG search context.
-              </p>
-            </div>
 
-            {/* Step 4 */}
-            <div className="group flex flex-col items-center text-center p-4 bg-black/40 backdrop-blur-md border border-[#1a1a1a] rounded-2xl hover:border-[#ff6b00]/40 transition-all duration-300">
-              <div className="w-20 h-20 rounded-2xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 shadow-lg group-hover:scale-105 transition-transform group-hover:shadow-[0_0_20px_rgba(255,107,0,0.15)] relative">
-                <Shield className="text-[#ff6b00] w-8 h-8" />
-                <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#ff6b00] text-[10px] font-bold text-white flex items-center justify-center border border-black shadow">04</span>
+              {/* Step 4 */}
+              <div className="relative flex flex-col md:flex-row items-center justify-center md:justify-between w-full group md:mt-24">
+                <div className="md:w-5/12 hidden md:block"></div>
+                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#050505] border-2 border-[#1a1a1a] flex items-center justify-center z-10 hidden md:flex group-hover:border-[#ff6b00] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,107,0,0.4)] transition-all duration-500">
+                  <Shield className="text-[#737373] group-hover:text-[#ff6b00] w-6 h-6 transition-colors duration-500" />
+                </div>
+                <div className="md:w-5/12 flex justify-start md:pl-12 text-center md:text-left w-full">
+                  <div className="bg-[#050505]/80 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-3xl group-hover:border-[#ff6b00]/50 transition-all duration-300 w-full hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(255,107,0,0.15)] relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-40 h-40 bg-[#ff6b00]/10 rounded-full blur-3xl transition-transform group-hover:scale-150"></div>
+                    <div className="text-[#ff6b00] font-mono text-xs font-bold tracking-widest mb-3">STEP 04</div>
+                    <h4 className="text-2xl font-bold text-white mb-3">Wipe & Unlock</h4>
+                    <p className="text-[#737373] text-sm leading-relaxed">
+                      Physical folders are wiped securely. Downstream vector indices and MongoDB metadata are cached to unlock immediate user exploration.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <h4 className="text-lg font-bold text-white mb-2">Wipe & Unlock</h4>
-              <p className="text-[#737373] text-sm leading-relaxed">
-                Physical folders are wiped securely. Downstream vector indices and MongoDB metadata are cached to unlock immediate user exploration.
-              </p>
+
             </div>
           </div>
         </div>
       </section>
 
-      {/* Feature Section: Static Telemetry and Codeflow Analysis */}
-      <section className="w-full max-w-6xl mx-auto py-32 px-6 relative">
-        <div className="text-center mb-24">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/30 text-[#ff6b00] text-xs font-mono uppercase tracking-wider mb-6">
-            Static Analysis Telemetry
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-white">
-            Architecture Intelligence Under the Hood
-          </h2>
-          <p className="text-[#a3a3a3] max-w-2xl mx-auto text-lg font-light">
-            RepoLens doesn't just read code; it analyzes architectural safety, identifies structural pattern classes, and monitors coupling complexity.
-          </p>
-        </div>
+      {/* Feature Section: Static Telemetry (Glassmorphism Grid) */}
+      <section className="w-full py-32 px-6 relative overflow-hidden">
+        {/* Background Ambient Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#ff6b00]/10 blur-[150px] rounded-full pointer-events-none"></div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Card 1 */}
-          <div className="group bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff6b00]/30 transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
-              <Code2 size={130} className="text-[#ff6b00]" />
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center mb-24">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[#ff6b00] text-xs font-mono uppercase tracking-wider mb-6 backdrop-blur-md">
+              Static Analysis Telemetry
             </div>
-            <div className="w-12 h-12 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 group-hover:border-[#ff6b00]/40 transition-colors">
-              <Activity className="text-[#ff6b00] w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-3">Cyclomatic Complexity</h3>
-            <p className="text-sm text-[#737373] leading-relaxed">
-              We count branches, loops, case triggers, and conditionals. The system logs critical warnings if function scores exceed threshold boundaries (low 0-15, medium 16-30, critical 30+).
+            <h2 className="text-5xl md:text-6xl font-black mb-6 tracking-tighter text-white">
+              Architecture Intelligence
+            </h2>
+            <p className="text-[#a3a3a3] max-w-2xl mx-auto text-lg font-light leading-relaxed">
+              RepoLens doesn't just read code; it analyzes architectural safety, identifies structural pattern classes, and monitors coupling complexity in real-time.
             </p>
           </div>
 
-          {/* Card 2 */}
-          <div className="group bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff8c00]/30 transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
-              <Shield size={130} className="text-[#ff8c00]" />
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 group-hover:border-[#ff8c00]/40 transition-colors">
-              <AlertTriangle className="text-[#ff8c00] w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-3">Vulnerability Scan</h3>
-            <p className="text-sm text-[#737373] leading-relaxed">
-              Automated rules trace security threats: hardcoded credentials, SQL injection attempts, unescaped XSS injections, path traversals, unsafe eval usage, and outdated cryptographic algorithms.
-            </p>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Card 1 */}
+            <BorderGlow className="h-full w-full" backgroundColor="#050505" glowColor="33 100 50" borderRadius={32} colors={['#ff6b00', '#ff8c00', '#ffa800']}>
+              <div className="p-8 flex flex-col h-full">
+                <div className="w-14 h-14 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-center mb-6 shadow-inner">
+                  <Cpu className="w-7 h-7 text-[#ff6b00]" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-tight">Cyclomatic Complexity</h3>
+                <p className="text-[#888] text-sm leading-relaxed">We count branches, loops, and conditionals. The system logs critical warnings if function scores exceed threshold boundaries.</p>
+              </div>
+            </BorderGlow>
 
-          {/* Card 3 */}
-          <div className="group bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ffa800]/30 transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
-              <Layers size={130} className="text-[#ffa800]" />
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 group-hover:border-[#ffa800]/40 transition-colors">
-              <Workflow className="text-[#ffa800] w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-3">Architectural Layers</h3>
-            <p className="text-sm text-[#737373] leading-relaxed">
-              Automatically indexes RepoSpace structures into logic zones: Controller, Service, Model, View, and Utils. Warns when dependencies violate boundary patterns (e.g. Model referencing Controller).
-            </p>
-          </div>
+            {/* Card 2 */}
+            <BorderGlow className="h-full w-full" backgroundColor="#050505" glowColor="33 100 50" borderRadius={32} colors={['#ff6b00', '#ff8c00', '#ffa800']}>
+              <div className="p-8 flex flex-col h-full">
+                <div className="w-14 h-14 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-center mb-6 shadow-inner">
+                  <AlertTriangle className="w-7 h-7 text-[#ff8c00]" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-tight">Vulnerability Scan</h3>
+                <p className="text-[#888] text-sm leading-relaxed">Automated rules trace security threats: hardcoded credentials, SQL injection, path traversals, and outdated cryptographic algorithms.</p>
+              </div>
+            </BorderGlow>
 
-          {/* Card 4 */}
-          <div className="group bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ffa800]/30 transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
-              <Bot size={130} className="text-[#ffa800]" />
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 group-hover:border-[#ffa800]/40 transition-colors">
-              <Bot className="text-[#ffa800] w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-3">Voice-Driven Exploration</h3>
-            <p className="text-sm text-[#737373] leading-relaxed">
-              Query codehands-free. A full speech pipeline converts your audio via AssemblyAI (STT) ➔ reasons with codebase vector context via Gemini ➔ and reads replies via Murf AI (TTS) voice streams.
-            </p>
-          </div>
+            {/* Card 3 */}
+            <BorderGlow className="h-full w-full" backgroundColor="#050505" glowColor="33 100 50" borderRadius={32} colors={['#ff6b00', '#ff8c00', '#ffa800']}>
+              <div className="p-8 flex flex-col h-full">
+                <div className="w-14 h-14 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-center mb-6 shadow-inner">
+                  <Layers className="w-7 h-7 text-[#ffa800]" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-tight">Architectural Layers</h3>
+                <p className="text-[#888] text-sm leading-relaxed">Auto-indexes logic zones (Model, View, Controller) and actively warns developers on architectural boundary violations.</p>
+              </div>
+            </BorderGlow>
 
-          {/* Card 5 */}
-          <div className="group bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff6b00]/30 transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
-              <Sparkles size={130} className="text-[#ff6b00]" />
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 group-hover:border-[#ff6b00]/40 transition-colors">
-              <Sparkles className="text-[#ff6b00] w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-3">Pattern & Anti-Pattern Search</h3>
-            <p className="text-sm text-[#737373] leading-relaxed">
-              Scan directory schemas to locate implementations of design patterns (Singleton, Factory, Observer, Repository, MVC) and identify anti-patterns (God Objects, Long Files, Feature Envy).
-            </p>
-          </div>
+            {/* Card 4 */}
+            <BorderGlow className="h-full w-full" backgroundColor="#050505" glowColor="33 100 50" borderRadius={32} colors={['#ff6b00', '#ff8c00', '#ffa800']}>
+              <div className="p-8 flex flex-col h-full">
+                <div className="w-14 h-14 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-center mb-6 shadow-inner">
+                  <Bot className="w-7 h-7 text-[#ff6b00]" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-tight">Voice Exploration</h3>
+                <p className="text-[#888] text-sm leading-relaxed">Query code hands-free. We integrate a full speech pipeline via AssemblyAI and Murf AI for accessibility and fast lookups.</p>
+              </div>
+            </BorderGlow>
 
-          {/* Card 6 */}
-          <div className="group bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff8c00]/30 transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
-              <LineChart size={130} className="text-[#ff8c00]" />
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 group-hover:border-[#ff8c00]/40 transition-colors">
-              <CheckCircle2 className="text-[#ff8c00] w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-3">Unified Repository Health</h3>
-            <p className="text-sm text-[#737373] leading-relaxed">
-              Consolidates indices to output a 0-100 overall health grade. Scoring deducts points for circular dependencies, dead code structures, God files, high coupling ratio, and high-severity security leaks.
-            </p>
+            {/* Card 5 */}
+            <BorderGlow className="h-full w-full" backgroundColor="#050505" glowColor="33 100 50" borderRadius={32} colors={['#ff6b00', '#ff8c00', '#ffa800']}>
+              <div className="p-8 flex flex-col h-full">
+                <div className="w-14 h-14 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-center mb-6 shadow-inner">
+                  <Sparkles className="w-7 h-7 text-[#ff8c00]" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-tight">Pattern Search</h3>
+                <p className="text-[#888] text-sm leading-relaxed">Scan directory schemas to locate implementations of design patterns and identify architectural anti-patterns like God Objects.</p>
+              </div>
+            </BorderGlow>
+
+            {/* Card 6 */}
+            <BorderGlow className="h-full w-full" backgroundColor="#050505" glowColor="33 100 50" borderRadius={32} colors={['#ff6b00', '#ff8c00', '#ffa800']}>
+              <div className="p-8 flex flex-col h-full">
+                <div className="w-14 h-14 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-center mb-6 shadow-inner">
+                  <Activity className="w-7 h-7 text-[#ffa800]" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-tight">Unified Repo Health</h3>
+                <p className="text-[#888] text-sm leading-relaxed">Consolidates indices to output a 0-100 overall health grade. Scoring deducts points for circular dependencies and dead code.</p>
+              </div>
+            </BorderGlow>
           </div>
         </div>
       </section>
 
-      {/* Feature Section: RepoLabs Intelligence */}
-      <section className="w-full max-w-6xl mx-auto pb-32 px-6 relative">
-        <div className="text-center mb-24">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff8c00]/10 border border-[#ff8c00]/30 text-[#ff8c00] text-xs font-mono uppercase tracking-wider mb-6">
+      {/* Feature Section: RepoLabs (Z-Stacked Sticky Cards) */}
+      <section className="w-full max-w-5xl mx-auto pb-48 pt-20 px-6 relative">
+        <div className="text-center mb-20">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#ff8c00]/10 border border-[#ff8c00]/30 text-[#ff8c00] text-xs font-mono uppercase tracking-wider mb-6">
             Vector Intelligence
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-white">
-            RepoLabs: Beyond Traditional Grep
+          <h2 className="text-5xl md:text-6xl font-black mb-6 tracking-tighter text-white">
+            RepoLabs: Beyond Grep
           </h2>
           <p className="text-[#a3a3a3] max-w-2xl mx-auto text-lg font-light">
             We repurpose the Qdrant vector embeddings generated during ingestion to unlock deep semantic codebase intelligence features.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Feature 1 */}
-          <div className="group bg-[#050505]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff8c00]/40 transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
-              <Search size={120} className="text-[#ff8c00]" />
+        <div className="flex flex-col relative w-full h-[2400px] md:h-[2000px]">
+          {/* Card 1 */}
+          <div className="sticky top-24 w-full rounded-[3rem] bg-[#050505] border border-[#222] shadow-[0_-10px_40px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col md:flex-row items-center justify-between p-12 md:p-16 group z-10 mt-[100px]">
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#ff8c00] via-black to-black transition-opacity duration-700 pointer-events-none"></div>
+            
+            <div className="max-w-md relative z-10 w-full mb-10 md:mb-0">
+              <Search className="w-12 h-12 text-[#ff8c00] mb-8" />
+              <h3 className="text-4xl font-bold text-white mb-4 tracking-tight">Natural Language Search</h3>
+              <p className="text-[#a3a3a3] text-lg leading-relaxed mb-8">
+                Stop guessing variable names. Search your codebase using plain English queries. Qdrant’s Cosine similarity matching retrieves semantically relevant AST blocks even if exact keywords are absent.
+              </p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 group-hover:border-[#ff8c00]/40 transition-colors shadow-lg">
-              <Search className="text-[#ff8c00] w-6 h-6" />
+
+            {/* Mock UI Demo */}
+            <div className="w-full md:max-w-sm bg-black border border-[#333] rounded-2xl p-6 shadow-2xl relative z-10 group-hover:scale-105 transition-transform duration-500">
+              <div className="flex items-center gap-3 bg-[#111] border border-[#222] rounded-xl p-3 mb-4">
+                <Search className="w-4 h-4 text-[#888]" />
+                <span className="text-[#ccc] text-sm font-mono whitespace-nowrap overflow-hidden text-ellipsis">Where is the JWT token verified?</span>
+                <div className="ml-auto w-2 h-4 bg-[#ff8c00] animate-pulse"></div>
+              </div>
+              <div className="space-y-3">
+                <div className="w-full h-8 bg-white/5 rounded"></div>
+                <div className="w-3/4 h-8 bg-white/5 rounded"></div>
+                <div className="w-5/6 h-8 bg-white/5 rounded"></div>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">Natural Language Search</h3>
-            <p className="text-sm text-[#737373] leading-relaxed">
-              Stop guessing variable names. Search your codebase using plain English queries. Qdrant’s Cosine similarity matching retrieves semantically relevant AST blocks even if exact keywords are absent.
-            </p>
           </div>
 
-          {/* Feature 2 */}
-          <div className="group bg-[#050505]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ff6b00]/40 transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
-              <Layers size={120} className="text-[#ff6b00]" />
+          {/* Card 2 */}
+          <div className="sticky top-32 w-full rounded-[3rem] bg-[#0a0a0a] border border-[#2a2a2a] shadow-[0_-10px_40px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col md:flex-row items-center justify-between p-12 md:p-16 group z-20 mt-[500px]">
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#ff6b00] via-black to-black transition-opacity duration-700 pointer-events-none"></div>
+            
+            <div className="max-w-md relative z-10 w-full mb-10 md:mb-0">
+              <GitBranch className="w-12 h-12 text-[#ff6b00] mb-8" />
+              <h3 className="text-4xl font-bold text-white mb-4 tracking-tight">Semantic Clone Detection</h3>
+              <p className="text-[#a3a3a3] text-lg leading-relaxed mb-8">
+                Find hidden code duplication. Our clustering algorithm scans the entire vector space to identify blocks of code that perform identical logic, bypassing differences in formatting or variable nomenclature.
+              </p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 group-hover:border-[#ff6b00]/40 transition-colors shadow-lg">
-              <GitBranch className="text-[#ff6b00] w-6 h-6" />
+
+            {/* Mock UI Demo */}
+            <div className="w-full md:max-w-sm flex flex-col gap-4 relative z-10 group-hover:scale-105 transition-transform duration-500">
+              <div className="bg-[#111] border border-[#333] rounded-2xl p-4 shadow-xl">
+                <div className="text-xs text-[#ff6b00] font-mono mb-2">Block A (Python)</div>
+                <div className="space-y-2">
+                  <div className="w-full h-4 bg-white/5 rounded"></div>
+                  <div className="w-2/3 h-4 bg-white/5 rounded ml-4"></div>
+                </div>
+              </div>
+              <div className="flex justify-center -my-3 z-20">
+                <div className="bg-[#ff6b00] text-black text-xs font-bold px-3 py-1 rounded-full border-[3px] border-[#0a0a0a]">99% MATCH</div>
+              </div>
+              <div className="bg-[#111] border border-[#333] rounded-2xl p-4 shadow-xl">
+                <div className="text-xs text-[#ff6b00] font-mono mb-2">Block B (JavaScript)</div>
+                <div className="space-y-2">
+                  <div className="w-full h-4 bg-white/5 rounded"></div>
+                  <div className="w-2/3 h-4 bg-white/5 rounded ml-4"></div>
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">Semantic Clone Detection</h3>
-            <p className="text-sm text-[#737373] leading-relaxed">
-              Find hidden code duplication. Our clustering algorithm scans the entire vector space to identify blocks of code that perform identical logic, bypassing differences in formatting or variable nomenclature.
-            </p>
           </div>
 
-          {/* Feature 3 */}
-          <div className="group bg-[#050505]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-2xl hover:border-[#ffa800]/40 transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-[0.08] transition-opacity">
-              <Activity size={120} className="text-[#ffa800]" />
+          {/* Card 3 */}
+          <div className="sticky top-40 w-full rounded-[3rem] bg-[#111] border border-[#333] shadow-[0_-20px_50px_rgba(0,0,0,1)] overflow-hidden flex flex-col md:flex-row items-center justify-between p-12 md:p-16 group z-30 mt-[500px]">
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#ffa800] via-black to-black transition-opacity duration-700 pointer-events-none"></div>
+            
+            <div className="max-w-md relative z-10 w-full mb-10 md:mb-0">
+              <Activity className="w-12 h-12 text-[#ffa800] mb-8" />
+              <h3 className="text-4xl font-bold text-white mb-4 tracking-tight">Version Drift Tracking</h3>
+              <p className="text-[#a3a3a3] text-lg leading-relaxed mb-8">
+                Track semantic evolution across time. By computing vector distances between indexed versions, RepoLabs highlights true behavioral drift and structural deviations that standard text diffs completely miss.
+              </p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-center mb-6 group-hover:border-[#ffa800]/40 transition-colors shadow-lg">
-              <Activity className="text-[#ffa800] w-6 h-6" />
+
+            {/* Mock UI Demo */}
+            <div className="w-full md:max-w-sm bg-black border border-[#444] rounded-2xl p-6 shadow-2xl relative z-10 group-hover:scale-105 transition-transform duration-500">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-[#333]">
+                <span className="text-xs font-mono text-[#888]">v1.0.0</span>
+                <ArrowRight className="w-4 h-4 text-[#ffa800]" />
+                <span className="text-xs font-mono text-white">v1.1.0</span>
+              </div>
+              <div className="space-y-3 font-mono text-xs">
+                <div className="flex items-center gap-2 text-[#ff4500] bg-[#ff4500]/10 px-2 py-1 rounded">
+                  <span>-</span><span>Legacy Auth Module Removed</span>
+                </div>
+                <div className="flex items-center gap-2 text-[#00ff9d] bg-[#00ff9d]/10 px-2 py-1 rounded">
+                  <span>+</span><span>OAuth2.0 Flow Implemented</span>
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">Version Drift Tracking</h3>
-            <p className="text-sm text-[#737373] leading-relaxed">
-              Track semantic evolution across time. By computing vector distances between indexed versions, RepoLabs highlights true behavioral drift and structural deviations that standard text diffs completely miss.
-            </p>
           </div>
         </div>
       </section>
