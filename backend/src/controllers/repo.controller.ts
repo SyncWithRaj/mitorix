@@ -23,6 +23,7 @@ import {
   requireAuthUser,
   ensureValidRepoId,
 } from "../utils/repositoryAccess.util.js";
+import { User } from "../models/auth.model.js";
 
 // Prevent Git from trying to prompt for credentials in server environments (Render, Docker, etc.)
 // GIT_TERMINAL_PROMPT=0 disables interactive prompts without injecting fake credentials
@@ -222,6 +223,8 @@ export const processRepoController = async (req: Request, res: Response, next: N
     repo.localPath = repoPath;
 
     await repo.save();
+    
+    await User.findByIdAndUpdate(user._id, { $push: { repoCreationHistory: new Date() } });
 
     const job = await repoQueue.add("process-repo", {
       repoUrl: githubUrl,
@@ -384,6 +387,8 @@ export const uploadLocalRepository = async (req: Request, res: Response): Promis
     fs.mkdirSync(repoPath, { recursive: true });
     repo.localPath = repoPath;
     await repo.save();
+    
+    await User.findByIdAndUpdate(user._id, { $push: { repoCreationHistory: new Date() } });
 
     let queuedSuccessfully = false;
 
