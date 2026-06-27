@@ -2,6 +2,12 @@ import { Router } from "express";
 import passport from "passport";
 import jwt from "jsonwebtoken";
 import { protect } from "../middlewares/auth.middleware.js";
+import { getEffectiveTier } from "../middlewares/subscription.middleware.js";
+import {
+  TIER_RATE_LIMITS,
+  TIER_REPO_LIMITS,
+  getFeaturesForTier,
+} from "../config/subscription.config.js";
 import { User } from "../models/auth.model.js";
 import logger from "../lib/logger.js";
 
@@ -34,11 +40,26 @@ router.get("/github/callback", passport.authenticate("github", { session: false 
   res.redirect(`${frontendUrl}/dashboard`);
 });
 
-// Retrieve current authenticated user
+// Retrieve current authenticated user (with subscription info)
 router.get("/me", protect, (req, res) => {
+  const user = req.user as Express.IUser;
+  const effectiveTier = getEffectiveTier(user);
+  const isExpired = effectiveTier !== (user.subscriptionTier || "FREE");
+
   res.json({
     success: true,
     user: req.user,
+    subscription: {
+      tier: effectiveTier,
+      isExpired,
+      expiresAt: user.subscriptionExpiresAt || null,
+      features: getFeaturesForTier(effectiveTier),
+      limits: {
+        repos: TIER_REPO_LIMITS[effectiveTier],
+        chatPerDay: TIER_RATE_LIMITS[effectiveTier].chatPerDay,
+        searchPerDay: TIER_RATE_LIMITS[effectiveTier].searchPerDay,
+      },
+    },
   });
 });
 
