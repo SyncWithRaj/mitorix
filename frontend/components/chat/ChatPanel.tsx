@@ -24,6 +24,7 @@ import {
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useDragStore } from "@/lib/dragStore";
+import { useSubscription } from "@/context/SubscriptionContext";
 import { entityIcons } from "@/lib/dragdrop.types";
 import type { DraggedContextNode } from "@/lib/dragdrop.types";
 
@@ -109,6 +110,7 @@ export default function ChatPanel({
 }: ChatPanelProps) {
   const router = useRouter();
   const { isDragging } = useDragStore();
+  const { hasFeature } = useSubscription();
   const [dropHighlight, setDropHighlight] = useState(false);
   const chatInputAreaRef = useRef<HTMLDivElement>(null);
   const [callState, setCallState] = useState<"idle" | "listening" | "processing" | "speaking">(
@@ -567,8 +569,15 @@ export default function ChatPanel({
             Chat
           </button>
           <button
-            onClick={() => setActiveTab("call")}
-            className={`cursor-pointer flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold tracking-widest uppercase transition-all duration-300 ${activeTab === "call" ? "text-[#ff8c00] border-b-2 border-[#ff8c00] bg-[#000000]" : "text-[#737373] hover:text-[#e5e5e5] hover:bg-[#0a0a0a]"}`}
+            onClick={() => {
+              if (!hasFeature("chat:voice")) {
+                toast.error("🔒 Voice call requires the PRO plan. Upgrade to unlock.", { id: "voice-locked" });
+                return;
+              }
+              setActiveTab("call");
+            }}
+            className={`cursor-pointer flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold tracking-widest uppercase transition-all duration-300 ${activeTab === "call" ? "text-[#ff8c00] border-b-2 border-[#ff8c00] bg-[#000000]" : "text-[#737373] hover:text-[#e5e5e5] hover:bg-[#0a0a0a]"} ${!hasFeature("chat:voice") ? "opacity-70" : ""}`}
+            title={hasFeature("chat:voice") ? "Voice Call" : "Requires PRO plan"}
           >
             <Phone size={14} />
             Call
