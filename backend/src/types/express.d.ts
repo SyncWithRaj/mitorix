@@ -15,6 +15,11 @@ declare global {
       username: string;
       email?: string;
       avatar?: string;
+      subscriptionTier: "FREE" | "BASIC" | "PRO";
+      subscriptionExpiresAt?: Date | null;
+      razorpayCustomerId?: string | null;
+      razorpaySubscriptionId?: string | null;
+      lastPaymentId?: string | null;
       createdAt: Date;
       updatedAt: Date;
     }
@@ -24,3 +29,4 @@ declare global {
     }
   }
 }
+
