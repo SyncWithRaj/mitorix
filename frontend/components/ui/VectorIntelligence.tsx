@@ -72,12 +72,11 @@ export default function VectorIntelligence() {
               <div
                 key={feature.id}
                 onMouseEnter={() => setActiveIndex(index)}
-                className="relative rounded-[1.5rem] overflow-hidden cursor-pointer border"
+                className="relative rounded-[1.5rem] overflow-hidden cursor-pointer border bg-[#030303]/40 backdrop-blur-md"
                 style={{
                   flex: isActive ? 5 : 1,
                   transition: "flex 450ms cubic-bezier(0.22, 1, 0.36, 1), border-color 250ms ease",
                   borderColor: isActive ? `${feature.accentColor}50` : "#1a1a1a",
-                  background: "#030303",
                   willChange: "flex",
                 }}
               >
@@ -131,7 +130,7 @@ export default function VectorIntelligence() {
                   </div>
 
                   {/* Info bar */}
-                  <div className="border-t border-[#1a1a1a] px-7 py-5 bg-[#020202]">
+                  <div className="border-t border-[#1a1a1a] px-7 py-5 bg-transparent">
                     <div className="flex items-start justify-between gap-6">
                       <div className="min-w-0 flex-1">
                         <h3 className="text-lg font-bold text-white mb-1.5 tracking-tight">
@@ -169,8 +168,9 @@ export default function VectorIntelligence() {
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
-              <div key={feature.id} className="rounded-2xl border border-[#1a1a1a] bg-[#030303] overflow-hidden">
-                <div className="p-6 flex items-start gap-4">
+              <div key={feature.id} className="rounded-2xl border border-[#1a1a1a] bg-[#030303]/40 backdrop-blur-md overflow-hidden">
+                <div
+                  className="flex items-center gap-4 p-5 cursor-pointer">
                   <div
                     className="w-11 h-11 rounded-xl flex items-center justify-center border shrink-0"
                     style={{ borderColor: `${feature.accentColor}30`, background: `${feature.accentColor}10` }}

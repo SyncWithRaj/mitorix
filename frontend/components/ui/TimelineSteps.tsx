@@ -133,21 +133,8 @@ export default function TimelineSteps() {
                 i > 0 ? "md:mt-20" : ""
               }`}
             >
-              {/* ── Left half ── */}
-              <div className={`flex-1 ${isLeft ? "md:pr-8" : ""} w-full ${isLeft ? "" : "hidden md:block"}`}>
-                {isLeft && (
-                  <StepCard
-                    step={step}
-                    visible={visible}
-                    delay={delay}
-                    slideFrom="left"
-                    textAlign="right"
-                  />
-                )}
-              </div>
-
-              {/* ── Center dot (fixed 56px) ── */}
-              <div className="hidden md:flex w-14 shrink-0 items-center justify-center relative z-10">
+              {/* ── Center dot (ABSOLUTE positioned for perfect alignment) ── */}
+              <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 shrink-0 items-center justify-center z-20">
                 <div
                   className="w-14 h-14 rounded-full bg-[#050505] border-2 flex items-center justify-center"
                   style={{
@@ -162,8 +149,21 @@ export default function TimelineSteps() {
                 </div>
               </div>
 
+              {/* ── Left half ── */}
+              <div className={`w-full md:w-1/2 ${isLeft ? "md:pr-12" : ""} ${isLeft ? "" : "hidden md:block"}`}>
+                {isLeft && (
+                  <StepCard
+                    step={step}
+                    visible={visible}
+                    delay={delay}
+                    slideFrom="left"
+                    textAlign="right"
+                  />
+                )}
+              </div>
+
               {/* ── Right half ── */}
-              <div className={`flex-1 ${!isLeft ? "md:pl-8" : ""} w-full ${!isLeft ? "" : "hidden md:block"}`}>
+              <div className={`w-full md:w-1/2 ${!isLeft ? "md:pl-12" : ""} ${!isLeft ? "" : "hidden md:block"}`}>
                 {!isLeft && (
                   <StepCard
                     step={step}
@@ -196,7 +196,7 @@ function StepCard({ step, visible, delay, slideFrom, textAlign }: StepCardProps)
 
   return (
     <div
-      className={`bg-[#050505]/80 border border-[#1a1a1a] p-8 rounded-3xl w-full relative overflow-hidden hover:-translate-y-1 hover:shadow-lg ${
+      className={`bg-[#030303]/40 backdrop-blur-md border border-[#1a1a1a] p-8 rounded-3xl w-full relative overflow-hidden hover:-translate-y-1 hover:shadow-lg ${
         textAlign === "right" ? "text-right" : "text-left"
       }`}
       style={{

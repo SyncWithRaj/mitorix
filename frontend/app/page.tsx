@@ -746,9 +746,7 @@ export default function Home() {
               </div>
             ]}
             velocity={40}
-            className="text-white hover:text-[#ff6b00] transition-colors duration-500"
-            damping={30}
-            stiffness={400}
+            className="text-white"
             numCopies={6}
           />
         </div>
