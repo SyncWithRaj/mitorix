@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
+import toast from "react-hot-toast";
 import { useCodeflow } from "../../../context/CodeflowContext";
+import { useSubscription } from "../../../context/SubscriptionContext";
 import { VizType } from "../../../lib/codeflow.types";
 import {
   Network,
@@ -16,8 +18,17 @@ import {
 
 export default function VizSelector() {
   const { graphConfig, setGraphConfig } = useCodeflow();
+  const { tier } = useSubscription();
 
   const handleSelect = (vizType: VizType) => {
+    // Only Visual (visual) and Graph (force) are allowed on FREE plan
+    if (tier === "FREE" && vizType !== "visual" && vizType !== "force") {
+      toast.error(
+        "🔒 Advanced visualizations require the BASIC plan or higher. Upgrade to unlock.",
+        { id: "viz-locked" }
+      );
+      return;
+    }
     setGraphConfig({ ...graphConfig, vizType });
   };
 
@@ -37,13 +48,18 @@ export default function VizSelector() {
       {tabs.map((tab) => {
         const isActive = graphConfig.vizType === tab.id;
         const Icon = tab.icon;
+        const isLocked = tier === "FREE" && tab.id !== "visual" && tab.id !== "force";
+
         return (
           <button
             key={tab.id}
             onClick={() => handleSelect(tab.id)}
+            title={isLocked ? "Requires Basic Plan" : tab.label}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
               isActive
                 ? "bg-[#0a0a0a] text-white shadow-sm border border-[#ff6b00]/30"
+                : isLocked
+                ? "text-[#737373] hover:text-[#ff6b00]/80 hover:bg-[rgba(255,255,255,0.02)] border border-transparent"
                 : "text-[#737373] hover:text-[#e5e5e5] hover:bg-[rgba(255,255,255,0.02)] border border-transparent"
             }`}
           >
