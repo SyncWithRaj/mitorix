@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import Image from "next/image";
@@ -13,14 +13,25 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 20);
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -52,17 +63,25 @@ export default function Navbar() {
   if (pathname.startsWith("/codeflow")) return null;
 
   return (
-    <nav
-      className={`fixed left-0 right-0 z-50 transition-all duration-500 text-[#e5e5e5] px-6 py-3.5 flex items-center justify-between ${
-        inRepoLabs
-          ? scrolled
-            ? "top-0 mx-0 rounded-none border-t-0 border-x-0 bg-[#000000] shadow-[0_8px_40px_rgba(0,0,0,0.6)] border-b border-[#ff6b00]/20"
-            : "top-0 mx-0 rounded-none bg-[#000000] border-b border-[#1a1a1a]"
-          : scrolled
-          ? "top-0 mx-0 rounded-none border-t-0 border-x-0 glass-panel shadow-[0_8px_40px_rgba(0,0,0,0.6)] border-b border-[#ff6b00]/20"
-          : "top-[15px] mx-[15px] rounded-2xl bg-[#000000]/30 backdrop-blur-xl border border-[rgba(255,255,255,0.05)] shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
-      }`}
-    >
+    <>
+      <div className={`fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none px-4 transition-transform duration-500 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
+      <nav
+        className={`pointer-events-auto transition-all duration-500 text-[#e5e5e5] px-6 py-3.5 flex items-center justify-between w-full max-w-7xl relative ${
+          inRepoLabs
+            ? "bg-[#000000] rounded-none border-b border-[#1a1a1a]"
+            : "bg-white/[0.03] backdrop-blur-2xl rounded-b-[28px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_inset_0_-1px_1px_rgba(255,255,255,0.05),_0_15px_40px_rgba(0,0,0,0.6)] border border-t-0 border-white/10"
+        }`}
+      >
+        {!inRepoLabs && (
+          <>
+            <svg className="absolute top-0 -left-4 w-4 h-4 text-white/[0.03] fill-current backdrop-blur-2xl" viewBox="0 0 16 16">
+              <path d="M16 0L0 0C8.83656 0 16 7.16344 16 16Z" />
+            </svg>
+            <svg className="absolute top-0 -right-4 w-4 h-4 text-white/[0.03] fill-current backdrop-blur-2xl" viewBox="0 0 16 16">
+              <path d="M0 0L16 0C7.16344 0 0 7.16344 0 16Z" />
+            </svg>
+          </>
+        )}
       <div className="flex items-center space-x-6">
         {inRepoSpace ? (
           <div className="flex items-center gap-4">
@@ -118,20 +137,13 @@ export default function Navbar() {
 
       <div className="flex items-center space-x-4">
         {isAuthenticated ? (
-          <>
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium hover:text-white text-[#e5e5e5] hover:bg-[#0a0a0a] px-3 py-1.5 rounded-md transition-all duration-300"
-            >
-              Dashboard
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-[#ff4500] hover:text-white hover:bg-[#ff4500] hover:border-[#ff4500] transition-all duration-300 active:scale-95 font-medium bg-[#0a0a0a] border border-[#1a1a1a] px-4 py-1.5 rounded-lg shadow-sm"
-            >
-              Logout
-            </button>
-          </>
+          <Link
+            href="/dashboard"
+            className="relative overflow-hidden text-sm font-bold text-black bg-[#ff6b00] px-5 py-2 rounded-full transition-all duration-300 group shadow-[0_0_15px_rgba(255,107,0,0.4)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)]"
+          >
+            <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+            <span className="relative z-10">Dashboard</span>
+          </Link>
         ) : (
           <Link
             href="/login"
@@ -143,6 +155,19 @@ export default function Navbar() {
           </Link>
         )}
       </div>
-    </nav>
+      </nav>
+    </div>
+
+    {isAuthenticated && (
+      <button
+        onClick={handleLogout}
+        title="Logout"
+        className="fixed top-6 right-6 z-50 w-12 h-12 rounded-full bg-[#ff6b00] text-black shadow-[0_0_15px_rgba(255,107,0,0.4)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] overflow-hidden group flex items-center justify-center transition-all duration-300 hover:-translate-y-1"
+      >
+        <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+        <LogOut className="relative z-10 w-5 h-5" />
+      </button>
+    )}
+    </>
   );
 }
