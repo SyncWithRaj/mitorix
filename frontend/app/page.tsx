@@ -38,7 +38,8 @@ import {
   LineChart,
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
-import Silk from "@/components/ui/Silk";
+import { Silk } from "@/components/ui/Silk";
+import ScrollVelocity from "@/components/ui/ScrollVelocity";
 import Shuffle from "@/components/ui/Shuffle";
 
 const LiveChatMock = () => {
@@ -839,23 +840,18 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {languages.map((lang, idx) => (
-              <div
-                key={idx}
-                className="group relative bg-[#0a0a0a]/40 backdrop-blur-md border border-[#1a1a1a] p-5 rounded-xl hover:border-[#ff6b00]/35 transition-all duration-300 hover:shadow-[0_4px_20px_rgba(255,107,0,0.1)] flex flex-col justify-between items-center text-center overflow-hidden"
-              >
-                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${lang.color} flex items-center justify-center font-bold text-xs shadow-md shrink-0 mb-3`} style={{ color: lang.text }}>
-                  {lang.name.substring(0, 2)}
-                </div>
-                <div className="text-sm font-bold text-white group-hover:text-[#ff8c00] transition-colors">{lang.name}</div>
-                <div className="text-[10px] text-[#737373] mt-1 font-mono">{lang.ext}</div>
-              </div>
-            ))}
-            <div className="group bg-[#030303]/40 backdrop-blur-md border border-dashed border-[#262626] p-5 rounded-xl flex flex-col items-center justify-center text-center">
-              <span className="text-xs text-[#737373] font-medium uppercase tracking-widest mb-1">Coming Soon</span>
-              <span className="text-[11px] text-[#525252] font-mono">Scala, Swift, Kotlin</span>
-            </div>
+          <div className="mt-16 w-full max-w-[100vw] overflow-hidden -mx-6 md:-mx-12 px-6 md:px-12">
+            <ScrollVelocity
+              texts={[
+                'TypeScript • JavaScript • Python • Go • Rust • ',
+                'Java • C/C++ • C# • Ruby • PHP • '
+              ]}
+              velocity={40}
+              className="text-[#333] hover:text-[#ff6b00] transition-colors duration-500 mx-4"
+              damping={30}
+              stiffness={400}
+              numCopies={6}
+            />
           </div>
         </div>
       </section>
