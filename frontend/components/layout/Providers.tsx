@@ -1,10 +1,11 @@
 "use client";
 
 import { Toaster } from "react-hot-toast";
+import { SubscriptionProvider } from "@/context/SubscriptionContext";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <SubscriptionProvider>
       {children}
       <Toaster
         position="bottom-right"
@@ -34,6 +35,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           },
         }}
       />
-    </>
+    </SubscriptionProvider>
   );
 }
