@@ -41,6 +41,9 @@ import Footer from "@/components/layout/Footer";
 import Silk from "@/components/ui/Silk";
 import ScrollVelocity from "@/components/ui/ScrollVelocity";
 import Shuffle from "@/components/ui/Shuffle";
+import { SiTypescript, SiJavascript, SiPython, SiGo, SiRust, SiCplusplus, SiRuby, SiPhp } from 'react-icons/si';
+import { FaJava } from 'react-icons/fa';
+import { TbBrandCSharp } from 'react-icons/tb';
 
 const LiveChatMock = () => {
   const [hasSent, setHasSent] = useState(false);
@@ -839,20 +842,32 @@ export default function Home() {
               RepoLens bypasses fragile regex code matching by compiling high-fidelity ASTs using dedicated language parsers.
             </p>
           </div>
+        </div>
 
-          <div className="mt-16 w-full max-w-[100vw] overflow-hidden -mx-6 md:-mx-12 px-6 md:px-12">
-            <ScrollVelocity
-              texts={[
-                'TypeScript • JavaScript • Python • Go • Rust • ',
-                'Java • C/C++ • C# • Ruby • PHP • '
-              ]}
-              velocity={40}
-              className="text-[#333] hover:text-[#ff6b00] transition-colors duration-500 mx-4"
-              damping={30}
-              stiffness={400}
-              numCopies={6}
-            />
-          </div>
+        <div className="mt-8 w-full overflow-hidden">
+          <ScrollVelocity
+            texts={[
+              <div key="row1" className="flex items-center gap-12 px-6">
+                <div className="flex items-center gap-4"><SiTypescript className="w-12 h-12 sm:w-16 sm:h-16 text-[#3178C6]" /> <span>TypeScript</span></div>
+                <div className="flex items-center gap-4"><SiJavascript className="w-12 h-12 sm:w-16 sm:h-16 text-[#F7DF1E]" /> <span>JavaScript</span></div>
+                <div className="flex items-center gap-4"><SiPython className="w-12 h-12 sm:w-16 sm:h-16 text-[#3776AB]" /> <span>Python</span></div>
+                <div className="flex items-center gap-4"><SiGo className="w-12 h-12 sm:w-16 sm:h-16 text-[#00ADD8]" /> <span>Go</span></div>
+                <div className="flex items-center gap-4"><SiRust className="w-12 h-12 sm:w-16 sm:h-16 text-white" /> <span>Rust</span></div>
+              </div>,
+              <div key="row2" className="flex items-center gap-12 px-6">
+                <div className="flex items-center gap-4"><FaJava className="w-12 h-12 sm:w-16 sm:h-16 text-[#E76F00]" /> <span>Java</span></div>
+                <div className="flex items-center gap-4"><SiCplusplus className="w-12 h-12 sm:w-16 sm:h-16 text-[#00599C]" /> <span>C/C++</span></div>
+                <div className="flex items-center gap-4"><TbBrandCSharp className="w-12 h-12 sm:w-16 sm:h-16 text-[#239120]" /> <span>C#</span></div>
+                <div className="flex items-center gap-4"><SiRuby className="w-12 h-12 sm:w-16 sm:h-16 text-[#CC342D]" /> <span>Ruby</span></div>
+                <div className="flex items-center gap-4"><SiPhp className="w-12 h-12 sm:w-16 sm:h-16 text-[#777BB3]" /> <span>PHP</span></div>
+              </div>
+            ]}
+            velocity={40}
+            className="text-white hover:text-[#ff6b00] transition-colors duration-500"
+            damping={30}
+            stiffness={400}
+            numCopies={6}
+          />
         </div>
       </section>
 
