@@ -65,6 +65,7 @@ import ConfirmDialog from "./modals/ConfirmDialog";
 
 import AnalysisProgress from "./AnalysisProgress";
 import { getWorkerManager } from "../../lib/worker.utils";
+import { useSubscription } from "../../context/SubscriptionContext";
 
 export type ChatRef = { file: string; startLine?: number; endLine?: number };
 export type ChatMessage = {
@@ -114,6 +115,8 @@ export default function CodeflowLayout({
   const [leftPanelWidth, setLeftPanelWidth] = useState(260);
   const [isDesignDocOpen, setIsDesignDocOpen] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+
+  const { hasFeature, tier } = useSubscription();
 
   // ── Chat Slide-Out State ──
   const [chatOpen, setChatOpen] = useState(false);
@@ -379,32 +382,56 @@ export default function CodeflowLayout({
 
         <div className="flex items-center gap-1 sm:gap-2">
           <button
-            className="p-1.5 text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover rounded-md transition flex items-center gap-1.5"
-            title="Generate System Design"
-            onClick={() => setIsDesignDocOpen(true)}
+            className="p-1.5 rounded-md transition flex items-center gap-1.5 text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover"
+            title={hasFeature('repo:design-doc') ? "Generate System Design" : "System Design requires PRO plan"}
+            onClick={() => {
+              if (!hasFeature('repo:design-doc')) {
+                toast.error("🔒 System Design requires the PRO plan. Upgrade to unlock.");
+                return;
+              }
+              setIsDesignDocOpen(true);
+            }}
           >
             <FileText size={16} />
             <span className="text-[10px] uppercase font-bold hidden xl:inline">Design Doc</span>
           </button>
           <button
-            className="p-1.5 text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover rounded-md transition flex items-center gap-1.5"
-            title="Onboarding Guide"
-            onClick={() => setIsOnboardingOpen(true)}
+            className="p-1.5 rounded-md transition flex items-center gap-1.5 text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover"
+            title={hasFeature('repo:onboarding') ? "Onboarding Guide" : "Onboarding Guide requires PRO plan"}
+            onClick={() => {
+              if (!hasFeature('repo:onboarding')) {
+                toast.error("🔒 Onboarding Guide requires the PRO plan. Upgrade to unlock.");
+                return;
+              }
+              setIsOnboardingOpen(true);
+            }}
           >
             <BookOpen size={16} />
             <span className="text-[10px] uppercase font-bold hidden xl:inline">Onboarding</span>
           </button>
           <button
-            className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition"
-            title="Pull Request"
-            onClick={() => setShowPRModal(true)}
+            className="p-1.5 rounded-md transition text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover"
+            title={hasFeature('codeflow:pr') ? "Pull Request Analysis" : "PR Analysis requires PRO plan"}
+            onClick={() => {
+              if (!hasFeature('codeflow:pr')) {
+                toast.error("🔒 Pull Request Analysis requires the PRO plan. Upgrade to unlock.");
+                return;
+              }
+              setShowPRModal(true);
+            }}
           >
             <GitPullRequest size={16} />
           </button>
           <button
-            className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition"
-            title="Export"
-            onClick={() => setShowExportModal(true)}
+            className="p-1.5 rounded-md transition text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover"
+            title={hasFeature('export:data') ? "Export Analysis" : "Export requires BASIC plan"}
+            onClick={() => {
+              if (!hasFeature('export:data')) {
+                toast.error("🔒 Export Analysis requires the BASIC plan. Upgrade to unlock.");
+                return;
+              }
+              setShowExportModal(true);
+            }}
           >
             <Download size={16} />
           </button>
