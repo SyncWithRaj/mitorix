@@ -30,10 +30,6 @@ export const repoQueue = new Queue<JobData, JobResult, string>("repo-processing-
   settings: upstashOptimizedSettings,
 });
 
-export const cleanupQueue = new Queue("cleanup-queue", {
-  connection: redisConnection,
-  settings: upstashOptimizedSettings,
-});
 
 export const globalQueueEvents = new QueueEvents("repo-processing-queue", {
   connection: redisConnection,
