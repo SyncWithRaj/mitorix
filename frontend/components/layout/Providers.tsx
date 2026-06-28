@@ -2,10 +2,15 @@
 
 import { Toaster } from "react-hot-toast";
 import { SubscriptionProvider } from "@/context/SubscriptionContext";
+import Silk from "@/components/ui/Silk";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SubscriptionProvider>
+      {/* Global Persistent Silk Background */}
+      <div className="fixed inset-0 z-[-1] opacity-[0.25] pointer-events-none">
+        <Silk color="#ff6b00" speed={4} scale={1.5} noiseIntensity={2} />
+      </div>
       {children}
       <Toaster
         position="bottom-right"

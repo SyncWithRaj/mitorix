@@ -39,7 +39,7 @@ import {
   LineChart,
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
-import Silk from "@/components/ui/Silk";
+
 import ScrollVelocity from "@/components/ui/ScrollVelocity";
 import Shuffle from "@/components/ui/Shuffle";
 import VectorIntelligence from "@/components/ui/VectorIntelligence";
@@ -278,10 +278,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col flex-grow items-center w-full overflow-hidden selection:bg-[#ff6b00] selection:text-white bg-transparent text-[#e5e5e5]">
-      {/* Silk Animated Background - Fixed to viewport */}
-      <div className="fixed inset-0 z-0 opacity-[0.25] pointer-events-none">
-        <Silk color="#ff6b00" speed={4} scale={1.5} noiseIntensity={2} />
-      </div>
+
 
       {/* Hero Section */}
       <section className="relative w-full min-h-[95vh] flex flex-col items-center justify-center pt-36 pb-24 px-6 overflow-hidden z-10">

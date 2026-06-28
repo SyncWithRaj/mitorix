@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Hexagon, Cpu, Network, Zap, CheckCircle2 } from "lucide-react";
-import Silk from "@/components/ui/Silk";
+
 
 interface AnalysisProgressProps {
   progress: number;
@@ -29,10 +29,7 @@ export default function AnalysisProgress({ progress, message, isVisible }: Analy
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-2xl">
-      {/* Background Silk & Glow */}
-      <div className="absolute inset-0 z-0 opacity-[0.25] pointer-events-none">
-        <Silk color="#ff6b00" speed={4} scale={1.5} noiseIntensity={2} />
-      </div>
+      {/* Background Glow */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,107,0,0.15)_0%,transparent_50%)] pointer-events-none z-0" />
       
       <div className="w-full max-w-xl mx-4 bg-[#050505]/80 backdrop-blur-xl border border-white/10 p-1 rounded-[2rem] shadow-[0_0_50px_rgba(255,107,0,0.2)] relative overflow-hidden group z-10">

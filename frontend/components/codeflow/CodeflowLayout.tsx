@@ -314,9 +314,12 @@ export default function CodeflowLayout({
   ];
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-gh-bg text-gh-text overflow-hidden font-mono">
-      {/* Topbar */}
-      <div className="h-14 border-b border-gh-border bg-gh-panel flex items-center px-4 shrink-0 sticky top-0 z-[120] justify-between">
+    <div className={`fixed inset-0 z-[100] flex flex-col text-gh-text overflow-hidden font-mono ${isLoading ? 'bg-transparent' : 'bg-gh-bg'}`}>
+      
+      {/* Main Content Wrapper - Hidden during loading so global Silk shows through */}
+      <div className={`flex flex-col h-full w-full transition-opacity duration-700 ease-in-out ${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        {/* Topbar */}
+        <div className="h-14 border-b border-gh-border bg-gh-panel flex items-center px-4 shrink-0 sticky top-0 z-[120] justify-between">
         <div className="flex items-center gap-2 min-w-0">
           <Link
             href={`/dashboard`}
@@ -696,6 +699,7 @@ export default function CodeflowLayout({
         isOpen={isOnboardingOpen}
         onClose={() => setIsOnboardingOpen(false)}
       />
+      </div> {/* End Main Content Wrapper */}
 
       {/* Analysis Progress Overlay */}
       <AnalysisProgress

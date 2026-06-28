@@ -1,15 +1,12 @@
 "use client";
 
 import { Mail, MessageCircle, Linkedin, Send, MessageSquareText } from "lucide-react";
-import Silk from "@/components/ui/Silk";
+
 
 export default function ContactPage() {
   return (
-    <div className="w-full h-screen overflow-hidden bg-black text-[#e5e5e5] selection:bg-[#ff6b00] selection:text-white relative flex flex-col">
+    <div className="w-full h-screen overflow-hidden bg-transparent text-[#e5e5e5] selection:bg-[#ff6b00] selection:text-white relative flex flex-col">
       {/* Background decorations */}
-      <div className="absolute inset-0 z-0 opacity-[0.25] pointer-events-none">
-        <Silk color="#ff6b00" speed={4} scale={1.5} noiseIntensity={2} />
-      </div>
       <div
         className="absolute inset-0 opacity-[0.015] pointer-events-none z-0"
         style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}

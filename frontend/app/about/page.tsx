@@ -27,15 +27,12 @@ import {
   FileCode,
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
-import Silk from "@/components/ui/Silk";
+
 
 export default function AboutPage() {
   return (
     <div className="flex flex-col flex-grow w-full bg-transparent text-[#e5e5e5] pb-0 selection:bg-[#ff6b00] selection:text-white relative">
       {/* Background patterns */}
-      <div className="fixed inset-0 z-0 opacity-[0.25] pointer-events-none">
-        <Silk color="#ff6b00" speed={4} scale={1.5} noiseIntensity={2} />
-      </div>
       <div
         className="fixed inset-0 opacity-[0.015] pointer-events-none z-0 mix-blend-screen"
         style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}

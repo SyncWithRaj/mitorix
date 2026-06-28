@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Github, Fingerprint, FlaskConical, ShieldCheck, Box, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
-import Silk from "@/components/ui/Silk";
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,11 +51,8 @@ export default function LoginPage() {
   const isDev = process.env.NODE_ENV === "development";
 
   return (
-    <div className="w-full h-screen overflow-hidden bg-black text-[#e5e5e5] relative flex">
-      {/* Backgrounds spanning the whole page */}
-      <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
-        <Silk color="#ff6b00" speed={4} scale={1.5} noiseIntensity={2} />
-      </div>
+    <div className="w-full h-screen overflow-hidden bg-transparent text-[#e5e5e5] relative flex">
+
       <div
         className="absolute inset-0 opacity-[0.02] pointer-events-none z-0"
         style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}

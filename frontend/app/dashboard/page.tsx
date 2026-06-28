@@ -30,7 +30,7 @@ import JSZip from "jszip";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useSubscription } from "@/context/SubscriptionContext";
-import Silk from "@/components/ui/Silk";
+
 
 function RepoProgressTracker({ jobId, onComplete }: { jobId: string; onComplete: () => void }) {
   const [status, setStatus] = useState("connecting...");
@@ -349,10 +349,7 @@ export default function Dashboard() {
 
   return (
     <div className="w-full min-h-screen bg-transparent flex flex-col pt-32 pb-24 relative selection:bg-[#ff6b00] selection:text-white overflow-hidden text-[#e5e5e5]">
-      {/* Silk Animated Background - Fixed to viewport */}
-      <div className="fixed inset-0 z-0 opacity-[0.25] pointer-events-none">
-        <Silk color="#ff6b00" speed={4} scale={1.5} noiseIntensity={2} />
-      </div>
+
 
       {/* Noise overlay */}
       <div
