@@ -30,6 +30,7 @@ import JSZip from "jszip";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useSubscription } from "@/context/SubscriptionContext";
+import Silk from "@/components/ui/Silk";
 
 function RepoProgressTracker({ jobId, onComplete }: { jobId: string; onComplete: () => void }) {
   const [status, setStatus] = useState("connecting...");
@@ -324,19 +325,19 @@ export default function Dashboard() {
   const embeddedCount = repos.filter(r => r.isEmbedded).length;
 
   return (
-    <div className="w-full min-h-screen bg-[#020202] flex flex-col pt-32 pb-24 relative selection:bg-[#ff6b00] selection:text-white overflow-hidden">
-      {/* Background patterns */}
-      <div className="absolute top-0 right-[-10%] w-[70vw] h-[70vw] max-w-[900px] bg-gradient-to-br from-[#ff6b00]/5 via-[#ffa800]/2 to-transparent blur-[140px] rounded-full pointer-events-none mix-blend-screen animate-glow-pulse"></div>
-      <div className="absolute bottom-[5%] left-[-10%] w-[50vw] h-[50vw] max-w-[700px] bg-gradient-to-tr from-[#ff8c00]/4 to-[#ffa800]/1 to-transparent blur-[150px] rounded-full pointer-events-none mix-blend-screen animate-float"></div>
-      
-      {/* Tech Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_30%,transparent_100%)] pointer-events-none"></div>
+    <div className="w-full min-h-screen bg-transparent flex flex-col pt-32 pb-24 relative selection:bg-[#ff6b00] selection:text-white overflow-hidden text-[#e5e5e5]">
+      {/* Silk Animated Background - Fixed to viewport */}
+      <div className="fixed inset-0 z-0 opacity-[0.25] pointer-events-none">
+        <Silk color="#ff6b00" speed={4} scale={1.5} noiseIntensity={2} />
+      </div>
 
       {/* Noise overlay */}
       <div
         className="absolute inset-0 opacity-[0.015] pointer-events-none"
         style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}
       ></div>
+      {/* Tech Grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_20%,transparent_100%)] pointer-events-none"></div>
 
       <div className="max-w-6xl mx-auto w-full px-6 flex-grow relative z-10 space-y-10">
         
@@ -365,7 +366,7 @@ export default function Dashboard() {
           
           {/* Quick Metrics */}
           <div className="flex flex-wrap gap-4 w-full md:w-auto">
-            <div className="bg-[#09090b]/80 backdrop-blur-xl border border-[#1f1f23] rounded-2xl px-5 py-4 flex items-center gap-4 shadow-xl shrink-0">
+            <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl px-5 py-4 flex items-center gap-4 shadow-xl shrink-0">
               <div className="w-10 h-10 rounded-xl bg-[#ff6b00]/10 border border-[#ff6b00]/20 flex items-center justify-center shadow-inner">
                 <Box className="text-[#ff6b00] w-5 h-5" />
               </div>
@@ -375,7 +376,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-[#09090b]/80 backdrop-blur-xl border border-[#1f1f23] rounded-2xl px-5 py-4 flex items-center gap-4 shadow-xl shrink-0">
+            <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl px-5 py-4 flex items-center gap-4 shadow-xl shrink-0">
               <div className="w-10 h-10 rounded-xl bg-[#ffa800]/10 border border-[#ffa800]/20 flex items-center justify-center shadow-inner">
                 <Database className="text-[#ffa800] w-5 h-5" />
               </div>
@@ -388,7 +389,7 @@ export default function Dashboard() {
         </div>
 
         {/* Provision Card */}
-        <div className="bg-gradient-to-b from-[#09090b]/90 to-[#030303]/95 backdrop-blur-2xl border border-[#1f1f23] rounded-3xl p-5 md:py-6 md:px-7 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+        <div className="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 md:py-6 md:px-7 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
           <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-gradient-to-bl from-[#ff6b00]/5 via-transparent to-transparent blur-3xl rounded-full pointer-events-none group-hover:from-[#ff6b00]/10 transition-all duration-700"></div>
 
           <h2 className="text-lg font-bold text-white mb-4 relative z-10 flex items-center gap-3">
@@ -517,7 +518,7 @@ export default function Dashboard() {
           </div>
 
           {repos.length === 0 ? (
-            <div className="text-center py-32 px-6 bg-gradient-to-b from-[#050507] to-[#020203] border border-dashed border-[#1f1f23] rounded-3xl flex flex-col items-center shadow-lg">
+            <div className="text-center py-32 px-6 bg-black/40 backdrop-blur-2xl border border-dashed border-white/10 rounded-3xl flex flex-col items-center shadow-lg">
               <div className="w-20 h-20 rounded-2xl bg-[#09090b] border border-[#1f1f23] flex items-center justify-center mb-6 shadow-inner relative">
                 <GitBranch className="h-9 w-9 text-[#3f3f46]" />
                 <div className="absolute inset-0 bg-[#ff6b00]/5 opacity-0 hover:opacity-100 blur-md rounded-2xl transition-opacity pointer-events-none"></div>
@@ -532,7 +533,7 @@ export default function Dashboard() {
               {repos.map((repo, index) => (
                 <div
                   key={repo._id}
-                  className="group bg-gradient-to-b from-[#070708]/90 to-[#030304]/95 backdrop-blur-2xl border border-[#18181b] p-4.5 sm:py-5 sm:px-6 rounded-2xl flex flex-col lg:flex-row justify-between lg:items-center gap-6 hover:border-[#ff6b00]/30 hover:shadow-[0_15px_40px_rgba(0,0,0,0.8)] transition-all duration-500 relative overflow-hidden"
+                  className="group bg-black/40 backdrop-blur-2xl border border-white/10 p-4.5 sm:py-5 sm:px-6 rounded-2xl flex flex-col lg:flex-row justify-between lg:items-center gap-6 hover:border-[#ff6b00]/50 hover:shadow-[0_15px_40px_rgba(255,107,0,0.2)] transition-all duration-500 relative overflow-hidden"
                 >
                   {/* Glowing left bar */}
                   <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#18181b] group-hover:bg-gradient-to-b from-[#ff6b00] to-[#ffa800] transition-all duration-500"></div>
