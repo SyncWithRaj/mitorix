@@ -27,7 +27,6 @@ export interface ICodeEntity extends Document {
   returnType: string;
   startLine: number;
   endLine: number;
-  content: string;
   scopeDepth: number;
   parentName?: string | null;
   embeddingId?: string;
@@ -90,10 +89,6 @@ const codeEntitySchema = new Schema<ICodeEntity>(
     },
     endLine: {
       type: Number,
-      required: true,
-    },
-    content: {
-      type: String,
       required: true,
     },
     scopeDepth: {

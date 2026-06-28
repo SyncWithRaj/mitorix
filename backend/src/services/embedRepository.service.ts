@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { v4 as uuidv4 } from "uuid";
 import { Repository } from "../models/repo.model.js";
+import { FileContent } from "../models/fileContent.model.js";
 import { VectorInitService } from "./vectorInit.service.js";
 import logger from "../lib/logger.js";
 
@@ -89,6 +90,10 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
   let pendingUpload: Promise<void> | null = null;
   const startTime = Date.now();
 
+  // Cache to prevent duplicate MongoDB lookups
+  const fileContentCache = new Map<string, string>();
+  const repoObjectId = new mongoose.Types.ObjectId(repoId);
+
   for (let batchStart = 0; batchStart < total; batchStart += EMBED_BATCH_SIZE) {
     const batchEnd = Math.min(batchStart + EMBED_BATCH_SIZE, total);
     const batch = entities.slice(batchStart, batchEnd);
@@ -96,15 +101,33 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
 
     logger.debug({ repoId, progress: `${batchStart}/${total}`, batchSize: batch.length }, "Embedding batch");
 
+    // Pre-fetch all necessary file contents for this batch
+    const filePaths = [...new Set(batch.map(e => e.filePath))];
+    const missingPaths = filePaths.filter(fp => !fileContentCache.has(fp));
+    
+    if (missingPaths.length > 0) {
+      const files = await FileContent.find({
+        repoId: repoObjectId,
+        relativePath: { $in: missingPaths }
+      });
+      for (const file of files) {
+        fileContentCache.set(file.relativePath, file.content || "");
+      }
+    }
+
     // Prepare all texts for this batch
     const texts = batch.map((entity) => {
+      const fullFileContent = fileContentCache.get(entity.filePath) || "";
+      const lines = fullFileContent.split("\n");
+      const entityContent = lines.slice(entity.startLine - 1, entity.endLine).join("\n");
+
       const text = `
 Entity Type: ${entity?.type}
 Name: ${entity?.name}
 File: ${entity?.filePath}
 
 Code:
-${entity?.content || ""}
+${entityContent}
 `;
       return text; // truncation happens inside embedBatch → embedDirect
     });
@@ -122,7 +145,6 @@ ${entity?.content || ""}
         id: uuidv4(),
         vector: vectors[j],
         payload: {
-          pageContent: entity.content || entity.name,
           metadata: {
             mongoId: entity._id.toString(),
             repoId: repoId.toString(),
@@ -131,6 +153,8 @@ ${entity?.content || ""}
             language: language,
             startLine: entity.startLine,
             endLine: entity.endLine,
+            entityType: entity.type,
+            symbolName: entity.name,
           },
         },
       });

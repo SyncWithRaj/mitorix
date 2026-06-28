@@ -30,7 +30,6 @@ export type ParsedEntity = {
   returnType: string;
   startLine: number;
   endLine: number;
-  content: string;
   scopeDepth: number;
   parentName?: string | null;
 };
@@ -153,7 +152,6 @@ export abstract class BaseParser implements LanguageParser {
       returnType,
       startLine: node.startPosition.row + 1,
       endLine: node.endPosition.row + 1,
-      content: node.text,
       scopeDepth: depth,
       parentName,
     };

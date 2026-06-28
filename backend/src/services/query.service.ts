@@ -62,8 +62,22 @@ export const askQuestion = async (
   requesterUserId: string,
   question: string,
   history: any[] = [],
-  attachedNodes: AttachedNode[] = []
+  attachedNodes: any[] = []
 ) => {
+  const fileContentCache = new Map<string, string>();
+  
+  const getEntityContentSliced = async (repoObjectId: any, relativePath: string, startLine: number, endLine: number): Promise<string> => {
+    if (!fileContentCache.has(relativePath)) {
+      const fileDoc = await FileContent.findOne({
+        repoId: repoObjectId,
+        relativePath: relativePath,
+      }).select("content");
+      fileContentCache.set(relativePath, fileDoc?.content || "");
+    }
+    const content = fileContentCache.get(relativePath) || "";
+    const lines = content.split("\n");
+    return lines.slice(startLine - 1, endLine).join("\n");
+  };
   const repo = await getRepositoryForUserOrThrow(repoId, requesterUserId);
 
   // ── 1. On-demand Vector Embedding if not already done ──
@@ -153,7 +167,8 @@ export const askQuestion = async (
 
           for (const e of entities) {
             const relativePath = path.relative(repo.localPath, e.filePath).replace(/\\/g, "/");
-            explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${e.type}] ${e.name}\nFile: ${relativePath}\nLines: ${e.startLine}-${e.endLine}\n\n${e.content}\n`;
+            const entityContent = await getEntityContentSliced(repo._id, relativePath, e.startLine, e.endLine);
+            explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${e.type}] ${e.name}\nFile: ${relativePath}\nLines: ${e.startLine}-${e.endLine}\n\n${entityContent}\n`;
             pushExplicitRef(relativePath, e.startLine, e.endLine);
             addAttachedPathHint(relativePath);
           }
@@ -212,7 +227,8 @@ export const askQuestion = async (
 
           for (const e of entities) {
             const relativePath = path.relative(repo.localPath, e.filePath).replace(/\\/g, "/");
-            explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${e.type}] ${e.name}\nFile: ${relativePath}\nLines: ${e.startLine}-${e.endLine}\n\n${e.content}\n`;
+            const entityContent = await getEntityContentSliced(repo._id, relativePath, e.startLine, e.endLine);
+            explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${e.type}] ${e.name}\nFile: ${relativePath}\nLines: ${e.startLine}-${e.endLine}\n\n${entityContent}\n`;
             pushExplicitRef(relativePath, e.startLine, e.endLine);
             addAttachedPathHint(relativePath);
           }
@@ -271,24 +287,26 @@ export const askQuestion = async (
 
   const entityMap = new Map(entities.map((e: any) => [e._id.toString(), e]));
 
-  const context = entityIds
-    .map((id: string, index: number) => {
-      const entity = entityMap.get(id);
-      if (!entity) return null;
+  const contextRaw = await Promise.all(entityIds.map(async (id: string, index: number) => {
+    const entity = entityMap.get(id);
+    if (!entity) return null;
 
-      const resultAtIndex = results[index];
-      if (!resultAtIndex) return null;
+    const resultAtIndex = results[index];
+    if (!resultAtIndex) return null;
 
-      const relativePath = path.relative(repo.localPath, entity.filePath).replace(/\\/g, "/");
+    const relativePath = path.relative(repo.localPath, entity.filePath).replace(/\\/g, "/");
+    const codeContent = await getEntityContentSliced(repo._id, relativePath, entity.startLine, entity.endLine);
 
-      return {
-        filePath: relativePath,
-        code: entity.content,
-        startLine: entity.startLine,
-        endLine: entity.endLine,
-        score: resultAtIndex[1],
-      };
-    })
+    return {
+      filePath: relativePath,
+      code: codeContent,
+      startLine: entity.startLine,
+      endLine: entity.endLine,
+      score: resultAtIndex[1],
+    };
+  }));
+
+  const context = contextRaw
     .filter(
       (
         c

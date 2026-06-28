@@ -177,8 +177,14 @@ export async function processRepositoryParsing(repoId: string, filePaths: string
   );
 
   const deduplicatedRelationships = new Map<string, any>();
+  
+  const PRUNED_PREFIXES = ["console.", "Math.", "Object.", "Array.", "String.", "Promise.", "JSON.", "React.use", "Number."];
+  const PRUNED_EXACT = ["console", "Math", "Object", "Array", "String", "Promise", "JSON", "React", "window", "document"];
 
   for (const rel of relationships) {
+    if (PRUNED_EXACT.includes(rel.toName) || PRUNED_PREFIXES.some(prefix => rel.toName.startsWith(prefix))) {
+      continue; // Skip trivial relationships
+    }
     let isExternal = false;
     let targetPath = rel.toFilePath ? rel.toFilePath.replace(/\\/g, "/") : null;
 
