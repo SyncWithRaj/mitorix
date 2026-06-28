@@ -48,7 +48,7 @@ router.post("/create-subscription", protect, async (req: Request, res: Response)
     const options = {
       amount: plan.priceInPaise,
       currency: plan.currency,
-      receipt: `sub_${user._id}_${planId}_${Date.now()}`,
+      receipt: `sub_${Date.now()}`,
       notes: {
         userId: user._id.toString(),
         planId,
