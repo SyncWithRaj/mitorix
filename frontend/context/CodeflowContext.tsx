@@ -258,11 +258,11 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
   const [confirmDialog, setConfirmDialog] = useState<any | null>(null);
 
   // Web Worker State
-  const [useWebWorker, setUseWebWorker] = useState<boolean>(false);
+  const [useWebWorker, setUseWebWorker] = useState<boolean>(true);
   const [analysisProgress, setAnalysisProgress] = useState<{
     progress: number;
     message: string;
-  } | null>(null);
+  } | null>({ progress: 0, message: "Initializing..." });
 
   // Initialize Web Worker on mount
   useEffect(() => {
