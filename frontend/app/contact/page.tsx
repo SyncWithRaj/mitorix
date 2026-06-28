@@ -1,154 +1,154 @@
 "use client";
 
-import Footer from "@/components/layout/Footer";
-import { Mail, MessageCircle, MapPin, Send, MessageSquareText } from "lucide-react";
+import { Mail, MessageCircle, Linkedin, Send, MessageSquareText } from "lucide-react";
+import Silk from "@/components/ui/Silk";
 
 export default function ContactPage() {
   return (
-    <div className="flex flex-col flex-grow items-center w-full min-h-screen bg-[#000000] text-[#e5e5e5] selection:bg-[#ff6b00] selection:text-white pt-32 pb-40 overflow-hidden relative">
+    <div className="w-full h-screen overflow-hidden bg-black text-[#e5e5e5] selection:bg-[#ff6b00] selection:text-white relative flex flex-col">
       {/* Background decorations */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-[#ff6b00]/5 via-[#ff8c00]/5 to-transparent blur-[120px] rounded-full pointer-events-none"></div>
-
-      {/* Header Section */}
-      <div className="max-w-3xl text-center px-6 mb-20 relative z-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/30 text-[#ff6b00] text-xs font-semibold uppercase tracking-wider mb-8 shadow-sm">
-          <MessageSquareText size={14} className="text-[#ff6b00]" />
-          Support & Inquiry
-        </div>
-        <h1 className="text-5xl md:text-6xl font-black text-white mb-6 tracking-tighter pb-2 text-transparent bg-clip-text bg-gradient-to-b from-white to-[#e5e5e5]">
-          Get in Touch
-        </h1>
-        <p className="text-[#737373] text-xl leading-relaxed font-light max-w-2xl mx-auto">
-          Have questions about RepoLens enterprise integration, feature requests, or encountered a
-          bug? We'd love to hear from you. Our engineering team responds within 24 hours.
-        </p>
+      <div className="absolute inset-0 z-0 opacity-[0.25] pointer-events-none">
+        <Silk color="#ff6b00" speed={4} scale={1.5} noiseIntensity={2} />
       </div>
+      <div
+        className="absolute inset-0 opacity-[0.015] pointer-events-none z-0"
+        style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}
+      ></div>
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_20%,transparent_100%)] pointer-events-none z-0"></div>
 
-      <div className="w-full max-w-6xl px-6 grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16 relative z-10 mb-20">
-        {/* Contact info cards */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <div className="group bg-[#050505]/50 backdrop-blur-md border border-[#1a1a1a] rounded-3xl p-8 shadow-md hover:border-[#ff6b00]/50 hover:shadow-[0_0_30px_rgba(255,107,0,0.15)] transition-all duration-500 hover:-translate-y-1">
-            <div className="flex items-center gap-5 mb-4">
-              <div className="bg-[#0a0a0a] border border-[#1a1a1a] p-4 rounded-2xl group-hover:bg-[#ff6b00]/10 group-hover:border-[#ff6b00]/50 transition-colors shadow-inner">
-                <Mail className="w-6 h-6 text-[#ff6b00] group-hover:scale-110 transition-transform" />
+      {/* Main Content - Adjusted for pt-24 (navbar) to fit perfectly */}
+      <div className="relative z-10 w-full h-full pt-24 pb-8 px-6 lg:px-12 xl:px-24 flex items-center justify-center">
+        <div className="w-full max-w-7xl h-full max-h-[800px] grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+          
+          {/* Left Column - Info & Cards */}
+          <div className="flex flex-col justify-center h-full">
+            <div className="mb-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/30 text-[#ff6b00] text-xs font-semibold uppercase tracking-wider mb-4 shadow-sm">
+                <MessageSquareText size={14} className="text-[#ff6b00]" />
+                Support & Inquiry
               </div>
-              <h3 className="text-2xl font-bold text-white tracking-tight">Email Us</h3>
+              <h1 className="text-5xl lg:text-6xl font-black text-white mb-4 tracking-tighter pb-2 text-transparent bg-clip-text bg-gradient-to-b from-white to-[#e5e5e5]">
+                Get in Touch
+              </h1>
+              <p className="text-[#a3a3a3] text-lg leading-relaxed font-light">
+                Have questions about RepoLens enterprise integration, feature requests, or encountered a bug? We'd love to hear from you. Our engineering team responds within 24 hours.
+              </p>
             </div>
-            <div className="space-y-2 mt-4 ml-[72px]">
-              <a
-                href="mailto:hello@repolens.ai"
-                className="block text-[#737373] text-base hover:text-[#ff6b00] transition-colors leading-relaxed font-medium"
-              >
-                hello@repolens.ai
-              </a>
-              <a
-                href="mailto:support@repolens.ai"
-                className="block text-[#737373] text-base hover:text-[#ff6b00] transition-colors leading-relaxed font-medium"
-              >
-                support@repolens.ai
-              </a>
-            </div>
-          </div>
 
-          <div className="group bg-[#050505]/50 backdrop-blur-md border border-[#1a1a1a] rounded-3xl p-8 shadow-md hover:border-[#ff8c00]/50 hover:shadow-[0_0_30px_rgba(255,140,0,0.15)] transition-all duration-500 hover:-translate-y-1">
-            <div className="flex items-center gap-5 mb-4">
-              <div className="bg-[#0a0a0a] border border-[#1a1a1a] p-4 rounded-2xl group-hover:bg-[#ff8c00]/10 group-hover:border-[#ff8c00]/50 transition-colors shadow-inner">
-                <MessageCircle className="w-6 h-6 text-[#ff8c00] group-hover:scale-110 transition-transform" />
-              </div>
-              <h3 className="text-2xl font-bold text-white tracking-tight">X / Twitter</h3>
-            </div>
-            <p className="mt-4 ml-[72px]">
-              <a
-                href="#"
-                className="font-medium text-[#737373] text-base hover:text-[#ff8c00] hover:underline transition-colors block"
-              >
-                @repolens
-              </a>
-            </p>
-          </div>
-
-          <div className="group bg-[#050505]/50 backdrop-blur-md border border-[#1a1a1a] rounded-3xl p-8 shadow-md hover:border-[#ffa800]/50 hover:shadow-[0_0_30px_rgba(255,168,0,0.15)] transition-all duration-500 hover:-translate-y-1 fill-available">
-            <div className="flex items-center gap-5 mb-4">
-              <div className="bg-[#0a0a0a] border border-[#1a1a1a] p-4 rounded-2xl group-hover:bg-[#ffa800]/10 group-hover:border-[#ffa800]/50 transition-colors shadow-inner">
-                <MapPin className="w-6 h-6 text-[#ffa800] group-hover:scale-110 transition-transform" />
-              </div>
-              <h3 className="text-2xl font-bold text-white tracking-tight">Headquarters</h3>
-            </div>
-            <p className="text-[#737373] text-base ml-[72px] leading-relaxed font-medium mt-4">
-              RepoLens Pvt. Ltd. <br />
-              Block V, Innovation Hub <br />
-              San Francisco, CA 94107
-            </p>
-          </div>
-        </div>
-
-        {/* Form Container */}
-        <div className="lg:col-span-3">
-          <form className="bg-[#050505]/80 backdrop-blur-xl p-10 md:p-12 rounded-[2rem] border border-[#1a1a1a] space-y-8 shadow-[0_20px_50px_rgba(0,0,0,0.8)] h-full flex flex-col justify-between group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#ff6b00]/5 blur-3xl rounded-full pointer-events-none group-hover:bg-[#ff6b00]/10 transition-colors duration-700"></div>
-
-            <div className="space-y-8 relative z-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-3">
-                  <label className="block text-sm font-semibold tracking-wide text-[#e5e5e5] ml-1 uppercase">
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Linus"
-                    className="w-full bg-[#000000]/80 backdrop-blur-sm border border-[#1a1a1a] rounded-2xl px-5 py-4 text-white placeholder-[#737373] focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all shadow-inner hover:border-[#ff6b00]/30"
-                  />
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 fill-mode-both">
+              {/* Card 1 */}
+              <div className="group bg-white/5 backdrop-blur-xl border border-white/5 rounded-2xl p-5 shadow-lg hover:border-[#ff6b00]/50 hover:bg-white/10 transition-all duration-300 flex items-center gap-5 cursor-default">
+                <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl group-hover:bg-[#ff6b00]/20 group-hover:border-[#ff6b00]/50 transition-colors shadow-inner">
+                  <Mail className="w-5 h-5 text-[#ff6b00] group-hover:scale-110 transition-transform" />
                 </div>
-                <div className="space-y-3">
-                  <label className="block text-sm font-semibold tracking-wide text-[#e5e5e5] ml-1 uppercase">
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Torvalds"
-                    className="w-full bg-[#000000]/80 backdrop-blur-sm border border-[#1a1a1a] rounded-2xl px-5 py-4 text-white placeholder-[#737373] focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all shadow-inner hover:border-[#ff6b00]/30"
-                  />
+                <div>
+                  <h3 className="text-lg font-bold text-white tracking-tight">Email Us</h3>
+                  <div className="text-sm text-[#d4d4d8] mt-1 space-x-4">
+                    <a href="mailto:hello@repolens.ai" className="hover:text-[#ff6b00] transition-colors">hello@repolens.ai</a>
+                    <a href="mailto:support@repolens.ai" className="hover:text-[#ff6b00] transition-colors">support@repolens.ai</a>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <label className="block text-sm font-semibold tracking-wide text-[#e5e5e5] ml-1 uppercase">
-                  Corporate Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="linus@linux.org"
-                  className="w-full bg-[#000000]/80 backdrop-blur-sm border border-[#1a1a1a] rounded-2xl px-5 py-4 text-white placeholder-[#737373] focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all shadow-inner hover:border-[#ff6b00]/30"
-                />
+              {/* Card 2 */}
+              <div className="group bg-white/5 backdrop-blur-xl border border-white/5 rounded-2xl p-5 shadow-lg hover:border-[#ff8c00]/50 hover:bg-white/10 transition-all duration-300 flex items-center gap-5 cursor-default">
+                <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl group-hover:bg-[#ff8c00]/20 group-hover:border-[#ff8c00]/50 transition-colors shadow-inner">
+                  <MessageCircle className="w-5 h-5 text-[#ff8c00] group-hover:scale-110 transition-transform" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white tracking-tight">X / Twitter</h3>
+                  <p className="text-sm text-[#d4d4d8] mt-1">
+                    <a href="#" className="hover:text-[#ff8c00] transition-colors">@repolens</a>
+                  </p>
+                </div>
               </div>
 
-              <div className="space-y-3">
-                <label className="block text-sm font-semibold tracking-wide text-[#e5e5e5] ml-1 uppercase">
-                  How can we help?
-                </label>
-                <textarea
-                  rows={6}
-                  placeholder="Detail your inquiry regarding architectural integration or enterprise requirements..."
-                  className="w-full bg-[#000000]/80 backdrop-blur-sm border border-[#1a1a1a] rounded-2xl px-5 py-4 text-white placeholder-[#737373] focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all resize-y shadow-inner hover:border-[#ff6b00]/30 text-base leading-relaxed"
-                ></textarea>
+              {/* Card 3 */}
+              <div className="group bg-white/5 backdrop-blur-xl border border-white/5 rounded-2xl p-5 shadow-lg hover:border-[#ffa800]/50 hover:bg-white/10 transition-all duration-300 flex items-center gap-5 cursor-default">
+                <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl group-hover:bg-[#ffa800]/20 group-hover:border-[#ffa800]/50 transition-colors shadow-inner">
+                  <Linkedin className="w-5 h-5 text-[#ffa800] group-hover:scale-110 transition-transform" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white tracking-tight">LinkedIn</h3>
+                  <div className="text-sm text-[#d4d4d8] mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                    <a href="https://linkedin.com/company/repolens" target="_blank" rel="noopener noreferrer" className="hover:text-[#ffa800] transition-colors">RepoLens Page</a>
+                    <a href="https://linkedin.com/in/rajribadiya" target="_blank" rel="noopener noreferrer" className="hover:text-[#ffa800] transition-colors">Raj Ribadiya</a>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="pt-8 relative z-10 w-full md:w-auto self-end">
-              <button
-                type="button"
-                className="w-full md:w-auto px-12 py-4 rounded-xl flex items-center justify-center gap-4 bg-[#ff6b00] hover:bg-[#ff8c00] font-semibold text-white transition-all duration-300 shadow-[0_0_20px_rgba(255,107,0,0.2)] hover:shadow-[0_0_30px_rgba(255,107,0,0.4)] border border-[#ff8c00]/30 hover:border-[#ff8c00] group/btn"
-                onClick={() => alert("This is a demo UI. Messaging API is currently disabled.")}
-              >
-                Send Message
-                <Send className="w-5 h-5 group-hover/btn:-translate-y-1 group-hover/btn:translate-x-1 transition-transform duration-300" />
-              </button>
-            </div>
-          </form>
+          {/* Right Column - Form Container */}
+          <div className="flex flex-col justify-center h-full animate-in fade-in zoom-in-95 duration-1000 delay-500 fill-mode-both">
+            <form className="bg-white/5 backdrop-blur-2xl p-8 lg:p-10 rounded-[2rem] border border-white/5 shadow-[0_30px_60px_rgba(0,0,0,0.4)] flex flex-col justify-between group/form relative overflow-hidden h-full max-h-[700px]">
+              <div className="absolute top-0 right-0 w-80 h-80 bg-[#ff6b00]/10 blur-3xl rounded-full pointer-events-none group-hover/form:bg-[#ff6b00]/20 transition-colors duration-700"></div>
+
+              <div className="space-y-6 relative z-10 flex-grow flex flex-col justify-center">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="block text-[11px] font-bold tracking-widest text-[#d4d4d8] ml-1 uppercase">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Linus"
+                      className="w-full bg-black/40 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-[#a1a1aa] focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all shadow-inner hover:border-white/20 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-[11px] font-bold tracking-widest text-[#d4d4d8] ml-1 uppercase">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Torvalds"
+                      className="w-full bg-black/40 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-[#a1a1aa] focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all shadow-inner hover:border-white/20 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-bold tracking-widest text-[#d4d4d8] ml-1 uppercase">
+                    Corporate Email
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="linus@linux.org"
+                    className="w-full bg-black/40 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-[#a1a1aa] focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all shadow-inner hover:border-white/20 text-sm"
+                  />
+                </div>
+
+                <div className="space-y-2 flex-grow flex flex-col">
+                  <label className="block text-[11px] font-bold tracking-widest text-[#d4d4d8] ml-1 uppercase">
+                    How can we help?
+                  </label>
+                  <textarea
+                    placeholder="Detail your inquiry regarding architectural integration or enterprise requirements..."
+                    className="w-full bg-black/40 backdrop-blur-md border border-white/10 rounded-xl px-4 py-4 text-white placeholder-[#a1a1aa] focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all resize-none shadow-inner hover:border-white/20 text-sm leading-relaxed flex-grow min-h-[120px]"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div className="pt-6 relative z-10 w-full mt-auto">
+                <button
+                  type="button"
+                  className="relative w-full py-4 rounded-xl flex items-center justify-center gap-3 bg-[#ff6b00] text-white font-semibold text-sm transition-all duration-300 shadow-[0_0_20px_rgba(255,107,0,0.25)] border border-[#ff8c00]/30 group/btn overflow-hidden"
+                  onClick={() => alert("This is a demo UI. Messaging API is currently disabled.")}
+                >
+                  {/* Fill up from bottom hover effect */}
+                  <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/btn:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+                  
+                  <span className="relative z-10 group-hover/btn:text-black transition-colors duration-500 flex items-center gap-3">
+                    Send Message
+                    <Send className="w-4 h-4 group-hover/btn:-translate-y-1 group-hover/btn:translate-x-1 group-hover/btn:text-black transition-all duration-500" />
+                  </span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 }

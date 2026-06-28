@@ -27,20 +27,25 @@ import {
   FileCode,
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
+import Silk from "@/components/ui/Silk";
 
 export default function AboutPage() {
   return (
-    <div className="flex flex-col flex-grow w-full overflow-hidden bg-[#000000] text-[#e5e5e5] pb-32 selection:bg-[#ff6b00] selection:text-white relative">
+    <div className="flex flex-col flex-grow w-full bg-transparent text-[#e5e5e5] pb-0 selection:bg-[#ff6b00] selection:text-white relative">
       {/* Background patterns */}
+      <div className="fixed inset-0 z-0 opacity-[0.25] pointer-events-none">
+        <Silk color="#ff6b00" speed={4} scale={1.5} noiseIntensity={2} />
+      </div>
       <div
-        className="absolute inset-0 opacity-[0.012] pointer-events-none mix-blend-screen"
+        className="fixed inset-0 opacity-[0.015] pointer-events-none z-0 mix-blend-screen"
         style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}
       ></div>
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_20%,transparent_100%)] pointer-events-none z-0"></div>
 
       {/* Header Section */}
-      <section className="relative w-full px-6 pt-36 pb-24 border-b border-[#1a1a1a] bg-gradient-to-b from-[#000000] via-[#050505]/40 to-[#000000] flex flex-col justify-center items-center overflow-hidden">
-        <div className="absolute top-[10%] left-[10%] w-[45vw] h-[45vw] min-w-[300px] min-h-[300px] bg-gradient-to-br from-[#ff6b00] to-transparent opacity-[0.04] blur-[130px] rounded-full pointer-events-none animate-pulse-slow"></div>
-        <div className="absolute right-[5%] bottom-[10%] w-[35vw] h-[35vw] min-w-[300px] min-h-[300px] bg-gradient-to-tr from-[#ffa800] to-transparent opacity-[0.03] blur-[120px] rounded-full pointer-events-none"></div>
+      <section className="relative w-full px-6 pt-36 pb-24 border-b border-white/10 bg-black/40 backdrop-blur-sm flex flex-col justify-center items-center overflow-hidden">
+        <div className="absolute top-[10%] left-[10%] w-[45vw] h-[45vw] min-w-[300px] min-h-[300px] bg-gradient-to-br from-[#ff6b00] to-transparent opacity-[0.08] blur-[130px] rounded-full pointer-events-none animate-pulse-slow"></div>
+        <div className="absolute right-[5%] bottom-[10%] w-[35vw] h-[35vw] min-w-[300px] min-h-[300px] bg-gradient-to-tr from-[#ffa800] to-transparent opacity-[0.06] blur-[120px] rounded-full pointer-events-none"></div>
 
         <div className="max-w-4xl text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0a0a0a] border border-[#1a1a1a] text-xs font-semibold text-[#737373] mb-8 shadow-sm group hover:border-[#ff6b00]/50 hover:text-white transition-all cursor-pointer">
@@ -106,7 +111,7 @@ export default function AboutPage() {
               The onboarding of a repository initiates an event-driven flow managed by **BullMQ** and backed by a **Redis** job queue. Because loading massive code structures blocks standard thread loops, ingestion returns an immediate HTTP status <code className="text-xs font-mono bg-[#1a1a1a] text-[#ff8c00] px-1.5 py-0.5 rounded">202 Accepted</code>, shifting the execution to specialized background processes.
             </p>
             
-            <div className="bg-[#030303] border border-[#1a1a1a] rounded-2xl p-6 space-y-4">
+            <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg rounded-2xl p-6 space-y-4">
               <h4 className="text-white font-bold text-sm uppercase tracking-wider">Engine Process Sequence:</h4>
               <ul className="space-y-4 text-sm text-[#737373]">
                 <li className="flex gap-3">
@@ -154,7 +159,7 @@ export default function AboutPage() {
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-              <div className="bg-[#030303] border border-[#1a1a1a] p-5 rounded-xl space-y-2">
+              <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-5 rounded-xl space-y-2">
                 <span className="text-[#ff6b00] font-bold block mb-2">RESOLVED AST SCHEMAS (11 Languages)</span>
                 <div className="grid grid-cols-2 gap-2 text-[#737373]">
                   <div>● TypeScript (.ts, .tsx)</div>
@@ -170,7 +175,7 @@ export default function AboutPage() {
                   <div>● VBA (.vba)</div>
                 </div>
               </div>
-              <div className="bg-[#030303] border border-[#1a1a1a] p-5 rounded-xl flex flex-col justify-between">
+              <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-5 rounded-xl flex flex-col justify-between">
                 <div>
                   <span className="text-[#ff8c00] font-bold block mb-2">SCOPED AST NODE ENTITIES</span>
                   <p className="text-[#737373] leading-relaxed">
@@ -196,7 +201,7 @@ export default function AboutPage() {
               Semantic lookup queries utilize the **Qdrant Vector Database**. RepoLens breaks functions and classes into discrete code blocks. We feed these blocks through **Nomic-embed-text** (running locally via **Ollama**) to generate 768-dimensional vectors representing semantic context — fully local, zero API cost, and zero data leakage.
             </p>
             
-            <div className="bg-[#030303] border border-[#1a1a1a] rounded-2xl p-6 space-y-6">
+            <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg rounded-2xl p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                 <div className="space-y-2">
                   <div className="text-lg font-bold text-white font-mono">768</div>
@@ -237,7 +242,7 @@ export default function AboutPage() {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-              <div className="space-y-4 bg-[#030303] border border-[#1a1a1a] p-6 rounded-2xl">
+              <div className="space-y-4 bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-6 rounded-2xl">
                 <h4 className="text-white font-bold flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#ff6b00]"></span>
                   1. Force-Directed Node Graph
@@ -247,7 +252,7 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              <div className="space-y-4 bg-[#030303] border border-[#1a1a1a] p-6 rounded-2xl">
+              <div className="space-y-4 bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-6 rounded-2xl">
                 <h4 className="text-white font-bold flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#ff8c00]"></span>
                   2. Treemap View (d3-hierarchy)
@@ -257,7 +262,7 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              <div className="space-y-4 bg-[#030303] border border-[#1a1a1a] p-6 rounded-2xl">
+              <div className="space-y-4 bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-6 rounded-2xl">
                 <h4 className="text-white font-bold flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#ffa800]"></span>
                   3. Adjacency Dependency Matrix
@@ -267,7 +272,7 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              <div className="space-y-4 bg-[#030303] border border-[#1a1a1a] p-6 rounded-2xl">
+              <div className="space-y-4 bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-6 rounded-2xl">
                 <h4 className="text-white font-bold flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#ff6b00]"></span>
                   4. Hierarchical Dendrogram
@@ -277,7 +282,7 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              <div className="space-y-4 bg-[#030303] border border-[#1a1a1a] p-6 rounded-2xl">
+              <div className="space-y-4 bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-6 rounded-2xl">
                 <h4 className="text-white font-bold flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#ff8c00]"></span>
                   5. Sankey Flow Diagrams
@@ -287,7 +292,7 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              <div className="space-y-4 bg-[#030303] border border-[#1a1a1a] p-6 rounded-2xl">
+              <div className="space-y-4 bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-6 rounded-2xl">
                 <h4 className="text-white font-bold flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#ffa800]"></span>
                   6. Disjoint Clusters View
@@ -298,7 +303,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <div className="bg-[#030303] border border-[#1a1a1a] p-6 rounded-2xl text-sm space-y-3">
+            <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-6 rounded-2xl text-sm space-y-3">
               <h4 className="text-white font-bold flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#ff6b00]"></span>
                 7. Circular Edge Bundling Layout
@@ -344,7 +349,7 @@ export default function AboutPage() {
                 <p className="text-[#a3a3a3] font-light leading-relaxed text-sm">
                   Calculations start at a baseline of 100 points, applying deductions based on code quality and complexity metrics:
                 </p>
-                <div className="bg-[#030303] border border-[#1a1a1a] p-4 rounded-xl text-xs font-mono text-[#737373] space-y-2">
+                <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-4 rounded-xl text-xs font-mono text-[#737373] space-y-2">
                   <div className="flex justify-between border-b border-[#1a1a1a] pb-1.5"><span className="text-white">Rule Metric Trigger</span><span className="text-white">Maximum Deduction Impact</span></div>
                   <div className="flex justify-between"><span>Vulnerability Leaks (SQL Injection, Credentials, XSS)</span><span className="text-[#ff4500]">-20 points total (-5 per issue)</span></div>
                   <div className="flex justify-between"><span>Circular/Cyclic Dependency Loops</span><span className="text-[#ff4500]">-20 points total (-5 per link)</span></div>
@@ -362,7 +367,7 @@ export default function AboutPage() {
                 <p className="text-[#a3a3a3] font-light leading-relaxed text-sm">
                   Computes structural risk coordinates when a file is modified. The algorithm triggers a **Breadth-First Search (BFS)** across the dependency graph:
                 </p>
-                <div className="bg-[#030303] border border-[#1a1a1a] p-5 rounded-xl text-xs font-mono text-[#737373] space-y-2 leading-relaxed">
+                <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-5 rounded-xl text-xs font-mono text-[#737373] space-y-2 leading-relaxed">
                   <p className="text-[#ff8c00]">BFS Propagation Equation Parameters:</p>
                   <div>1. Identifies files directly importing the modified module (Depth 1).</div>
                   <div>2. Propagates downstream relationships up to Depth 3, applying a decay weight multiplier of <code className="text-white bg-[#1a1a1a] px-1 rounded">1 / Depth</code> to transitive links.</div>
@@ -380,19 +385,19 @@ export default function AboutPage() {
                   Evaluates codebase risk for branch merges. The score ranges from 0 to 100 based on several factors:
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mt-2">
-                  <div className="bg-[#030303] border border-[#1a1a1a] p-4 rounded-xl">
+                  <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-4 rounded-xl">
                     <div className="text-white font-bold text-sm">+30 Max</div>
                     <div className="text-[10px] text-[#737373] mt-1">Blast Radius Impact</div>
                   </div>
-                  <div className="bg-[#030303] border border-[#1a1a1a] p-4 rounded-xl">
+                  <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-4 rounded-xl">
                     <div className="text-white font-bold text-sm">+25 Max</div>
                     <div className="text-[10px] text-[#737373] mt-1">Lines of Code Altered</div>
                   </div>
-                  <div className="bg-[#030303] border border-[#1a1a1a] p-4 rounded-xl">
+                  <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-4 rounded-xl">
                     <div className="text-white font-bold text-sm">+20 Max</div>
                     <div className="text-[10px] text-[#737373] mt-1">Number of Files Modified</div>
                   </div>
-                  <div className="bg-[#030303] border border-[#1a1a1a] p-4 rounded-xl">
+                  <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-4 rounded-xl">
                     <div className="text-white font-bold text-sm">+25 Max</div>
                     <div className="text-[10px] text-[#737373] mt-1">Core & Configuration Edits</div>
                   </div>
@@ -405,7 +410,7 @@ export default function AboutPage() {
                   <span className="text-[#ff8c00]">■</span> Design Pattern & Security Rules
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-mono">
-                  <div className="bg-[#030303] border border-[#1a1a1a] p-5 rounded-xl space-y-3">
+                  <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-5 rounded-xl space-y-3">
                     <span className="text-white font-bold block border-b border-[#1a1a1a] pb-2">PATTERN RULES</span>
                     <ul className="space-y-2 text-[#737373]">
                       <li><b className="text-white">Singleton:</b> Detects <code className="text-[#ff6b00] bg-black px-1 rounded">getInstance</code> methods and static instance markers.</li>
@@ -414,7 +419,7 @@ export default function AboutPage() {
                       <li><b className="text-white">Repository:</b> Matches <code className="text-[#ff6b00] bg-black px-1 rounded">*repo*</code> structures containing database actions.</li>
                     </ul>
                   </div>
-                  <div className="bg-[#030303] border border-[#1a1a1a] p-5 rounded-xl space-y-3">
+                  <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-5 rounded-xl space-y-3">
                     <span className="text-white font-bold block border-b border-[#1a1a1a] pb-2">SECURITY SCANNER REGEXES</span>
                     <ul className="space-y-2 text-[#737373]">
                       <li><b className="text-white">SQL Injection:</b> Detects SQL queries built with string concatenation.</li>
@@ -440,7 +445,7 @@ export default function AboutPage() {
               The hands-free voice feature operates a sequential audio pipeline to capture, analyze, and reply to queries in real-time.
             </p>
 
-            <div className="border border-[#1a1a1a] rounded-2xl bg-[#030303] p-6 space-y-6">
+            <div className="border border-white/5 rounded-2xl bg-black/40 backdrop-blur-xl shadow-lg p-6 space-y-6">
               <div className="flex flex-col md:flex-row justify-between items-stretch gap-4 text-center text-xs font-mono">
                 <div className="flex-1 bg-black border border-[#1a1a1a] p-4 rounded-xl flex flex-col justify-between items-center">
                   <div className="text-[#ff6b00] font-bold">1. CAPTURE (STT)</div>
@@ -472,7 +477,7 @@ export default function AboutPage() {
               RepoLens is structured as a scalable, multi-container architecture.
             </p>
 
-            <div className="border border-[#1a1a1a] rounded-2xl bg-[#030303] overflow-hidden text-sm">
+            <div className="border border-white/5 rounded-2xl bg-black/40 backdrop-blur-xl shadow-lg overflow-hidden text-sm">
               <div className="bg-[#050505] p-4 border-b border-[#1a1a1a] font-mono text-xs text-white">CONTAINER DEFINITION SPECIFICATIONS</div>
               <div className="p-6 space-y-4">
                 <div className="flex gap-4">
@@ -513,7 +518,7 @@ export default function AboutPage() {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-              <div className="bg-[#030303] border border-[#1a1a1a] p-6 rounded-2xl space-y-4">
+              <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-6 rounded-2xl space-y-4">
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
                   <span className="text-[#ff6b00]">■</span> Semantic Clone Detection
                 </h3>
@@ -527,7 +532,7 @@ export default function AboutPage() {
                 </div>
               </div>
 
-              <div className="bg-[#030303] border border-[#1a1a1a] p-6 rounded-2xl space-y-4">
+              <div className="bg-black/40 backdrop-blur-xl border border-white/5 shadow-lg p-6 rounded-2xl space-y-4">
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
                   <span className="text-[#ffa800]">■</span> Version Drift Tracking
                 </h3>
@@ -546,7 +551,9 @@ export default function AboutPage() {
         </main>
       </div>
 
-      <Footer />
+      <div className="mt-32 relative z-10 w-full bg-black/40 backdrop-blur-md border-t border-white/5">
+        <Footer />
+      </div>
     </div>
   );
 }
