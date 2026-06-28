@@ -37,7 +37,7 @@ export default function ContactPage() {
 
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 fill-mode-both">
               {/* Card 1 */}
-              <div className="group bg-white/5 backdrop-blur-xl border border-white/5 rounded-2xl p-5 shadow-lg hover:border-[#ff6b00]/50 hover:bg-white/10 transition-all duration-300 flex items-center gap-5 cursor-default">
+              <div className="group bg-black/40 backdrop-blur-2xl border border-white/10 rounded-2xl p-5 shadow-lg hover:border-[#ff6b00]/50 hover:bg-white/10 transition-all duration-300 flex items-center gap-5 cursor-default">
                 <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl group-hover:bg-[#ff6b00]/20 group-hover:border-[#ff6b00]/50 transition-colors shadow-inner">
                   <Mail className="w-5 h-5 text-[#ff6b00] group-hover:scale-110 transition-transform" />
                 </div>
@@ -51,7 +51,7 @@ export default function ContactPage() {
               </div>
 
               {/* Card 2 */}
-              <div className="group bg-white/5 backdrop-blur-xl border border-white/5 rounded-2xl p-5 shadow-lg hover:border-[#ff8c00]/50 hover:bg-white/10 transition-all duration-300 flex items-center gap-5 cursor-default">
+              <div className="group bg-black/40 backdrop-blur-2xl border border-white/10 rounded-2xl p-5 shadow-lg hover:border-[#ff8c00]/50 hover:bg-white/10 transition-all duration-300 flex items-center gap-5 cursor-default">
                 <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl group-hover:bg-[#ff8c00]/20 group-hover:border-[#ff8c00]/50 transition-colors shadow-inner">
                   <MessageCircle className="w-5 h-5 text-[#ff8c00] group-hover:scale-110 transition-transform" />
                 </div>
@@ -64,7 +64,7 @@ export default function ContactPage() {
               </div>
 
               {/* Card 3 */}
-              <div className="group bg-white/5 backdrop-blur-xl border border-white/5 rounded-2xl p-5 shadow-lg hover:border-[#ffa800]/50 hover:bg-white/10 transition-all duration-300 flex items-center gap-5 cursor-default">
+              <div className="group bg-black/40 backdrop-blur-2xl border border-white/10 rounded-2xl p-5 shadow-lg hover:border-[#ffa800]/50 hover:bg-white/10 transition-all duration-300 flex items-center gap-5 cursor-default">
                 <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl group-hover:bg-[#ffa800]/20 group-hover:border-[#ffa800]/50 transition-colors shadow-inner">
                   <Linkedin className="w-5 h-5 text-[#ffa800] group-hover:scale-110 transition-transform" />
                 </div>
@@ -81,7 +81,7 @@ export default function ContactPage() {
 
           {/* Right Column - Form Container */}
           <div className="flex flex-col justify-center h-full animate-in fade-in zoom-in-95 duration-1000 delay-500 fill-mode-both">
-            <form className="bg-white/5 backdrop-blur-2xl p-8 lg:p-10 rounded-[2rem] border border-white/5 shadow-[0_30px_60px_rgba(0,0,0,0.4)] flex flex-col justify-between group/form relative overflow-hidden h-full max-h-[700px]">
+            <form className="bg-black/40 backdrop-blur-2xl p-8 lg:p-10 rounded-[2rem] border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.4)] flex flex-col justify-between group/form relative overflow-hidden h-full max-h-[700px]">
               <div className="absolute top-0 right-0 w-80 h-80 bg-[#ff6b00]/10 blur-3xl rounded-full pointer-events-none group-hover/form:bg-[#ff6b00]/20 transition-colors duration-700"></div>
 
               <div className="space-y-6 relative z-10 flex-grow flex flex-col justify-center">

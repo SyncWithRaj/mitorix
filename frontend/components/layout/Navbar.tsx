@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft, LogOut, Sparkles } from "lucide-react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { motion } from "motion/react";
+import { useSubscription } from "@/context/SubscriptionContext";
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
+  const { tier } = useSubscription();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -112,7 +114,7 @@ export default function Navbar() {
                 priority
               />
             </div>
-            <span className="font-semibold text-xl tracking-tight bg-clip-text group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#ff6b00] transition-all duration-300">
+            <span className="font-semibold text-xl tracking-tight bg-clip-text group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#ff6b00] transition-all duration-300 select-none">
               RepoLens
             </span>
           </Link>
@@ -121,6 +123,7 @@ export default function Navbar() {
         <div className="hidden md:flex space-x-2 relative">
           {[
             { name: "Home", path: "/" },
+            ...(isAuthenticated ? [{ name: "Dashboard", path: "/dashboard" }] : []),
             { name: "About", path: "/about" },
             { name: "Contact Us", path: "/contact" },
           ].map((tab) => (
@@ -146,13 +149,26 @@ export default function Navbar() {
 
       <div className="flex items-center space-x-4">
         {isAuthenticated ? (
-          <Link
-            href="/dashboard"
-            className="relative overflow-hidden text-sm font-bold text-white bg-[#ff6b00] px-6 py-2.5 rounded-xl transition-all duration-300 group shadow-[0_0_15px_rgba(255,107,0,0.4)] border border-[#ff8c00]/30 hover:shadow-[0_0_25px_rgba(255,107,0,0.6)]"
-          >
-            <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
-            <span className="relative z-10 group-hover:text-black transition-colors duration-500">Dashboard</span>
-          </Link>
+          <div className="flex items-center space-x-4">
+            <div className={`hidden sm:flex items-center justify-center gap-1.5 px-4 h-10 rounded-full border text-xs font-black uppercase tracking-widest relative overflow-hidden group transition-all duration-300 select-none ${
+              tier === 'PRO' ? 'bg-gradient-to-r from-[#ffb000]/10 to-[#ff8c00]/10 border-[#ffb000]/40 text-[#ffb000] shadow-[0_0_20px_rgba(255,176,0,0.25)] hover:shadow-[0_0_30px_rgba(255,176,0,0.4)]' :
+              tier === 'BASIC' ? 'bg-gradient-to-r from-[#ff6b00]/10 to-[#ff8c00]/10 border-[#ff6b00]/40 text-[#ff6b00] shadow-[0_0_20px_rgba(255,107,0,0.15)] hover:shadow-[0_0_30px_rgba(255,107,0,0.3)]' :
+              'bg-gradient-to-r from-white/5 to-white/5 border-white/20 text-[#c9d1d9] shadow-[0_0_15px_rgba(255,255,255,0.05)]'
+            }`}>
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none"></div>
+              <Sparkles size={13} className={tier === 'PRO' ? 'animate-pulse text-[#ffb000]' : ''} /> 
+              <span className={tier === 'PRO' ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#ffb000] to-[#ffd000]' : ''}>{tier} PLAN</span>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              title="Logout"
+              className="w-10 h-10 rounded-xl bg-[#ff6b00] border border-[#ff8c00]/30 text-black hover:shadow-[0_0_25px_rgba(255,107,0,0.5)] shadow-[0_0_15px_rgba(255,107,0,0.3)] overflow-hidden group flex items-center justify-center transition-all duration-300 relative"
+            >
+              <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+              <LogOut className="relative z-10 w-4 h-4 group-hover:text-black transition-colors duration-500" />
+            </button>
+          </div>
         ) : (
           <Link
             href="/login"
@@ -165,17 +181,6 @@ export default function Navbar() {
       </div>
       </nav>
     </div>
-
-    {isAuthenticated && (
-      <button
-        onClick={handleLogout}
-        title="Logout"
-        className="fixed top-6 right-6 z-50 w-12 h-12 rounded-full bg-[#ff6b00] text-black shadow-[0_0_15px_rgba(255,107,0,0.4)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] overflow-hidden group flex items-center justify-center transition-all duration-300 hover:-translate-y-1"
-      >
-        <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
-        <LogOut className="relative z-10 w-5 h-5" />
-      </button>
-    )}
     </>
   );
 }

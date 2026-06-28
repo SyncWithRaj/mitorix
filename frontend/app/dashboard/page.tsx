@@ -371,13 +371,6 @@ export default function Dashboard() {
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/20 text-[#ff6b00] text-xs font-mono uppercase tracking-wider shadow-[0_0_15px_rgba(255,107,0,0.1)]">
                 <Server size={13} className="animate-pulse" /> Active Workspace Hub
               </div>
-              <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wider ${
-                tier === 'PRO' ? 'bg-[#a371f7]/10 border-[#a371f7]/30 text-[#a371f7] shadow-[0_0_10px_rgba(163,113,247,0.2)]' :
-                tier === 'BASIC' ? 'bg-[#58a6ff]/10 border-[#58a6ff]/30 text-[#58a6ff] shadow-[0_0_10px_rgba(88,166,255,0.2)]' :
-                'bg-[#30363d] border-[#484f58] text-[#c9d1d9]'
-              }`}>
-                <Sparkles size={13} /> {tier} PLAN
-              </div>
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none">
               {greeting}, <span className="text-[#ff6b00]">{user?.username || "Developer"}</span>

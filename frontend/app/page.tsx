@@ -314,12 +314,12 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full px-6 sm:w-auto mb-16">
             <Link
               href="/dashboard"
-              className="group relative flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] text-white overflow-hidden transition-all duration-300 active:scale-[0.98] w-full sm:w-64 shadow-[0_0_25px_rgba(255,107,0,0.25)] hover:shadow-[0_0_40px_rgba(255,255,255,0.45)] border border-[#ff8c00]/30 hover:border-white"
+              className="group/btn relative flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-[#ff6b00] text-white overflow-hidden transition-all duration-300 active:scale-[0.98] w-full sm:w-64 shadow-[0_0_25px_rgba(255,107,0,0.25)] hover:shadow-[0_0_40px_rgba(255,255,255,0.45)] border border-[#ff8c00]/30 hover:border-white"
             >
-              <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out z-0"></div>
-              <span className="relative z-10 flex items-center gap-2 group-hover:text-[#ff6b00] transition-colors duration-300">
+              <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/btn:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+              <span className="relative z-10 flex items-center gap-2 group-hover/btn:text-black transition-colors duration-500">
                 Launch RepoSpace
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
               </span>
             </Link>
             <Link
@@ -1101,10 +1101,13 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-sm mx-auto">
             <Link
               href="/dashboard"
-              className="flex justify-center items-center gap-2 px-10 py-5 bg-[#ff6b00] hover:bg-[#ff8c00] text-white font-bold text-lg rounded-xl transition-all duration-300 active:scale-[0.98] shadow-[0_0_30px_rgba(255,107,0,0.25)] hover:shadow-[0_0_40px_rgba(255,107,0,0.55)] border border-[#ff8c00]/30"
+              className="group/btn relative overflow-hidden flex justify-center items-center gap-2 px-10 py-5 bg-[#ff6b00] text-white font-bold text-lg rounded-xl transition-all duration-300 active:scale-[0.98] shadow-[0_0_30px_rgba(255,107,0,0.25)] hover:shadow-[0_0_40px_rgba(255,107,0,0.55)] border border-[#ff8c00]/30"
             >
-              Analyze Your Repository
-              <ChevronRight className="w-5 h-5" />
+              <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/btn:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+              <span className="relative z-10 flex items-center gap-2 group-hover/btn:text-black transition-colors duration-500">
+                Analyze Your Repository
+                <ChevronRight className="w-5 h-5" />
+              </span>
             </Link>
           </div>
         </div>
