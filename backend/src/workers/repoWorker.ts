@@ -8,6 +8,7 @@ import { getTempRepoPath } from "../utils/cleanup.util.js";
 import { scanCodeFiles } from "../modules/indexer/fileScanner.js";
 import { processRepositoryParsing } from "../services/parser.service.js";
 import { embedRepository } from "../services/embedRepository.service.js";
+import { generateAnswer } from "../services/llm.service.js";
 import logger from "../lib/logger.js";
 
 // @ts-ignore - ioredis constructor typing interop in this tsconfig (NodeNext) is noisy here
@@ -153,6 +154,21 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
       const { saveRepoFilesToDB } = await import("../services/parser.service.js");
       const savedFilesCount = await saveRepoFilesToDB(repoId, repoPath);
       logger.info({ repoId, savedFilesCount }, "File tree saved to MongoDB");
+
+      // Generate AI Description
+      logger.info({ repoId }, "Generating AI repository summary");
+      try {
+        const repoDoc = await Repository.findById(repoId);
+        if (repoDoc) {
+          const filesSnippet = scannedFiles.slice(0, 50).map(f => f.relativePath).join(", ");
+          const prompt = `Based on the following file paths from the repository '${repoDoc.name}', generate a concise 2-3 sentence summary of what this repository likely is and what technologies it uses. Do not use Markdown formatting. File paths: ${filesSnippet}`;
+          const summary = await generateAnswer(prompt);
+          await Repository.findByIdAndUpdate(repoId, { description: summary.trim() });
+          logger.info({ repoId }, "AI repository summary generated successfully");
+        }
+      } catch (err) {
+        logger.warn({ err, repoId }, "Failed to generate AI repository summary");
+      }
 
       await job.updateProgress(70);
 

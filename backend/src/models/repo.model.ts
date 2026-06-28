@@ -16,6 +16,7 @@ export interface IRepository extends Document {
   lastAccessedAt: Date;
   onboardingGuide?: any;
   systemDesignDoc?: string;
+  description?: string;
   isSession?: boolean;
   isEmbedded?: boolean;
 }
@@ -67,6 +68,9 @@ const repoSchema = new Schema<IRepository>(
       type: Schema.Types.Mixed,
     },
     systemDesignDoc: {
+      type: String,
+    },
+    description: {
       type: String,
     },
     isSession: {

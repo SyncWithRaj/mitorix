@@ -533,12 +533,14 @@ export default function Dashboard() {
               {repos.map((repo, index) => (
                 <div
                   key={repo._id}
-                  className="group bg-black/40 backdrop-blur-2xl border border-white/10 p-4.5 sm:py-5 sm:px-6 rounded-2xl flex flex-col lg:flex-row justify-between lg:items-center gap-6 hover:border-[#ff6b00]/50 hover:shadow-[0_15px_40px_rgba(255,107,0,0.2)] transition-all duration-500 relative overflow-hidden"
+                  className="group bg-black/40 backdrop-blur-2xl border border-white/10 p-4.5 sm:py-5 sm:px-6 rounded-2xl flex flex-col hover:border-[#ff6b00]/50 hover:shadow-[0_15px_40px_rgba(255,107,0,0.2)] transition-all duration-500 relative overflow-hidden"
                 >
                   {/* Glowing left bar */}
                   <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#18181b] group-hover:bg-gradient-to-b from-[#ff6b00] to-[#ffa800] transition-all duration-500"></div>
 
-                  <div className="flex-grow space-y-3 ml-2">
+                  {/* Main Card Content */}
+                  <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6 w-full relative z-10">
+                    <div className="flex-grow space-y-3 ml-2">
                     <div className="flex items-center gap-4">
                       <div className="w-11 h-11 rounded-xl bg-[#0d0d0f] border border-[#1f1f23] flex items-center justify-center shadow-inner group-hover:bg-[#ff6b00]/10 group-hover:border-[#ff6b00]/30 transition-all duration-500 shrink-0">
                         <Github className="w-5.5 h-5.5 text-[#a1a1aa] group-hover:text-[#ff6b00] transition-colors duration-500" />
@@ -635,6 +637,21 @@ export default function Dashboard() {
                     >
                       <Trash2 size={14} className="group-hover/del:scale-110 transition-transform duration-300" />
                     </button>
+                  </div>
+                  </div>
+
+                  {/* Expandable AI Insights Section */}
+                  <div className="w-full max-h-0 opacity-0 group-hover:max-h-[200px] group-hover:opacity-100 transition-all duration-500 ease-in-out overflow-hidden mt-0 group-hover:mt-5">
+                    <div className="pt-4 border-t border-white/10 ml-2">
+                      <div className="flex items-center gap-2 text-[#ff8c00] mb-2">
+                        <Sparkles size={14} />
+                        <span className="text-xs font-bold uppercase tracking-wider">AI Repository Summary</span>
+                      </div>
+                      <p className="text-xs text-[#a1a1aa] leading-relaxed max-w-4xl line-clamp-3">
+                        {/* @ts-ignore - description added to backend model */}
+                        {repo.description || "AI description is currently being generated or not available. Please re-index the repository."}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}
