@@ -65,11 +65,11 @@ export default function LoginPage() {
       <div className="relative z-10 w-full h-full grid lg:grid-cols-2">
         
         {/* Left Column - Brand & Info */}
-        <div className="hidden lg:flex flex-col justify-between p-12 xl:p-16 border-r border-white/5 bg-black/20 backdrop-blur-sm">
-          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-8 duration-1000">
+        <div className="hidden lg:flex flex-col justify-between p-12 xl:p-20 border-r border-white/5 bg-black/20 backdrop-blur-sm items-end pr-16 xl:pr-32">
+          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-8 duration-1000 w-full max-w-md xl:max-w-lg text-left">
           </div>
 
-          <div className="max-w-md xl:max-w-lg">
+          <div className="w-full max-w-md xl:max-w-lg text-left">
             <h1 className="text-5xl xl:text-6xl font-black text-white tracking-tighter mb-6 leading-[1.1] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 fill-mode-both">
               AI-Powered <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b00] to-[#ffa800]">Code Intelligence</span>
@@ -100,15 +100,15 @@ export default function LoginPage() {
             </div>
           </div>
           
-          <div className="text-xs font-mono text-[#52525b] animate-in fade-in duration-1000 delay-1000 fill-mode-both">
+          <div className="w-full max-w-md xl:max-w-lg text-left text-xs font-mono text-[#52525b] animate-in fade-in duration-1000 delay-1000 fill-mode-both">
             © {new Date().getFullYear()} RepoLens Inc.
           </div>
         </div>
 
         {/* Right Column - Login */}
-        <div className="flex flex-col justify-center items-center p-8 lg:p-16 relative">
-          <div className="w-full max-w-sm">
-            <div className="bg-black/60 backdrop-blur-3xl p-10 rounded-[2rem] text-center border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] flex flex-col items-center group relative overflow-hidden animate-in fade-in zoom-in-95 duration-1000 delay-500 fill-mode-both">
+        <div className="flex flex-col justify-center items-center p-8 lg:p-16 relative pl-16 xl:pl-32 items-start">
+          <div className="w-full max-w-[420px] xl:max-w-[480px]">
+            <div className="bg-black/60 backdrop-blur-3xl p-12 rounded-[2.5rem] text-center border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] flex flex-col items-center group relative overflow-hidden animate-in fade-in zoom-in-95 duration-1000 delay-500 fill-mode-both">
               {/* Glow */}
               <div className="absolute -top-32 -right-32 w-64 h-64 bg-[#ff6b00]/15 blur-3xl rounded-full group-hover:bg-[#ff6b00]/25 transition-colors duration-700 pointer-events-none"></div>
               
