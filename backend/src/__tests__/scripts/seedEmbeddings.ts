@@ -17,7 +17,7 @@ import { QdrantClient } from "@qdrant/js-client-rest";
 import { v4 as uuidv4 } from "uuid";
 import { embedBatch } from "../../services/embedding.service.js";
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/RepoLens";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/Mitorix";
 const QDRANT_URL = process.env.QDRANT_URL || "http://localhost:6333";
 const COLLECTION = "repo_entities";
 

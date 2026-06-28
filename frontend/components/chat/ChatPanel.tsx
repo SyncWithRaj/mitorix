@@ -150,7 +150,7 @@ export default function ChatPanel({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDropHighlight(false);
-    const raw = e.dataTransfer.getData("application/repolens-node");
+    const raw = e.dataTransfer.getData("application/mitorix-node");
     if (raw) {
       try {
         const node: DraggedContextNode = JSON.parse(raw);
@@ -515,7 +515,7 @@ export default function ChatPanel({
         <div className="p-4 flex flex-row items-center justify-between">
           <h3 className="text-xs font-bold tracking-widest uppercase text-[#e5e5e5] flex items-center gap-2">
             <Bot size={16} className="text-[#ff6b00]" />
-            RepoLens AI
+            Mitorix AI
           </h3>
           <div className="flex items-center gap-2">
             {callState === "listening" && (
@@ -599,7 +599,7 @@ export default function ChatPanel({
             <p className="text-base font-medium text-[#e5e5e5] mb-2">
               {activeTab === "chat"
                 ? "How can I help with this codebase?"
-                : "Speak your mind with RepoLens"}
+                : "Speak your mind with Mitorix"}
             </p>
             <p className="text-sm text-[#737373]">
               {activeTab === "chat"
@@ -632,7 +632,7 @@ export default function ChatPanel({
                     }`}
                   >
                     {msg.role === "assistant" && <Bot size={14} className="text-[#ff6b00]" />}
-                    {msg.role === "user" ? "You" : "RepoLens"}
+                    {msg.role === "user" ? "You" : "Mitorix"}
                     {msg.role === "user" && <User size={14} className="text-[#737373]" />}
                   </div>
                   <div className="p-4 text-[13px] sm:text-sm text-[#e5e5e5] whitespace-pre-wrap leading-relaxed font-sans">
@@ -724,7 +724,7 @@ export default function ChatPanel({
             <div className="max-w-[85%] glass-panel border border-[rgba(255,255,255,0.02)] border-l-2 border-l-[#ff6b00]/50 rounded-2xl rounded-tl-sm overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.8)]">
               <div className="px-4 py-2 text-[11px] font-bold tracking-wide uppercase border-b border-[rgba(255,255,255,0.02)] bg-[rgba(0,0,0,0.4)] text-[#ff6b00] flex items-center gap-2">
                 <Bot size={14} className="text-[#ff6b00]" />
-                RepoLens
+                Mitorix
               </div>
               <div className="p-5 text-[13px] text-[#737373] flex items-center gap-3">
                 <div className="flex space-x-1">
@@ -824,7 +824,7 @@ export default function ChatPanel({
           </div>
           <div className="w-full mt-3 flex justify-center">
             <span className="text-[10px] text-[#737373] font-medium tracking-wide opacity-80 flex items-center gap-1.5">
-              RepoLens Assistant <span className="w-1 h-1 rounded-full bg-[#1a1a1a]"></span> AI can
+              Mitorix Assistant <span className="w-1 h-1 rounded-full bg-[#1a1a1a]"></span> AI can
               make mistakes
             </span>
           </div>

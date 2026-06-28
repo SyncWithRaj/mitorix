@@ -17,7 +17,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "RepoLens - AI powered code assistant",
+  title: "Mitorix - AI powered code assistant",
   description: "Chat with your codebase intelligently.",
 };
 

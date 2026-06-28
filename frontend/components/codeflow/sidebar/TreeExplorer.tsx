@@ -51,7 +51,7 @@ const TreeNode = ({
               path: node.path,
               source: "LEFT_PANEL",
             };
-            e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+            e.dataTransfer.setData("application/mitorix-node", JSON.stringify(payload));
             e.dataTransfer.effectAllowed = "copy";
             useDragStore.getState().startDrag(payload);
           }}
@@ -127,7 +127,7 @@ const TreeNode = ({
                       path: file.path,
                       source: "LEFT_PANEL",
                     };
-                    e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+                    e.dataTransfer.setData("application/mitorix-node", JSON.stringify(payload));
                     e.dataTransfer.effectAllowed = "copy";
                     useDragStore.getState().startDrag(payload);
                   }}

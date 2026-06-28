@@ -7,7 +7,7 @@ import logger from "../lib/logger.js";
  * Base directory for all temporary repo clones.
  * Uses os.tmpdir() for cross-platform compatibility.
  */
-export const TEMP_REPO_BASE = path.join(os.tmpdir(), "repolens-repos");
+export const TEMP_REPO_BASE = path.join(os.tmpdir(), "mitorix-repos");
 
 /**
  * Get the temp clone path for a specific repo.

@@ -17,7 +17,7 @@ import mongoose from "mongoose";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { embedDirect, embedBatch } from "../../services/embedding.service.js";
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/RepoLens";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/Mitorix";
 const QDRANT_URL = process.env.QDRANT_URL || "http://localhost:6333";
 const COLLECTION = "repo_entities";
 
@@ -119,7 +119,7 @@ async function testOllamaHealth() {
     console.log(`  ✓ Models available: ${models.join(", ") || "none"}`);
 
     if (!models.some((m: string) => m.includes("nomic-embed-text"))) {
-      console.error("  ✗ nomic-embed-text not found! Run: docker exec repolens_ollama ollama pull nomic-embed-text");
+      console.error("  ✗ nomic-embed-text not found! Run: docker exec mitorix_ollama ollama pull nomic-embed-text");
       process.exit(1);
     }
   } catch {
@@ -130,7 +130,7 @@ async function testOllamaHealth() {
 
 async function run() {
   console.log("╔══════════════════════════════════════════╗");
-  console.log("║   RepoLens Embedding Pipeline Test       ║");
+  console.log("║   Mitorix Embedding Pipeline Test       ║");
   console.log("╚══════════════════════════════════════════╝\n");
 
   await testOllamaHealth();

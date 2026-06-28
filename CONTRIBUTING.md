@@ -1,6 +1,6 @@
-w# Contributing to RepoLens
+w# Contributing to Mitorix
 
-Thank you for your interest in contributing to RepoLens! This document provides guidelines and instructions to help you get started.
+Thank you for your interest in contributing to Mitorix! This document provides guidelines and instructions to help you get started.
 
 ---
 
@@ -37,8 +37,8 @@ By participating in this project, you agree to maintain a respectful and inclusi
 ### Step 1: Clone & Install
 
 ```bash
-git clone https://github.com/your-org/repolens.git
-cd repolens
+git clone https://github.com/your-org/mitorix.git
+cd mitorix
 
 # Switch to Node 22 (if using nvm)
 nvm use
@@ -83,7 +83,7 @@ cd backend && npm run seed
 
 The seed script:
 - Creates a **demo user** you can log in with (no GitHub OAuth needed)
-- Runs the **real RepoLens parsing pipeline** on a bundled Express todo app
+- Runs the **real Mitorix parsing pipeline** on a bundled Express todo app
 - Populates MongoDB with file tree, code entities, and relationships
 - If Ollama is running with `nomic-embed-text`, also embeds into Qdrant (enables chat and semantic search)
 
@@ -313,4 +313,4 @@ Open an issue with the `enhancement` label. Include:
 
 ## 🙏 Thank You
 
-Every contribution matters — whether it's fixing a typo, reporting a bug, or building a new parser. Thank you for helping make RepoLens better!
+Every contribution matters — whether it's fixing a typo, reporting a bug, or building a new parser. Thank you for helping make Mitorix better!

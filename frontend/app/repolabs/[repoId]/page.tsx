@@ -16,7 +16,7 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]["key"];
 
-export default function RepoLabsPage({ params }: { params: Promise<{ repoId: string }> }) {
+export default function MitorixLabsPage({ params }: { params: Promise<{ repoId: string }> }) {
   const { repoId } = use(params);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>("search");
@@ -39,7 +39,7 @@ export default function RepoLabsPage({ params }: { params: Promise<{ repoId: str
                 <Sparkles size={18} className="text-[#FF6B00]" />
               </div>
               <div>
-                <h1 className="text-xl font-medium tracking-tight text-white">RepoLabs</h1>
+                <h1 className="text-xl font-medium tracking-tight text-white">MitorixLabs</h1>
                 <p className="text-[12px] text-[#A3A3A3] tracking-wide mt-0.5">Vector-powered codebase intelligence</p>
               </div>
             </div>

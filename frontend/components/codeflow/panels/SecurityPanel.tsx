@@ -80,7 +80,7 @@ export default function SecurityPanel() {
                     source: "RIGHT_PANEL",
                     metadata: { severity: issue.severity, desc: issue.desc, code: issue.code || "" },
                   };
-                  e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+                  e.dataTransfer.setData("application/mitorix-node", JSON.stringify(payload));
                   e.dataTransfer.effectAllowed = "copy";
                   useDragStore.getState().startDrag(payload);
                 }}

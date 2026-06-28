@@ -410,7 +410,7 @@ export default function Dashboard() {
 
           <h2 className="text-lg font-bold text-white mb-4 relative z-10 flex items-center gap-3">
             <Plus size={18} className="text-[#ff6b00] border border-[#ff6b00]/25 rounded-md p-0.5 bg-[#ff6b00]/5" />
-            Provision a new RepoSpace
+            Provision a new MitorixSpace
           </h2>
           
           <div className="flex flex-col md:flex-row gap-4 relative z-10">
@@ -539,7 +539,7 @@ export default function Dashboard() {
                 <GitBranch className="h-9 w-9 text-[#3f3f46]" />
                 <div className="absolute inset-0 bg-[#ff6b00]/5 opacity-0 hover:opacity-100 blur-md rounded-2xl transition-opacity pointer-events-none"></div>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2.5 tracking-tight">No RepoSpaces Provisioned</h3>
+              <h3 className="text-2xl font-bold text-white mb-2.5 tracking-tight">No MitorixSpaces Provisioned</h3>
               <p className="text-sm text-[#71717a] max-w-sm leading-relaxed">
                 Paste a public GitHub repository link or import a local codebase to begin the high-fidelity AST parsing pipeline.
               </p>
@@ -632,15 +632,15 @@ export default function Dashboard() {
                         >
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/action:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
                           <Activity size={14} />
-                          <span>Launch RepoSpace</span>
+                          <span>Launch MitorixSpace</span>
                         </button>
                         
                         <button
-                          onClick={() => router.push(`/repolabs/${repo._id}`)}
+                          onClick={() => router.push(`/mitorixlabs/${repo._id}`)}
                           className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs text-white font-semibold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#ff8c00]/40 hover:border-[#ff8c00]/80 bg-[#ff8c00]/10 hover:bg-[#ff8c00]/20 shadow-[0_0_15px_rgba(255,140,0,0.1)]"
                         >
                           <Search size={14} className="text-[#ff8c00]" />
-                          <span>RepoLabs</span>
+                          <span>MitorixLabs</span>
                         </button>
                       </>
                     )}

@@ -1,5 +1,5 @@
 # ==============================================
-# RepoLens Backend — Production Dockerfile
+# Mitorix Backend — Production Dockerfile
 # ==============================================
 
 # ---- Stage 1: Build ----

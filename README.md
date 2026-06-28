@@ -1,6 +1,6 @@
-# RepoLens — AI-Powered Architectural Copilot & Full-Stack Analysis Engine
+# Mitorix — AI-Powered Architectural Copilot & Full-Stack Analysis Engine
 
-![RepoLens AI Engine](https://img.shields.io/badge/RepoLens-AI_Engine-58a6ff?style=for-the-badge)
+![Mitorix AI Engine](https://img.shields.io/badge/Mitorix-AI_Engine-58a6ff?style=for-the-badge)
 ![Node.js](https://img.shields.io/badge/Node.js-22_LTS-339933?style=for-the-badge&logo=nodedotjs)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)
@@ -12,7 +12,7 @@
 
 **Understand, analyze, and query your codebase. Faster than ever.**
 
-RepoLens is an enterprise-grade AI-powered architectural copilot that leverages high-fidelity AST parsing, temporal vector embeddings, and Retrieval-Augmented Generation (RAG) to let you visually map, explore, and query any codebase through natural language. Stop reading thousands of lines of code—interrogate your repository directly and get exact, contextual explanations instantly.
+Mitorix is an enterprise-grade AI-powered architectural copilot that leverages high-fidelity AST parsing, temporal vector embeddings, and Retrieval-Augmented Generation (RAG) to let you visually map, explore, and query any codebase through natural language. Stop reading thousands of lines of code—interrogate your repository directly and get exact, contextual explanations instantly.
 
 > **Supported Languages:** JavaScript, TypeScript, Python, Go, Rust, Java, C, C++, C#, PHP, Ruby — parsed down to scope-aware abstract syntax trees using [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) for precise dependency and scope resolution.
 
@@ -22,7 +22,7 @@ RepoLens is an enterprise-grade AI-powered architectural copilot that leverages 
 
 The platform is structured into two main workspaces:
 
-### RepoSpace
+### MitorixSpace
 The interactive core workspace dashboard where you explore, map, and query repository structures visually and textually:
 * **8 Layout Viz Modes:** Toggle between Force-directed graph, Visual relation node-link maps, Treemaps (LOC profiles), Adjacency Matrix (import coupling), Dendrograms, Sankey flows, Disjoint cluster hulls, and Circular edge bundling.
 * **Integrated Monaco Editor:** Browse directory files via the sliding Tree Explorer and jump directly to coordinate-targeted code entities.
@@ -32,7 +32,7 @@ The interactive core workspace dashboard where you explore, map, and query repos
 * **Onboarding & Design Docs:** Automatically generate reading guides and Mermaid.js architecture flowcharts.
 * **Voice-Powered exploration:** Query codebases using integrated AssemblyAI Speech-to-Text and Murf AI Text-to-Speech call services.
 
-### RepoLabs
+### MitorixLabs
 The vector-powered advanced analytics suite running under the hood to perform deep mathematical codebase interrogation.
 * **Semantic Search:** Find variables, features, and abstractions using plain-text queries instead of exact keyword/regex searches.
 * **Version Drift Detector:** Computes Cosine vector distances across commits/versions to trace semantic logic churn.
@@ -142,7 +142,7 @@ graph TD
 ## Codebase Layout
 
 ```
-repolens/
+mitorix/
 ├── docker-compose.yml           # Multi-container orchestration config
 ├── Makefile                     # Dev workflow shortcuts
 ├── setup.sh                     # System configuration & dependency setup script
@@ -188,8 +188,8 @@ repolens/
 
 1. **Clone the project**
    ```bash
-   git clone https://github.com/your-org/repolens.git
-   cd repolens
+   git clone https://github.com/your-org/mitorix.git
+   cd mitorix
    ```
 
 2. **Initialize Environment**
@@ -294,7 +294,7 @@ We welcome contributions! Please review the [CONTRIBUTING.md](CONTRIBUTING.md) g
 
 ## License
 
-RepoLens is licensed under the [ISC License](LICENSE).
+Mitorix is licensed under the [ISC License](LICENSE).
 
 ---
 *Built for developers who want to understand code, not just read it.*

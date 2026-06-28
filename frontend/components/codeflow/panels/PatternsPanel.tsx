@@ -57,7 +57,7 @@ export default function PatternsPanel() {
                   source: "RIGHT_PANEL",
                   metadata: { isAnti: p.isAnti, desc: p.desc, fileCount: p.files?.length || 0 },
                 };
-                e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+                e.dataTransfer.setData("application/mitorix-node", JSON.stringify(payload));
                 e.dataTransfer.effectAllowed = "copy";
                 useDragStore.getState().startDrag(payload);
               }}

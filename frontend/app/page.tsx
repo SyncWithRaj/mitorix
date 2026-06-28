@@ -147,7 +147,7 @@ await client.upsert(collectionName, {
             if (e.key === 'Enter') handleSend();
           }}
           disabled={hasSent}
-          placeholder="Search RepoSpace index or query architecture..."
+          placeholder="Search MitorixSpace index or query architecture..."
           className="w-full bg-[#050505] border border-[#1a1a1a] rounded-xl px-4 py-3 text-xs text-[#a3a3a3] outline-none focus:border-[#ff6b00]/50 transition-colors"
         />
         <button 
@@ -218,7 +218,7 @@ export default function Home() {
         key: keyId,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: `RepoLens ${planName}`,
+        name: `Mitorix ${planName}`,
         description: `${planName} Plan Subscription`,
         order_id: orderData.order_id,
         handler: async function (response: any) {
@@ -307,7 +307,7 @@ export default function Home() {
 
           {/* Subtitle */}
           <p className="text-lg md:text-2xl text-[#a3a3a3] mb-12 max-w-4xl leading-relaxed font-light px-4">
-            RepoLens is an AI-powered architectural copilot. We parse your repository’s AST, index semantic relationships in a <span className="text-white font-medium">Qdrant vector space</span>, and render an interactive <span className="text-[#ff6b00] font-medium">dependency force-graph</span>. Converse with your code through natural language chat or voice calls.
+            Mitorix is an AI-powered architectural copilot. We parse your repository’s AST, index semantic relationships in a <span className="text-white font-medium">Qdrant vector space</span>, and render an interactive <span className="text-[#ff6b00] font-medium">dependency force-graph</span>. Converse with your code through natural language chat or voice calls.
           </p>
 
           {/* CTA Buttons */}
@@ -318,7 +318,7 @@ export default function Home() {
             >
               <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/btn:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
               <span className="relative z-10 flex items-center gap-2 group-hover/btn:text-black transition-colors duration-500">
-                Launch RepoSpace
+                Launch MitorixSpace
                 <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
               </span>
             </Link>
@@ -344,7 +344,7 @@ export default function Home() {
                   <span className="w-3.5 h-3.5 rounded-full bg-[#ffa800]/60"></span>
                 </div>
                 <div className="h-4 w-[1px] bg-[#1a1a1a] hidden sm:block"></div>
-                <span className="text-xs font-mono text-[#737373] hidden sm:block">REPOSPACE_SANDBOX</span>
+                <span className="text-xs font-mono text-[#737373] hidden sm:block">MITORIXSPACE_SANDBOX</span>
               </div>
               <div className="flex flex-wrap sm:flex-nowrap bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-0.5 overflow-x-auto custom-scrollbar">
                 <button
@@ -406,7 +406,7 @@ export default function Home() {
                 <div className="flex-1 flex flex-col md:flex-row h-full animate-fadeIn">
                   {/* File tree */}
                   <div className="w-1/3 border-r border-[#1a1a1a] bg-[#030303] p-4 hidden md:block">
-                    <span className="text-[10px] font-bold text-[#737373] uppercase tracking-widest block mb-4">REPOSPACE FILES</span>
+                    <span className="text-[10px] font-bold text-[#737373] uppercase tracking-widest block mb-4">MITORIXSPACE FILES</span>
                     <div className="space-y-2 text-xs font-mono text-[#a3a3a3]">
                       <div className="flex items-center gap-2 py-1 px-2 hover:bg-[#0a0a0a] rounded cursor-pointer">
                         <Code2 size={13} className="text-[#ff6b00]" />
@@ -612,7 +612,7 @@ export default function Home() {
               The Ephemeral Parsing Lifecycle
             </h2>
             <p className="text-[#a3a3a3] max-w-2xl mx-auto text-lg font-light">
-              RepoLens clones repositories asynchronously, extracts AST architecture matrices, embeds code blocks, and securely deletes the disk clone instantly.
+              Mitorix clones repositories asynchronously, extracts AST architecture matrices, embeds code blocks, and securely deletes the disk clone instantly.
             </p>
           </div>
 
@@ -634,7 +634,7 @@ export default function Home() {
               Architecture Intelligence
             </h2>
             <p className="text-[#a3a3a3] max-w-2xl mx-auto text-lg font-light leading-relaxed">
-              RepoLens doesn't just read code; it analyzes architectural safety, identifies structural pattern classes, and monitors coupling complexity in real-time.
+              Mitorix doesn't just read code; it analyzes architectural safety, identifies structural pattern classes, and monitors coupling complexity in real-time.
             </p>
           </div>
 
@@ -722,7 +722,7 @@ export default function Home() {
               Multi-Language High-Fidelity AST Support
             </h2>
             <p className="text-[#a3a3a3] max-w-2xl mx-auto text-lg font-light">
-              RepoLens bypasses fragile regex code matching by compiling high-fidelity ASTs using dedicated language parsers.
+              Mitorix bypasses fragile regex code matching by compiling high-fidelity ASTs using dedicated language parsers.
             </p>
           </div>
         </div>
@@ -759,7 +759,7 @@ export default function Home() {
             Compare Stack
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-white">
-            Why RepoLens is Different
+            Why Mitorix is Different
           </h2>
           <p className="text-[#a3a3a3] max-w-2xl mx-auto text-lg font-light">
             Traditional searches and standard LLMs fail when tackling large codebase dependency linkages. Here is how we compare.
@@ -773,7 +773,7 @@ export default function Home() {
                 <th className="p-6">Analysis Capabilities</th>
                 <th className="p-6">Legacy Regex Grep</th>
                 <th className="p-6">Standard AI Chat</th>
-                <th className="p-6 text-white font-bold bg-[#ff6b00]/10 border-x border-[#ff6b00]/20">RepoLens Engine</th>
+                <th className="p-6 text-white font-bold bg-[#ff6b00]/10 border-x border-[#ff6b00]/20">Mitorix Engine</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1a1a1a] text-[#a3a3a3]">
@@ -1082,7 +1082,7 @@ export default function Home() {
         {/* Pricing footnote */}
         <div className="text-center mt-12 relative z-10">
           <p className="text-xs text-[#525252] max-w-xl mx-auto">
-            All plans include access to the core RepoLens engine. Prices are in INR and billed monthly via Razorpay. Cancel anytime.
+            All plans include access to the core Mitorix engine. Prices are in INR and billed monthly via Razorpay. Cancel anytime.
           </p>
         </div>
       </section>

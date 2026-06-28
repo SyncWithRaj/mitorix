@@ -61,7 +61,7 @@ const model = genAI.getGenerativeModel({
 //   );
 //
 //   const text = extractAssistantText(res.data);
-//   return text || "RepoLens AI returned an empty response. Please try again.";
+//   return text || "Mitorix AI returned an empty response. Please try again.";
 // };
 
 // ── Legacy single-shot call (used by design docs, diagrams, etc.) ──
@@ -82,7 +82,7 @@ const geminiBreaker = new CircuitBreaker(callGeminiAPI, breakerOptions);
 // Fallback function: This runs if the breaker is OPEN or if a request fails/times out
 geminiBreaker.fallback((prompt: string, error?: Error) => {
   logger.error({ err: error }, "[Circuit Breaker] Gemini API is down or timing out");
-  return "RepoLens AI is currently experiencing high load or the LLM provider is down. Please try again later. We gracefully degraded to protect system stability.";
+  return "Mitorix AI is currently experiencing high load or the LLM provider is down. Please try again later. We gracefully degraded to protect system stability.";
 });
 
 // Event listeners for observability
@@ -134,7 +134,7 @@ const chatBreaker = new CircuitBreaker(callGeminiChatAPI, breakerOptions);
 
 chatBreaker.fallback((_sys: string, _hist: ChatMessage[], _msg: string, error?: Error) => {
   logger.error({ err: error }, "[Circuit Breaker] Gemini Chat API is down or timing out");
-  return "RepoLens AI is currently experiencing high load or the LLM provider is down. Please try again later.";
+  return "Mitorix AI is currently experiencing high load or the LLM provider is down. Please try again later.";
 });
 
 chatBreaker.on("open", () =>

@@ -98,7 +98,7 @@ export function buildDependencyGraph(
     moduleToFile[fileNameNoExt] = f.path;
 
     // Index by relative module path (e.g. services/rag or services.rag)
-    const repoMarker = "/tmp/repolens-repos/";
+    const repoMarker = "/tmp/mitorix-repos/";
     if (f.path.includes(repoMarker)) {
       const subPath = f.path.split(repoMarker)[1];
       const repoPathParts = subPath.split("/");

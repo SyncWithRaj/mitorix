@@ -1,7 +1,7 @@
 const { MongoClient } = require('mongodb');
 
 async function run() {
-  const uri = process.env.MONGO_URI || "mongodb://localhost:27017/repolens";
+  const uri = process.env.MONGO_URI || "mongodb://localhost:27017/mitorix";
   console.log("Connecting to", uri);
   const client = new MongoClient(uri);
   try {

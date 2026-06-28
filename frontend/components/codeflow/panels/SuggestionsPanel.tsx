@@ -70,7 +70,7 @@ export default function SuggestionsPanel() {
                     source: "RIGHT_PANEL",
                     metadata: { priority: s.priority, desc: s.desc, action: s.action, impact: s.impact },
                   };
-                  e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+                  e.dataTransfer.setData("application/mitorix-node", JSON.stringify(payload));
                   e.dataTransfer.effectAllowed = "copy";
                   useDragStore.getState().startDrag(payload);
                 }}
@@ -122,7 +122,7 @@ export default function SuggestionsPanel() {
                         source: "RIGHT_PANEL",
                         metadata: { duplicateType: d.type, fileCount: d.files?.length || 0 },
                       };
-                      e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+                      e.dataTransfer.setData("application/mitorix-node", JSON.stringify(payload));
                       e.dataTransfer.effectAllowed = "copy";
                       useDragStore.getState().startDrag(payload);
                     }}

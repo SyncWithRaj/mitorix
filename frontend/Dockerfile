@@ -1,5 +1,5 @@
 # ==============================================
-# RepoLens Frontend — Production Dockerfile
+# Mitorix Frontend — Production Dockerfile
 # ==============================================
 
 # ---- Stage 1: Dependencies ----

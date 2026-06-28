@@ -61,7 +61,7 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 
 const formatPath = (fullPath: string) => {
   if (!fullPath) return "";
-  return fullPath.replace(/^\/tmp\/repolens-repos\/[^\/]+\/[^\/]+\//, "");
+  return fullPath.replace(/^\/tmp\/mitorix-repos\/[^\/]+\/[^\/]+\//, "");
 };
 
 // Convert legacy format to the new dynamic format

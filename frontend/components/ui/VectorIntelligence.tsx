@@ -30,7 +30,7 @@ const features = [
     title: "Version Drift Tracking",
     shortTitle: "Drift Track",
     description:
-      "By computing vector distances between indexed versions, RepoLabs highlights true behavioral drift and structural deviations that standard text diffs miss entirely.",
+      "By computing vector distances between indexed versions, MitorixLabs highlights true behavioral drift and structural deviations that standard text diffs miss entirely.",
     accentColor: "#ffa800",
     tags: ["Drift Analysis", "Vector Delta"],
   },
@@ -54,7 +54,7 @@ export default function VectorIntelligence() {
             Vector Intelligence
           </div>
           <h2 className="text-5xl md:text-6xl font-black mb-6 tracking-tighter text-white">
-            RepoLabs: Beyond Grep
+            MitorixLabs: Beyond Grep
           </h2>
           <p className="text-[#a3a3a3] max-w-2xl mx-auto text-lg font-light">
             We repurpose the Qdrant vector embeddings generated during ingestion

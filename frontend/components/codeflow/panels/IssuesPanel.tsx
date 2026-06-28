@@ -54,7 +54,7 @@ export default function IssuesPanel() {
                     source: "RIGHT_PANEL",
                     metadata: { issueType: issue.type, desc: issue.desc, itemCount: issue.items?.length || 0 },
                   };
-                  e.dataTransfer.setData("application/repolens-node", JSON.stringify(payload));
+                  e.dataTransfer.setData("application/mitorix-node", JSON.stringify(payload));
                   e.dataTransfer.effectAllowed = "copy";
                   useDragStore.getState().startDrag(payload);
                 }}

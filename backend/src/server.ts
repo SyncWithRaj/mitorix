@@ -27,7 +27,7 @@ const startServer = async () => {
   );
 
   app.listen(port, () => {
-    logger.info({ port }, `RepoLens server is running`);
+    logger.info({ port }, `Mitorix server is running`);
   });
 };
 

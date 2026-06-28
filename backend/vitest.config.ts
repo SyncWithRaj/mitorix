@@ -1,5 +1,5 @@
 /**
- * Vitest configuration for the RepoLens backend.
+ * Vitest configuration for the Mitorix backend.
  */
 import { defineConfig } from "vitest/config";
 

@@ -112,7 +112,7 @@ export default function LoginPage() {
           </div>
           
           <div className="w-full max-w-md xl:max-w-lg text-left text-xs font-mono text-[#52525b] animate-in fade-in duration-1000 delay-1000 fill-mode-both">
-            © {new Date().getFullYear()} RepoLens Inc.
+            © {new Date().getFullYear()} Mitorix Inc.
           </div>
         </div>
 
@@ -129,7 +129,7 @@ export default function LoginPage() {
               </div>
 
               <h2 className="text-2xl font-bold mb-2 text-white tracking-tight">Welcome Back</h2>
-              <p className="mb-8 text-sm text-[#737373]">Access your personalized RepoSpace.</p>
+              <p className="mb-8 text-sm text-[#737373]">Access your personalized MitorixSpace.</p>
 
               <button
                 onClick={loginWithGithub}

@@ -1,5 +1,5 @@
 /**
- * RepoLens — Unseed Script
+ * Mitorix — Unseed Script
  *
  * Removes all data created by the seed script:
  *   - Demo user
@@ -46,7 +46,7 @@ const error = (msg: string) => console.log(`${RED}✖${NC} ${msg}`);
 
 // ─── Main ────────────────────────────────────────────────────
 async function unseed() {
-  console.log(`\n${BOLD}${CYAN}━━━ RepoLens Unseed Script ━━━${NC}\n`);
+  console.log(`\n${BOLD}${CYAN}━━━ Mitorix Unseed Script ━━━${NC}\n`);
 
   const mongoUri = process.env.MONGO_URI;
   if (!mongoUri) {

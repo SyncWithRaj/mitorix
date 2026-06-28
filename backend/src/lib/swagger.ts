@@ -10,12 +10,12 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "RepoLens API",
+      title: "Mitorix API",
       version: "1.0.0",
       description:
-        "REST API for RepoLens — an AI-powered code intelligence platform that allows developers to query, analyze, and understand repositories using natural language.",
+        "REST API for Mitorix — an AI-powered code intelligence platform that allows developers to query, analyze, and understand repositories using natural language.",
       contact: {
-        name: "RepoLens",
+        name: "Mitorix",
       },
     },
     servers: [

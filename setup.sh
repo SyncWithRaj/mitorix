@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================
-# RepoLens — One-Command Project Setup
+# Mitorix — One-Command Project Setup
 # ==============================================
 # Usage:  chmod +x setup.sh && ./setup.sh
 #
@@ -45,7 +45,7 @@ header "Step 1/6 — Checking Node.js"
 if ! command -v node &>/dev/null; then
   error "Node.js is not installed."
   echo ""
-  echo "  RepoLens requires Node.js v${REQUIRED_NODE_MAJOR}.x (LTS)."
+  echo "  Mitorix requires Node.js v${REQUIRED_NODE_MAJOR}.x (LTS)."
   echo ""
   echo "  Install via nvm (recommended):"
   echo "    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash"
@@ -290,7 +290,7 @@ fi
 
 printf "\n"
 printf "${BOLD}${GREEN}╔══════════════════════════════════════════════════╗${NC}\n"
-printf "${BOLD}${GREEN}║             RepoLens setup complete!             ║${NC}\n"
+printf "${BOLD}${GREEN}║             Mitorix setup complete!             ║${NC}\n"
 printf "${BOLD}${GREEN}╚══════════════════════════════════════════════════╝${NC}\n"
 printf "\n"
 printf "  Next steps:\n"

@@ -1,5 +1,5 @@
 /**
- * RepoLens — Seed Script
+ * Mitorix — Seed Script
  *
  * Seeds a demo user and runs the real parsing pipeline on the test project.
  * This allows contributors to test the UI without GitHub OAuth or API keys.
@@ -27,9 +27,9 @@ import { processRepositoryParsing, saveRepoFilesToDB } from "../../services/pars
 // ─── Demo User Credentials ──────────────────────────────────
 const DEMO_USER = {
   githubId: "demo-dev-00000",
-  username: "repolens-dev",
-  email: "dev@repolens.local",
-  avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=repolens",
+  username: "mitorix-dev",
+  email: "dev@mitorix.local",
+  avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=mitorix",
 };
 
 const DEMO_REPO = {
@@ -54,7 +54,7 @@ const error = (msg: string) => console.log(`${RED}✖${NC} ${msg}`);
 
 // ─── Main ────────────────────────────────────────────────────
 async function seed() {
-  console.log(`\n${BOLD}${CYAN}━━━ RepoLens Seed Script ━━━${NC}\n`);
+  console.log(`\n${BOLD}${CYAN}━━━ Mitorix Seed Script ━━━${NC}\n`);
 
   // 1. Connect to MongoDB
   const mongoUri = process.env.MONGO_URI;

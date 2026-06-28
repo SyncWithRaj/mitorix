@@ -134,7 +134,7 @@ function buildTreeFromFiles(files: any[]) {
   const root: any = { name: "Root", path: "", files: [], children: {} };
 
   files.forEach((file) => {
-    const cleanPath = file.path.replace(/^\/tmp\/repolens-repos\/[^\/]+\/[^\/]+\//, "");
+    const cleanPath = file.path.replace(/^\/tmp\/mitorix-repos\/[^\/]+\/[^\/]+\//, "");
     const parts = cleanPath.split("/");
     let current = root;
 
@@ -180,7 +180,7 @@ export function CodeflowProvider({ children }: { children: ReactNode }) {
       setRawAnalysisData(null);
       return;
     }
-    const cleanRepoPrefix = /^\/tmp\/repolens-repos\/[^\/]+\/[^\/]+\/?/;
+    const cleanRepoPrefix = /^\/tmp\/mitorix-repos\/[^\/]+\/[^\/]+\/?/;
     const cleanedFiles = data.files.map((f) => ({
       ...f,
       folder: f.folder ? f.folder.replace(cleanRepoPrefix, "") : "",

@@ -283,11 +283,11 @@ export default function CodeflowLayout({
         if (res.data.success) {
           setAnalysisData(res.data.data);
         } else {
-          toast.error("Failed to load RepoLens analysis");
+          toast.error("Failed to load Mitorix analysis");
         }
       } catch (err) {
         console.error("Error loading analysis:", err);
-        toast.error("Failed to load RepoLens analysis");
+        toast.error("Failed to load Mitorix analysis");
       } finally {
         setIsLoading(false);
         setAnalysisProgress(null);
@@ -321,13 +321,13 @@ export default function CodeflowLayout({
           <Link
             href={`/dashboard`}
             className="flex items-center gap-2 px-2 py-1.5 rounded-md border border-gh-border bg-gh-btn-secondary hover:bg-gh-btn-secondary-hover transition"
-            title="RepoLens"
+            title="Mitorix"
           >
             <div className="w-5 h-5 rounded bg-gh-btn-secondary flex items-center justify-center text-gh-text border border-gh-border">
               <span className="font-bold text-[10px]">RL</span>
             </div>
             <span className="font-bold text-gh-text tracking-wide text-xs sm:text-sm">
-              REPOLENS
+              MITORIX
             </span>
           </Link>
 

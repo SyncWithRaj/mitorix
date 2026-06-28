@@ -17,7 +17,7 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: repolens_redis
+    container_name: mitorix_redis
     ports:
       - "6379:6379"
     restart: unless-stopped
@@ -30,7 +30,7 @@ services:
 
   mongodb:
     image: mongo:7
-    container_name: repolens_mongo
+    container_name: mitorix_mongo
     ports:
       - "27017:27017"
     volumes:
@@ -45,7 +45,7 @@ services:
 
   ollama:
     image: ollama/ollama:latest
-    container_name: repolens_ollama
+    container_name: mitorix_ollama
     ports:
       - "11434:11434"
     volumes:
@@ -62,16 +62,16 @@ services:
       start_period: 15s
 
   backend:
-    image: repolens-backend:latest
+    image: mitorix-backend:latest
     build: ./backend
-    container_name: repolens_backend
+    container_name: mitorix_backend
     expose:
       - "5000"
     env_file:
       - ./.env
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb://mongodb:27017/RepoLens
+      - MONGO_URI=mongodb://mongodb:27017/Mitorix
       - QDRANT_URL=http://qdrant:6333
       - REDIS_URL=redis://redis:6379
       - REDIS_HOST=redis
@@ -90,12 +90,12 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: repolens-frontend:latest
+    image: mitorix-frontend:latest
     build:
       context: ./frontend
       args:
         NEXT_PUBLIC_API_URL: /api/v1
-    container_name: repolens_frontend
+    container_name: mitorix_frontend
     expose:
       - "3000"
     environment:
@@ -106,7 +106,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: repolens_nginx
+    container_name: mitorix_nginx
     ports:
       - "80:80"
     volumes:

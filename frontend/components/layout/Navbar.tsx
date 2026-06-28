@@ -60,8 +60,8 @@ export default function Navbar() {
     }
   };
 
-  const inRepoSpace = pathname.startsWith("/chat") || pathname.startsWith("/codeflow");
-  const inRepoLabs = pathname.startsWith("/repolabs");
+  const inMitorixSpace = pathname.startsWith("/chat") || pathname.startsWith("/codeflow");
+  const inMitorixLabs = pathname.startsWith("/mitorixlabs");
 
   if (pathname.startsWith("/codeflow") || pathname === "/login") return null;
 
@@ -70,12 +70,12 @@ export default function Navbar() {
       <div className={`fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none px-4 transition-transform duration-500 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
       <nav
         className={`pointer-events-auto transition-all duration-500 text-[#e5e5e5] px-6 py-3.5 flex items-center justify-between w-full max-w-7xl relative ${
-          inRepoLabs
+          inMitorixLabs
             ? "bg-[#000000] rounded-none border-b border-[#1a1a1a]"
             : "bg-white/[0.03] backdrop-blur-2xl rounded-b-[28px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_inset_0_-1px_1px_rgba(255,255,255,0.05),_0_15px_40px_rgba(0,0,0,0.6)] border border-t-0 border-white/10"
         }`}
       >
-        {!inRepoLabs && (
+        {!inMitorixLabs && (
           <>
             <svg className="absolute top-0 -left-4 w-4 h-4 text-white/[0.03] fill-current backdrop-blur-2xl" viewBox="0 0 16 16">
               <path d="M16 0L0 0C8.83656 0 16 7.16344 16 16Z" />
@@ -86,7 +86,7 @@ export default function Navbar() {
           </>
         )}
       <div className="flex items-center space-x-6">
-        {inRepoSpace ? (
+        {inMitorixSpace ? (
           <div className="flex items-center gap-4">
             <Link
               href="/dashboard"
@@ -97,26 +97,31 @@ export default function Navbar() {
             </Link>
             <div className="w-[1px] h-6 bg-[#1a1a1a]"></div>
             <span className="flex items-center space-x-2 text-white">
-              <span className="font-bold text-xl tracking-tight">RepoLens</span>
+              <span className="font-bold text-xl tracking-tight">Mitorix</span>
             </span>
           </div>
         ) : (
           <Link href="/" className="flex items-center space-x-2 text-white group">
-            <div className="relative rounded-lg bg-[#0a0a0a] border border-[#1a1a1a] group-hover:border-[#ff6b00]/50 transition-all duration-300 shadow-inner group-hover:shadow-[0_0_15px_rgba(255,107,0,0.3)] flex items-center justify-center overflow-hidden w-8 h-8">
-              <div className="absolute inset-0 bg-[#ff6b00] opacity-0 group-hover:opacity-20 blur-md rounded-lg transition-opacity duration-300 z-0"></div>
+            <div className="relative flex items-center justify-center w-11 h-11">
               <Image
                 src="/logo.png"
-                alt="RepoLens"
-                width={32}
-                height={32}
-                className="relative z-10 object-cover w-full h-full"
+                alt="Mitorix"
+                width={44}
+                height={44}
+                className="relative z-10 object-contain w-full h-full group-hover:scale-110 transition-all duration-500 drop-shadow-md group-hover:drop-shadow-[0_0_20px_rgba(255,107,0,0.4)]"
                 unoptimized
                 priority
               />
             </div>
-            <span className="font-semibold text-xl tracking-tight bg-clip-text group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#ff6b00] transition-all duration-300 select-none">
-              RepoLens
-            </span>
+            
+            <div className="flex items-center select-none ml-1">
+              <span className="font-bold text-2xl tracking-[0.2em] text-white">
+                MITORI
+              </span>
+              <span className="font-bold text-3xl tracking-[0.2em] text-[#ff6b00]">
+                X
+              </span>
+            </div>
           </Link>
         )}
 

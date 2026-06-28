@@ -55,11 +55,11 @@ export default function AboutPage() {
           <h1 className="text-5xl md:text-8xl font-black text-white mb-6 tracking-tighter drop-shadow-md pb-2">
             Inside the{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b00] via-[#ffa800] to-[#ff4500]">
-              RepoLens Engine
+              Mitorix Engine
             </span>
           </h1>
           <p className="max-w-3xl mx-auto text-lg md:text-xl text-[#a3a3a3] leading-relaxed font-light mt-6">
-            RepoLens is built on the principle that codebases are multidimensional spatial structures. This document details our parsing, vector-indexing, telemetry, and rendering engines.
+            Mitorix is built on the principle that codebases are multidimensional spatial structures. This document details our parsing, vector-indexing, telemetry, and rendering engines.
           </p>
         </div>
       </section>
@@ -91,8 +91,8 @@ export default function AboutPage() {
           <a href="#infrastructure" className="flex items-center gap-2 py-2 px-3 rounded-lg text-sm text-[#a3a3a3] hover:text-[#ff8c00] hover:bg-[#050505] transition-all">
             <Settings size={14} /> Production Infra Stack
           </a>
-          <a href="#repolabs" className="flex items-center gap-2 py-2 px-3 rounded-lg text-sm text-[#a3a3a3] hover:text-[#ff8c00] hover:bg-[#050505] transition-all">
-            <Search size={14} /> Vector RepoLabs
+          <a href="#mitorixlabs" className="flex items-center gap-2 py-2 px-3 rounded-lg text-sm text-[#a3a3a3] hover:text-[#ff8c00] hover:bg-[#050505] transition-all">
+            <Search size={14} /> Vector MitorixLabs
           </a>
         </aside>
 
@@ -125,7 +125,7 @@ export default function AboutPage() {
                   <span className="font-bold text-white font-mono shrink-0">B.</span>
                   <div>
                     <strong className="text-white">Isolated Sandbox Disk Mount:</strong>
-                    <p className="mt-1">The worker mounts a short-lived storage volume to the host filesystem directory path <code className="text-xs font-mono bg-[#1a1a1a] text-white px-1 py-0.5 rounded">/tmp/repolens-&lt;repo_id&gt;</code> and performs a shallow git clone with depth limit of 1.</p>
+                    <p className="mt-1">The worker mounts a short-lived storage volume to the host filesystem directory path <code className="text-xs font-mono bg-[#1a1a1a] text-white px-1 py-0.5 rounded">/tmp/mitorix-&lt;repo_id&gt;</code> and performs a shallow git clone with depth limit of 1.</p>
                   </div>
                 </li>
                 <li className="flex gap-3">
@@ -155,7 +155,7 @@ export default function AboutPage() {
               <h2 className="text-3xl font-extrabold text-white tracking-tight">2. Tree-sitter AST Structural Deconstruction</h2>
             </div>
             <p className="text-[#a3a3a3] leading-relaxed font-light text-base">
-              RepoLens bypasses flat, regex-based patterns to parse scope boundaries. We utilize **Tree-sitter WASM modules** compiled directly to native code blocks. Tree-sitter parses the repository's syntax structures into node streams representing classes, function bodies, imports, exports, and call parameters.
+              Mitorix bypasses flat, regex-based patterns to parse scope boundaries. We utilize **Tree-sitter WASM modules** compiled directly to native code blocks. Tree-sitter parses the repository's syntax structures into node streams representing classes, function bodies, imports, exports, and call parameters.
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
@@ -198,7 +198,7 @@ export default function AboutPage() {
               <h2 className="text-3xl font-extrabold text-white tracking-tight">3. Qdrant Vector DB & RAG Pipeline</h2>
             </div>
             <p className="text-[#a3a3a3] leading-relaxed font-light text-base">
-              Semantic lookup queries utilize the **Qdrant Vector Database**. RepoLens breaks functions and classes into discrete code blocks. We feed these blocks through **Nomic-embed-text** (running locally via **Ollama**) to generate 768-dimensional vectors representing semantic context — fully local, zero API cost, and zero data leakage.
+              Semantic lookup queries utilize the **Qdrant Vector Database**. Mitorix breaks functions and classes into discrete code blocks. We feed these blocks through **Nomic-embed-text** (running locally via **Ollama**) to generate 768-dimensional vectors representing semantic context — fully local, zero API cost, and zero data leakage.
             </p>
             
             <div className="bg-black/40 backdrop-blur-2xl border border-white/10 shadow-lg rounded-2xl p-6 space-y-6">
@@ -220,7 +220,7 @@ export default function AboutPage() {
               <div className="space-y-3 pt-4 border-t border-[#1a1a1a] text-sm leading-relaxed">
                 <strong className="text-white block">Payload Filtering Rules:</strong>
                 <p className="text-[#737373]">
-                  To isolate lookups per RepoSpace and prevent bleed, Qdrant vectors store metadata payloads. The API enforces strict field matching checks for <code className="text-xs font-mono bg-[#1a1a1a] text-white px-1">repo_id</code> on every query.
+                  To isolate lookups per MitorixSpace and prevent bleed, Qdrant vectors store metadata payloads. The API enforces strict field matching checks for <code className="text-xs font-mono bg-[#1a1a1a] text-white px-1">repo_id</code> on every query.
                 </p>
                 <p className="text-[#737373]">
                   When a user asks a question, we embed the query text locally via Nomic, retrieve the top 15 matching AST code blocks, and combine them with MongoDB file metadata to construct the RAG prompt for Google Gemini LLM, generating exact codebase references.
@@ -474,7 +474,7 @@ export default function AboutPage() {
               <h2 className="text-3xl font-extrabold text-white tracking-tight">7. Production Infrastructure Stack</h2>
             </div>
             <p className="text-[#a3a3a3] leading-relaxed font-light text-base">
-              RepoLens is structured as a scalable, multi-container architecture.
+              Mitorix is structured as a scalable, multi-container architecture.
             </p>
 
             <div className="border border-white/10 rounded-2xl bg-black/40 backdrop-blur-2xl shadow-lg overflow-hidden text-sm">
@@ -505,16 +505,16 @@ export default function AboutPage() {
             </div>
           </section>
 
-          {/* RepoLabs: Clone & Drift */}
-          <section id="repolabs" className="space-y-6 scroll-mt-24">
+          {/* MitorixLabs: Clone & Drift */}
+          <section id="mitorixlabs" className="space-y-6 scroll-mt-24">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-[#ff8c00]/10 border border-[#ff8c00]/25 flex items-center justify-center">
                 <Search className="text-[#ff8c00]" size={20} />
               </div>
-              <h2 className="text-3xl font-extrabold text-white tracking-tight">8. Vector RepoLabs: Clone & Drift Telemetry</h2>
+              <h2 className="text-3xl font-extrabold text-white tracking-tight">8. Vector MitorixLabs: Clone & Drift Telemetry</h2>
             </div>
             <p className="text-[#a3a3a3] leading-relaxed font-light text-base">
-              The RepoLabs module repurposes Qdrant embeddings to unlock deep codebase intelligence algorithms that transcend traditional text-matching engines.
+              The MitorixLabs module repurposes Qdrant embeddings to unlock deep codebase intelligence algorithms that transcend traditional text-matching engines.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
@@ -537,7 +537,7 @@ export default function AboutPage() {
                   <span className="text-[#ffa800]">■</span> Version Drift Tracking
                 </h3>
                 <p className="text-[#737373] leading-relaxed text-xs">
-                  When a codebase is re-indexed, RepoLens computes the vector distance between the old fingerprint and the new fingerprint mappings. This reveals semantic code drift that standard git text diffs fail to capture.
+                  When a codebase is re-indexed, Mitorix computes the vector distance between the old fingerprint and the new fingerprint mappings. This reveals semantic code drift that standard git text diffs fail to capture.
                 </p>
                 <div className="bg-[#050505] border border-[#1a1a1a] p-3 rounded-lg text-[11px] font-mono text-[#a3a3a3] space-y-1">
                   <div>Computes % Drift per AST Entity</div>

@@ -1,7 +1,7 @@
 {
   "name": "todo-express-app",
   "version": "1.0.0",
-  "description": "A simple Express Todo API for testing RepoLens parsing pipeline",
+  "description": "A simple Express Todo API for testing Mitorix parsing pipeline",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

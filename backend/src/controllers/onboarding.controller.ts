@@ -179,7 +179,7 @@ Section guidelines:
 - testSuite: Main test files or test directories that a new developer should be aware of.
 - readingList: A step-by-step reading list of 5-10 files a new developer should read IN ORDER to understand the repository. This should always be included.
 
-Use RELATIVE file paths only (e.g., "src/main.rs" not "/tmp/repolens-repos/.../src/main.rs").
+Use RELATIVE file paths only (e.g., "src/main.rs" not "/tmp/mitorix-repos/.../src/main.rs").
 Each section should have 2-6 items maximum. Quality over quantity.`;
 
     let resultText = await generateAnswer(prompt);

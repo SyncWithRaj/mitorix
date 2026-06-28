@@ -10,10 +10,10 @@ dev-full: dev pull-model
 # Wait for Ollama to be healthy, then pull nomic-embed-text if not already present
 pull-model:
 	@echo "Waiting for Ollama to be ready..."
-	@until docker exec repolens_ollama ollama list >/dev/null 2>&1; do sleep 2; done
-	@if ! docker exec repolens_ollama ollama list 2>/dev/null | grep -q "nomic-embed-text"; then \
+	@until docker exec mitorix_ollama ollama list >/dev/null 2>&1; do sleep 2; done
+	@if ! docker exec mitorix_ollama ollama list 2>/dev/null | grep -q "nomic-embed-text"; then \
 		echo "Pulling nomic-embed-text model..."; \
-		docker exec repolens_ollama ollama pull nomic-embed-text; \
+		docker exec mitorix_ollama ollama pull nomic-embed-text; \
 	else \
 		echo "nomic-embed-text already available ✓"; \
 	fi
@@ -50,7 +50,7 @@ wipe:
 	@echo "All data has been completely wiped. You can run 'make start' to begin fresh."
 
 showdb:
-	docker exec -it repolens_mongo mongosh RepoLens
+	docker exec -it mitorix_mongo mongosh Mitorix
 
 nomic:
-	docker exec -it repolens_ollama ollama pull nomic-embed-text
+	docker exec -it mitorix_ollama ollama pull nomic-embed-text

@@ -41,7 +41,7 @@ export default function DesignDocModal({ repoId, isOpen, onClose }: DesignDocMod
           let rawMermaid = res.data.mermaid;
 
           if (
-            rawMermaid.includes("RepoLens AI is currently experiencing high load") ||
+            rawMermaid.includes("Mitorix AI is currently experiencing high load") ||
             (!rawMermaid.includes("```") &&
               !rawMermaid.trim().startsWith("graph") &&
               !rawMermaid.trim().startsWith("flowchart"))

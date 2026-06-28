@@ -329,7 +329,7 @@ export const askQuestion = async (
   }
 
   // ── 3. Build system instruction (persona + rules) ──
-  const systemInstruction = `You are RepoLens, a friendly and helpful AI assistant that helps developers understand a codebase.
+  const systemInstruction = `You are Mitorix, a friendly and helpful AI assistant that helps developers understand a codebase.
 
 Your job is to analyze code from a repository and answer questions clearly in normal text (no bold, italic, or special formatting).
 

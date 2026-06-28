@@ -24,7 +24,7 @@ export default function Footer() {
                   priority
                 />
               </div>
-              <span className="font-semibold text-xl tracking-tight">RepoLens</span>
+              <span className="font-semibold text-xl tracking-tight">Mitorix</span>
             </Link>
             <p className="text-[#737373] max-w-sm text-sm leading-relaxed font-medium">
               The intelligent AI engine that transforms your static codebase into a living,
@@ -61,7 +61,7 @@ export default function Footer() {
                   href="/dashboard"
                   className="text-[#737373] hover:text-[#ff6b00] transition-colors inline-block relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1px] after:bg-[#ff6b00] hover:after:w-full after:transition-all after:duration-300"
                 >
-                  RepoSpace
+                  MitorixSpace
                 </Link>
               </li>
               <li>
@@ -127,7 +127,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-[#1a1a1a] flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-[#737373] font-medium">
-            &copy; {new Date().getFullYear()} RepoLens AI. All rights reserved.
+            &copy; {new Date().getFullYear()} Mitorix AI. All rights reserved.
           </p>
           <div className="flex items-center gap-2 text-xs font-mono text-[#737373]">
             <span className="w-2 h-2 rounded-full bg-[#ff6b00] animate-pulse"></span>

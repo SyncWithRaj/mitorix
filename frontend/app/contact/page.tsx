@@ -31,7 +31,7 @@ export default function ContactPage() {
                 Get in Touch
               </h1>
               <p className="text-[#a3a3a3] text-lg leading-relaxed font-light">
-                Have questions about RepoLens enterprise integration, feature requests, or encountered a bug? We'd love to hear from you. Our engineering team responds within 24 hours.
+                Have questions about Mitorix enterprise integration, feature requests, or encountered a bug? We'd love to hear from you. Our engineering team responds within 24 hours.
               </p>
             </div>
 
@@ -44,8 +44,8 @@ export default function ContactPage() {
                 <div>
                   <h3 className="text-lg font-bold text-white tracking-tight">Email Us</h3>
                   <div className="text-sm text-[#d4d4d8] mt-1 space-x-4">
-                    <a href="mailto:hello@repolens.ai" className="hover:text-[#ff6b00] transition-colors">hello@repolens.ai</a>
-                    <a href="mailto:support@repolens.ai" className="hover:text-[#ff6b00] transition-colors">support@repolens.ai</a>
+                    <a href="mailto:hello@mitorix.ai" className="hover:text-[#ff6b00] transition-colors">hello@mitorix.ai</a>
+                    <a href="mailto:support@mitorix.ai" className="hover:text-[#ff6b00] transition-colors">support@mitorix.ai</a>
                   </div>
                 </div>
               </div>
@@ -58,7 +58,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="text-lg font-bold text-white tracking-tight">X / Twitter</h3>
                   <p className="text-sm text-[#d4d4d8] mt-1">
-                    <a href="#" className="hover:text-[#ff8c00] transition-colors">@repolens</a>
+                    <a href="#" className="hover:text-[#ff8c00] transition-colors">@mitorix</a>
                   </p>
                 </div>
               </div>
@@ -71,7 +71,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="text-lg font-bold text-white tracking-tight">LinkedIn</h3>
                   <div className="text-sm text-[#d4d4d8] mt-1 flex flex-wrap gap-x-4 gap-y-1">
-                    <a href="https://linkedin.com/company/repolens" target="_blank" rel="noopener noreferrer" className="hover:text-[#ffa800] transition-colors">RepoLens Page</a>
+                    <a href="https://linkedin.com/company/mitorix" target="_blank" rel="noopener noreferrer" className="hover:text-[#ffa800] transition-colors">Mitorix Page</a>
                     <a href="https://linkedin.com/in/rajribadiya" target="_blank" rel="noopener noreferrer" className="hover:text-[#ffa800] transition-colors">Raj Ribadiya</a>
                   </div>
                 </div>

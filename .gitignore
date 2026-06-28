@@ -1,5 +1,5 @@
 # ============================================================
-# RepoLens Monorepo — Root .gitignore
+# Mitorix Monorepo — Root .gitignore
 # Single source of truth for the entire monorepo.
 # The frontend/.gitignore has been consolidated here.
 # ============================================================
@@ -65,7 +65,7 @@ mongo_data/
 # ── Large Generated / Exported Files in Root ──────────────────
 # These are developer-local exports and not project source files
 index.html
-repolens.txt
+mitorix.txt
 
 # ── Tailwind v4 / Turbopack Scanner Exclusions ────────────────
 # Prevents Turbopack from scanning binary/non-code files during
