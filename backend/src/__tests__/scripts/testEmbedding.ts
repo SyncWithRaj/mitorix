@@ -34,8 +34,8 @@ async function testSingleEmbed() {
   console.log(`  ✓ First 5 values: [${vector.slice(0, 5).map(v => v.toFixed(4)).join(", ")}]`);
   console.log(`  ✓ Time: ${elapsed}ms`);
 
-  if (vector.length !== 768) {
-    throw new Error(`Expected 768 dimensions, got ${vector.length}`);
+  if (vector.length !== 3072) {
+    throw new Error(`Expected 3072 dimensions, got ${vector.length}`);
   }
 
   return vector;
@@ -60,11 +60,11 @@ async function testBatchEmbed() {
   console.log(`  ✓ Avg: ${(elapsed / vectors.length).toFixed(0)}ms per text`);
 
   for (let i = 0; i < vectors.length; i++) {
-    if (vectors[i]!.length !== 768) {
-      throw new Error(`Vector ${i} has ${vectors[i]!.length} dimensions, expected 768`);
+    if (vectors[i]!.length !== 3072) {
+      throw new Error(`Vector ${i} has ${vectors[i]!.length} dimensions, expected 3072`);
     }
   }
-  console.log(`  ✓ All vectors have 768 dimensions`);
+  console.log(`  ✓ All vectors have 3072 dimensions`);
 
   return vectors;
 }

@@ -4,7 +4,7 @@ import CircuitBreaker from "opossum";
 import logger from "../lib/logger.js";
 
 // ── Active provider: Gemini ──
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+export const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",

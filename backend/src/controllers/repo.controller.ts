@@ -13,7 +13,7 @@ import { FileContent } from "../models/fileContent.model.js";
 import ChatHistory from "../models/chatHistory.model.js";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { getTempRepoPath } from "../utils/cleanup.util.js";
-import { repoQueue } from "../queue/jobQueue.js";
+import { repoQueue, redisConnection } from "../queue/jobQueue.js";
 import { QueueEvents } from "bullmq";
 import { purgeRepository } from "../utils/purge.util.js";
 import logger from "../lib/logger.js";
@@ -282,11 +282,7 @@ export const jobStatusController = async (req: Request, res: Response, next: Nex
   }
 
   const queueEvents = new QueueEvents("repo-processing-queue", {
-    connection: {
-      host: process.env.REDIS_HOST || "localhost",
-      port: parseInt(process.env.REDIS_PORT || "6379"),
-      // Or just pass the URL or IORedis instance
-    },
+    connection: redisConnection,
   });
 
   const onProgress = (args: { jobId: string; data: JobProgress }) => {

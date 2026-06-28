@@ -215,7 +215,7 @@ ${entity.content || ""}
   } catch {
     console.log(`  Creating Qdrant collection "${COLLECTION}"...`);
     await qdrant.createCollection(COLLECTION, {
-      vectors: { size: 768, distance: "Cosine" },
+      vectors: { size: 3072, distance: "Cosine" },
     });
   }
 

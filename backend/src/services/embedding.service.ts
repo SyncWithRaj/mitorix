@@ -1,15 +1,14 @@
 import dotenv from "dotenv";
 import logger from "../lib/logger.js";
+import { genAI } from "./llm.service.js";
 
 dotenv.config();
 
-const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
-
 /**
- * Nomic-embed-text has a 2048-token context window.
- * ~1 token ≈ 4 chars for code → safe limit is ~6000 chars.
+ * Gemini embedding limit is 2048 tokens.
+ * ~1 token ≈ 4 chars for code → safe limit is ~8000 chars.
  */
-const MAX_EMBED_CHARS = 6000;
+const MAX_EMBED_CHARS = 8000;
 
 /**
  * Truncate text to fit within Nomic's 2048-token context window.
@@ -27,33 +26,21 @@ function truncateForEmbedding(text: string): string {
     : truncated;
 }
 
-// ─── Direct Ollama Embedding ────────────────────────────────────────────────
-// Bypasses LangChain and calls Ollama's /api/embed directly.
+// ─── Gemini API Embedding ───────────────────────────────────────────────────
+// Bypasses LangChain and calls Gemini API directly.
 // Used by all embedding and search operations.
 // ────────────────────────────────────────────────────────────────────────────
 
 /**
- * Embed a single text using Ollama's native /api/embed endpoint.
- * Faster than LangChain wrapper — no overhead, direct HTTP call.
+ * Embed a single text using Gemini's native embedContent endpoint.
  */
 export async function embedDirect(text: string): Promise<number[]> {
   const truncated = truncateForEmbedding(text);
 
-  const response = await fetch(`${OLLAMA_BASE_URL}/api/embed`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "nomic-embed-text",
-      input: truncated,
-    }),
-  });
+  const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
+  const result = await model.embedContent(truncated);
 
-  if (!response.ok) {
-    throw new Error(`Ollama embed failed: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.embeddings[0];
+  return result.embedding.values;
 }
 
 /**

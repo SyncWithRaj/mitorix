@@ -2,12 +2,12 @@
  * Semantic Code Search Service
  *
  * Uses Qdrant as a standalone search engine (NOT RAG — no LLM involved).
- * Embeds the user's natural language query using Nomic-embed-text via Ollama
- * (local inference), then performs vector similarity search with payload
+ * Embeds the user's natural language query using Gemini embedding API
+ * then performs vector similarity search with payload
  * filters + keyword re-ranking.
  *
  * Accuracy improvements over naive vector search:
- *  1. Nomic-embed-text trained for both query and document embedding
+ *  1. Gemini embedding trained for both query and document embedding
  *  2. Query augmentation to match document embedding format
  *  3. Hybrid scoring: vector similarity + keyword relevance boost
  *  4. Fetch more candidates from Qdrant, then re-rank and trim
@@ -29,8 +29,8 @@ const qdrant = new QdrantClient({
   apiKey: process.env.QDRANT_API_KEY!,
 });
 
-// Query embedding uses direct Ollama /api/embed call — faster than LangChain wrapper
-// Nomic-embed-text is trained for both document and query embedding
+// Query embedding uses direct Gemini API call
+// Gemini is trained for both document and query embedding
 
 export interface SearchFilters {
   entityType?: string; // e.g., "function", "class", "route"
@@ -189,7 +189,7 @@ export async function semanticSearch(
     await Repository.findByIdAndUpdate(repoId, { isEmbedded: true });
   }
 
-  // ── Step 1: Augment query & embed using direct Ollama call (faster than LangChain) ──
+  // ── Step 1: Augment query & embed using direct Gemini API call ──
   const augmentedQuery = augmentQuery(query, filters);
   const queryVector = await embedDirect(augmentedQuery);
 
