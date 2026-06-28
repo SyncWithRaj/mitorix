@@ -60,7 +60,7 @@ export default function Navbar() {
   const inRepoSpace = pathname.startsWith("/chat") || pathname.startsWith("/codeflow");
   const inRepoLabs = pathname.startsWith("/repolabs");
 
-  if (pathname.startsWith("/codeflow")) return null;
+  if (pathname.startsWith("/codeflow") || pathname === "/login") return null;
 
   return (
     <>
