@@ -155,20 +155,22 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
       const savedFilesCount = await saveRepoFilesToDB(repoId, repoPath);
       logger.info({ repoId, savedFilesCount }, "File tree saved to MongoDB");
 
-      // Generate AI Description
-      logger.info({ repoId }, "Generating AI repository summary");
-      try {
-        const repoDoc = await Repository.findById(repoId);
-        if (repoDoc) {
-          const filesSnippet = scannedFiles.slice(0, 50).map(f => f.relativePath).join(", ");
-          const prompt = `Based on the following file paths from the repository '${repoDoc.name}', generate a concise 2-3 sentence summary of what this repository likely is and what technologies it uses. Do not use Markdown formatting. File paths: ${filesSnippet}`;
-          const summary = await generateAnswer(prompt);
-          await Repository.findByIdAndUpdate(repoId, { description: summary.trim() });
-          logger.info({ repoId }, "AI repository summary generated successfully");
+      // Generate AI Description asynchronously so it doesn't block job completion
+      logger.info({ repoId }, "Queueing async AI repository summary generation");
+      (async () => {
+        try {
+          const repoDoc = await Repository.findById(repoId);
+          if (repoDoc) {
+            const filesSnippet = scannedFiles.slice(0, 50).map(f => f.relativePath).join(", ");
+            const prompt = `Based on the following file paths from the repository '${repoDoc.name}', generate a concise 2-3 sentence summary of what this repository likely is and what technologies it uses. Do not use Markdown formatting. File paths: ${filesSnippet}`;
+            const summary = await generateAnswer(prompt);
+            await Repository.findByIdAndUpdate(repoId, { description: summary.trim() });
+            logger.info({ repoId }, "AI repository summary generated successfully in background");
+          }
+        } catch (err) {
+          logger.warn({ err, repoId }, "Failed to generate AI repository summary in background");
         }
-      } catch (err) {
-        logger.warn({ err, repoId }, "Failed to generate AI repository summary");
-      }
+      })();
 
       await job.updateProgress(70);
 

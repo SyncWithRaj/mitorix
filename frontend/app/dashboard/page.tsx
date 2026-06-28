@@ -193,6 +193,19 @@ export default function Dashboard() {
     checkAuth();
   }, [fetchRepos]);
 
+  // Poll for missing AI descriptions generated asynchronously
+  useEffect(() => {
+    // Check if any repo is successfully indexed but missing its AI description
+    const hasMissingDescriptions = repos.some(r => r.status === "indexed" && !r.description);
+    if (!hasMissingDescriptions) return;
+
+    const intervalId = setInterval(() => {
+      fetchRepos();
+    }, 5000); // Poll every 5 seconds until descriptions are populated
+
+    return () => clearInterval(intervalId);
+  }, [repos, fetchRepos]);
+
   useEffect(() => {
     repos.forEach((repo) => {
       if (repo.isEmbedding && !activeEventSources.current.has(repo._id)) {
