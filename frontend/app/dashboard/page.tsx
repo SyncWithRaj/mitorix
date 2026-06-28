@@ -425,13 +425,13 @@ export default function Dashboard() {
               </div>
               <button
                 onClick={processRepo}
-                className="group/btn relative cursor-pointer text-xs text-white font-bold px-7 py-2.5 rounded-xl transition-all duration-300 active:scale-[0.98] border border-[#ff8c00]/30 shadow-[0_4px_20px_rgba(255,107,0,0.2)] hover:shadow-[0_0_35px_rgba(255,107,0,0.45)] flex items-center justify-center min-w-[160px] overflow-hidden bg-gradient-to-r from-[#ff6b00] via-[#ff8c00] to-[#ffa800]"
+                className="group/clone relative cursor-pointer font-bold px-7 py-2.5 rounded-xl transition-all duration-300 active:scale-[0.98] border border-[#ff8c00]/30 shadow-[0_4px_20px_rgba(255,107,0,0.2)] hover:shadow-[0_0_35px_rgba(255,107,0,0.45)] flex items-center justify-center min-w-[160px] overflow-hidden bg-[#ff6b00] text-black"
                 title={isAtLimit ? "Repository limit reached" : ""}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
-                <span className="relative z-10 flex items-center gap-2">
+                <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/clone:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+                <span className="relative z-10 flex items-center gap-2 text-sm group-hover/clone:text-black transition-colors duration-500">
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Clone & Index"}
-                  {!loading && <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />}
+                  {!loading && <ArrowRight size={14} className="group-hover/clone:translate-x-1 transition-transform" />}
                 </span>
               </button>
             </div>
@@ -474,11 +474,12 @@ export default function Dashboard() {
                   }
                   document.getElementById("folder-upload-input")?.click();
                 }}
-                className="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-[#0c0c0e] hover:bg-[#141416] border border-[#1f1f23] text-white text-xs font-semibold transition-all active:scale-95 cursor-pointer hover:border-[#ff6b00]/40 shadow-md group/upload"
+                className="group/folder flex-1 lg:flex-initial flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-semibold transition-all duration-300 active:scale-95 cursor-pointer shadow-sm overflow-hidden relative"
                 title={tier === "FREE" ? "Requires Basic Plan" : isAtLimit ? "Repository limit reached" : ""}
               >
-                <Folder size={14} className="text-[#ff6b00] group-hover/upload:scale-105 transition-transform" />
-                Upload Folder
+                <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/folder:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+                <Folder size={15} className="relative z-10 text-[#ff6b00] group-hover/folder:text-[#ff6b00] group-hover/folder:scale-110 transition-all duration-500" />
+                <span className="relative z-10 text-xs group-hover/folder:text-black transition-colors duration-500">Upload Folder</span>
               </button>
 
               <input
@@ -500,11 +501,12 @@ export default function Dashboard() {
                   }
                   document.getElementById("zip-upload-input")?.click();
                 }}
-                className="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-[#0c0c0e] hover:bg-[#141416] border border-[#1f1f23] text-white text-xs font-semibold transition-all active:scale-95 cursor-pointer hover:border-[#ffa800]/40 shadow-md group/zip"
+                className="group/zip flex-1 lg:flex-initial flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-semibold transition-all duration-300 active:scale-95 cursor-pointer shadow-sm overflow-hidden relative"
                 title={tier === "FREE" ? "Requires Basic Plan" : isAtLimit ? "Repository limit reached" : ""}
               >
-                <Archive size={14} className="text-[#ffa800] group-hover/zip:scale-105 transition-transform" />
-                Upload ZIP
+                <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/zip:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+                <Archive size={15} className="relative z-10 text-[#ffa800] group-hover/zip:text-[#ffa800] group-hover/zip:scale-110 transition-all duration-500" />
+                <span className="relative z-10 text-xs group-hover/zip:text-black transition-colors duration-500">Upload ZIP</span>
               </button>
             </div>
           </div>
@@ -623,19 +625,20 @@ export default function Dashboard() {
                         
                         <button
                           onClick={() => router.push(`/codeflow/${repo._id}`)}
-                          className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs text-white font-bold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(255,107,0,0.15)] hover:shadow-[0_0_30px_rgba(255,107,0,0.45)] border border-[#ff6b00]/40 overflow-hidden bg-gradient-to-r from-[#ff6b00] via-[#ff8c00] to-[#ffa800] relative"
+                          className="group/launch flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm text-black font-bold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(255,107,0,0.2)] hover:shadow-[0_0_30px_rgba(255,107,0,0.45)] border border-[#ff6b00]/40 overflow-hidden bg-[#ff6b00] relative"
                         >
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/action:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
-                          <Activity size={14} />
-                          <span>Launch MitorixSpace</span>
+                          <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/launch:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+                          <Activity size={15} className="relative z-10 group-hover/launch:text-black transition-colors duration-500" />
+                          <span className="relative z-10 group-hover/launch:text-black transition-colors duration-500">Launch MitorixSpace</span>
                         </button>
                         
                         <button
                           onClick={() => router.push(`/mitorixlabs/${repo._id}`)}
-                          className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs text-white font-semibold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#ff8c00]/40 hover:border-[#ff8c00]/80 bg-[#ff8c00]/10 hover:bg-[#ff8c00]/20 shadow-[0_0_15px_rgba(255,140,0,0.1)]"
+                          className="group/labs flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-white/10 bg-white/5 shadow-sm overflow-hidden relative"
                         >
-                          <Search size={14} className="text-[#ff8c00]" />
-                          <span>MitorixLabs</span>
+                          <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/labs:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+                          <Search size={15} className="relative z-10 text-[#ffa800] group-hover/labs:text-[#ffa800] group-hover/labs:scale-110 transition-all duration-500" />
+                          <span className="relative z-10 text-white group-hover/labs:text-black transition-colors duration-500">MitorixLabs</span>
                         </button>
                       </>
                     )}
@@ -643,10 +646,11 @@ export default function Dashboard() {
                     <button
                       onClick={() => deleteRepo(repo._id)}
                       disabled={repo.status === "cloning" || repo.status === "indexing"}
-                      className="flex-1 sm:flex-none flex items-center justify-center w-auto sm:w-11 py-2.5 bg-[#0d0d0f] hover:bg-red-500/10 text-[#52525b] hover:text-red-500 border border-[#1f1f23] hover:border-red-500/30 rounded-xl transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed group/del"
+                      className="group/del flex-1 sm:flex-none flex items-center justify-center w-auto sm:w-11 py-2.5 bg-white/5 border border-white/10 rounded-xl transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden relative shadow-sm"
                       title="Destroy Clone"
                     >
-                      <Trash2 size={14} className="group-hover/del:scale-110 transition-transform duration-300" />
+                      <div className="absolute inset-0 bg-red-600 origin-bottom scale-y-0 group-hover/del:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0 disabled:hidden"></div>
+                      <Trash2 size={15} className="relative z-10 text-[#737373] group-hover/del:text-white transition-colors duration-500 group-hover/del:scale-110" />
                     </button>
                   </div>
                   </div>
