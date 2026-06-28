@@ -232,6 +232,8 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
     settings: {
       stalledInterval: 300000, // Check for stalled jobs every 5 minutes (default is 30s)
       maxStalledCount: 1,
+      guardInterval: 300000,
+      drainDelay: 300000,
     }
   }
 );

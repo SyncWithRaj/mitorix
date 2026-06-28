@@ -13,8 +13,7 @@ import { FileContent } from "../models/fileContent.model.js";
 import ChatHistory from "../models/chatHistory.model.js";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { getTempRepoPath } from "../utils/cleanup.util.js";
-import { repoQueue, redisConnection } from "../queue/jobQueue.js";
-import { QueueEvents } from "bullmq";
+import { repoQueue, globalQueueEvents } from "../queue/jobQueue.js";
 import { purgeRepository } from "../utils/purge.util.js";
 import logger from "../lib/logger.js";
 import { AppError } from "../middlewares/error.middleware.js";
@@ -281,9 +280,7 @@ export const jobStatusController = async (req: Request, res: Response, next: Nex
     res.write(`data: ${JSON.stringify({ status: "connected", progress: 0 })}\n\n`);
   }
 
-  const queueEvents = new QueueEvents("repo-processing-queue", {
-    connection: redisConnection,
-  });
+  // Use the global QueueEvents instance instead of creating a new one per connection
 
   const onProgress = (args: { jobId: string; data: JobProgress }) => {
     if (args.jobId === jobId) {
@@ -308,19 +305,18 @@ export const jobStatusController = async (req: Request, res: Response, next: Nex
     }
   };
 
-  queueEvents.on("progress", onProgress);
-  queueEvents.on("completed", onCompleted);
-  queueEvents.on("failed", onFailed);
+  globalQueueEvents.on("progress", onProgress);
+  globalQueueEvents.on("completed", onCompleted);
+  globalQueueEvents.on("failed", onFailed);
 
   req.on("close", () => {
     cleanup();
   });
 
   function cleanup() {
-    queueEvents.off("progress", onProgress);
-    queueEvents.off("completed", onCompleted);
-    queueEvents.off("failed", onFailed);
-    queueEvents.close();
+    globalQueueEvents.off("progress", onProgress);
+    globalQueueEvents.off("completed", onCompleted);
+    globalQueueEvents.off("failed", onFailed);
   }
 };
 

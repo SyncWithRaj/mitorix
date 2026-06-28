@@ -71,22 +71,22 @@ services:
       - ./.env
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb://mongodb:27017/Mitorix
-      - QDRANT_URL=http://qdrant:6333
+      # - MONGO_URI=mongodb://mongodb:27017/Mitorix
+      # - QDRANT_URL=http://qdrant:6333
       - REDIS_URL=redis://redis:6379
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - OLLAMA_BASE_URL=http://ollama:11434
+      # - OLLAMA_BASE_URL=http://ollama:11434
       # The rest are picked up from the .env file automatically
     depends_on:
-      mongodb:
-        condition: service_healthy
+      # mongodb:
+      #   condition: service_healthy
       redis:
         condition: service_healthy
-      qdrant:
-        condition: service_healthy
-      ollama:
-        condition: service_healthy
+      # qdrant:
+      #   condition: service_healthy
+      # ollama:
+      #   condition: service_healthy
     restart: unless-stopped
 
   frontend:

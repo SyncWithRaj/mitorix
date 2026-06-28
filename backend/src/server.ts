@@ -7,24 +7,11 @@ import logger from "./lib/logger.js";
 
 // Import workers so they start with the server process
 import "./workers/repoWorker.js";
-import "./workers/cleanupWorker.js";
-import { cleanupQueue } from "./queue/jobQueue.js";
 
 const port = process.env.PORT || 3000;
 
 const startServer = async () => {
   await connectDB();
-
-  // Schedule automated cleanup job (runs every hour)
-  await cleanupQueue.add(
-    "purge-inactive-repos",
-    {},
-    {
-      repeat: {
-        pattern: "0 * * * *", // Cron expression for top of every hour
-      },
-    }
-  );
 
   app.listen(port, () => {
     logger.info({ port }, `Mitorix server is running`);

@@ -1,4 +1,4 @@
-.PHONY: dev start stop restart logs build clean wipe showdb pull-model dev-full
+.PHONY: dev start stop restart logs build clean wipe showdb pull-model dev-full deploy-ec2
 
 # Start infrastructure (MongoDB, Redis, Qdrant, Ollama) for local development
 dev:
@@ -54,3 +54,7 @@ showdb:
 
 nomic:
 	docker exec -it mitorix_ollama ollama pull nomic-embed-text
+
+# Deploy only Backend and Redis for EC2 (Cloud architecture)
+deploy-ec2:
+	docker compose up -d --build backend redis
