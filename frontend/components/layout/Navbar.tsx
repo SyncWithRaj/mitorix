@@ -7,6 +7,7 @@ import { ArrowLeft, LogOut } from "lucide-react";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import { motion } from "motion/react";
 
 export default function Navbar() {
   const router = useRouter();
@@ -117,21 +118,29 @@ export default function Navbar() {
           </Link>
         )}
 
-        <div className="hidden md:flex space-x-2">
-          <Link
-            href="/about"
-            className="text-sm font-medium text-[#737373] hover:text-[#e5e5e5] px-3 py-1.5 rounded-md transition-all duration-300 relative group overflow-hidden"
-          >
-            <span className="relative z-10">About</span>
-            <div className="absolute bottom-1 left-3 right-3 h-[2px] bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-x-50 group-hover:scale-x-100 rounded-full"></div>
-          </Link>
-          <Link
-            href="/contact"
-            className="text-sm font-medium text-[#737373] hover:text-[#e5e5e5] px-3 py-1.5 rounded-md transition-all duration-300 relative group overflow-hidden"
-          >
-            <span className="relative z-10">Contact Us</span>
-            <div className="absolute bottom-1 left-3 right-3 h-[2px] bg-gradient-to-r from-[#ff8c00] to-[#ffa800] opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-x-50 group-hover:scale-x-100 rounded-full"></div>
-          </Link>
+        <div className="hidden md:flex space-x-2 relative">
+          {[
+            { name: "Home", path: "/" },
+            { name: "About", path: "/about" },
+            { name: "Contact Us", path: "/contact" },
+          ].map((tab) => (
+            <Link
+              key={tab.path}
+              href={tab.path}
+              className={`relative px-4 py-2 text-sm font-medium transition-colors duration-300 ${
+                pathname === tab.path ? "text-white" : "text-[#a3a3a3] hover:text-[#e5e5e5]"
+              }`}
+            >
+              {pathname === tab.path && (
+                <motion.div
+                  layoutId="activeNavbarTab"
+                  className="absolute inset-0 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] z-0"
+                  transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
+                />
+              )}
+              <span className="relative z-10">{tab.name}</span>
+            </Link>
+          ))}
         </div>
       </div>
 
@@ -139,19 +148,18 @@ export default function Navbar() {
         {isAuthenticated ? (
           <Link
             href="/dashboard"
-            className="relative overflow-hidden text-sm font-bold text-black bg-[#ff6b00] px-5 py-2 rounded-full transition-all duration-300 group shadow-[0_0_15px_rgba(255,107,0,0.4)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)]"
+            className="relative overflow-hidden text-sm font-bold text-white bg-[#ff6b00] px-6 py-2.5 rounded-xl transition-all duration-300 group shadow-[0_0_15px_rgba(255,107,0,0.4)] border border-[#ff8c00]/30 hover:shadow-[0_0_25px_rgba(255,107,0,0.6)]"
           >
-            <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
-            <span className="relative z-10">Dashboard</span>
+            <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+            <span className="relative z-10 group-hover:text-black transition-colors duration-500">Dashboard</span>
           </Link>
         ) : (
           <Link
             href="/login"
-            className="group relative text-sm font-medium text-white px-6 py-2 rounded-lg transition-all duration-300 active:scale-95 block overflow-hidden border border-[#ff6b00]/30 shadow-[0_0_20px_rgba(255,107,0,0.15)] hover:shadow-[0_0_30px_rgba(255,107,0,0.3)]"
+            className="relative overflow-hidden text-sm font-bold text-white bg-[#ff6b00] px-6 py-2.5 rounded-xl transition-all duration-300 group shadow-[0_0_15px_rgba(255,107,0,0.4)] border border-[#ff8c00]/30 hover:shadow-[0_0_25px_rgba(255,107,0,0.6)] block"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] transition-opacity duration-300 group-hover:opacity-90"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
-            <span className="relative z-10 flex items-center gap-2">Sign in</span>
+            <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+            <span className="relative z-10 flex items-center gap-2 group-hover:text-black transition-colors duration-500">Sign in</span>
           </Link>
         )}
       </div>

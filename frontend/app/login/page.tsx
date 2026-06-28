@@ -3,7 +3,8 @@
 import api from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Github, Fingerprint, FlaskConical, ShieldCheck, Sparkles, Box } from "lucide-react";
+import Link from "next/link";
+import { Github, Fingerprint, FlaskConical, ShieldCheck, Box, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import Silk from "@/components/ui/Silk";
 
@@ -61,6 +62,16 @@ export default function LoginPage() {
       ></div>
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_20%,transparent_100%)] pointer-events-none z-0"></div>
 
+      {/* Floating Back Button */}
+      <Link 
+        href="/" 
+        className="fixed top-8 left-8 z-50 w-12 h-12 rounded-full bg-[#ff6b00] text-black shadow-[0_0_15px_rgba(255,107,0,0.4)] hover:shadow-[0_0_25px_rgba(255,107,0,0.6)] overflow-hidden group flex items-center justify-center transition-all duration-300 hover:-translate-y-1 animate-in fade-in zoom-in duration-1000"
+        title="Back to Home"
+      >
+        <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+        <ArrowLeft className="relative z-10 w-5 h-5 group-hover:text-black transition-colors duration-500" />
+      </Link>
+
       {/* Split Grid Layout */}
       <div className="relative z-10 w-full h-full grid lg:grid-cols-2">
         
@@ -108,7 +119,7 @@ export default function LoginPage() {
         {/* Right Column - Login */}
         <div className="flex flex-col justify-center items-center p-8 lg:p-16 relative pl-16 xl:pl-32 items-start">
           <div className="w-full max-w-[420px] xl:max-w-[480px]">
-            <div className="bg-black/60 backdrop-blur-3xl p-12 rounded-[2.5rem] text-center border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] flex flex-col items-center group relative overflow-hidden animate-in fade-in zoom-in-95 duration-1000 delay-500 fill-mode-both">
+            <div className="bg-black/60 backdrop-blur-3xl py-16 px-12 rounded-[2.5rem] text-center border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] flex flex-col items-center justify-center min-h-[450px] group relative overflow-hidden animate-in fade-in zoom-in-95 duration-1000 delay-500 fill-mode-both">
               {/* Glow */}
               <div className="absolute -top-32 -right-32 w-64 h-64 bg-[#ff6b00]/15 blur-3xl rounded-full group-hover:bg-[#ff6b00]/25 transition-colors duration-700 pointer-events-none"></div>
               
@@ -122,18 +133,18 @@ export default function LoginPage() {
 
               <button
                 onClick={loginWithGithub}
-                className="w-full bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] hover:from-[#ff8c00] hover:to-[#ffa200] text-white font-semibold text-sm px-6 py-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(255,107,0,0.25)] hover:shadow-[0_0_35px_rgba(255,107,0,0.4)] flex items-center justify-center gap-3 group/btn relative overflow-hidden"
+                className="w-full bg-[#ff6b00] text-white font-semibold text-sm px-6 py-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(255,107,0,0.25)] hover:shadow-[0_0_35px_rgba(255,107,0,0.4)] flex items-center justify-center gap-3 group/btn relative overflow-hidden border border-[#ff8c00]/30"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
-                <Github size={18} className="relative z-10" />
-                <span className="relative z-10">Continue with GitHub</span>
+                <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/btn:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0 cursor-pointer"></div>
+                <Github size={18} className="relative z-10 group-hover/btn:text-black transition-colors duration-500" />
+                <span className="relative z-10 group-hover/btn:text-black transition-colors duration-500 ">Continue with GitHub</span>
               </button>
 
               {isDev && (
                 <button
                   onClick={loginAsDev}
                   disabled={devLoading}
-                  className="w-full mt-4 bg-white/5 hover:bg-white/10 text-white font-semibold text-sm px-6 py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border border-white/10 disabled:opacity-50"
+                  className="w-full mt-4 bg-white/5 hover:bg-white/10 text-white font-semibold text-sm px-6 py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border border-white/10 disabled:opacity-50 cursor-pointer"
                 >
                   <FlaskConical size={16} className="text-[#ff6b00]" />
                   {devLoading ? "Authenticating..." : "Dev Login"}
