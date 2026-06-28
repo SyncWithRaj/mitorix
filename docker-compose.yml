@@ -65,8 +65,8 @@ services:
     image: mitorix-backend:latest
     build: ./backend
     container_name: mitorix_backend
-    expose:
-      - "5000"
+    ports:
+      - "5000:5000"
     env_file:
       - ./.env
     environment:
