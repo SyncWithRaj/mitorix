@@ -367,11 +367,6 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-[#18181b] pb-8">
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/20 text-[#ff6b00] text-xs font-mono uppercase tracking-wider shadow-[0_0_15px_rgba(255,107,0,0.1)]">
-                <Server size={13} className="animate-pulse" /> Active Workspace Hub
-              </div>
-            </div>
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none">
               {greeting}, <span className="text-[#ff6b00]">{user?.username || "Developer"}</span>
             </h1>
