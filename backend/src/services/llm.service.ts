@@ -26,6 +26,7 @@ const callGroqCompletion = async (messages: Array<{ role: string; content: strin
     {
       model: GROQ_MODEL,
       messages,
+      temperature: 0.1,
     },
     {
       headers: {
