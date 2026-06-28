@@ -93,8 +93,17 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
+  const [user, setUser] = useState<any>(null);
+  const [greeting, setGreeting] = useState("Good Morning");
   const [embeddingStates, setEmbeddingStates] = useState<Record<string, { current: number; total: number; completed: boolean }>>({});
   const activeEventSources = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good Morning");
+    else if (hour < 18) setGreeting("Good Afternoon");
+    else setGreeting("Good Evening");
+  }, []);
 
   const { tier, subscription } = useSubscription();
   const repoLimit = subscription?.limits?.repos || 1;
@@ -184,14 +193,15 @@ export default function Dashboard() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        await api.get("/auth/me");
+        const res = await api.get("/auth/me");
+        setUser(res.data.user);
         fetchRepos();
       } catch {
         router.push("/login");
       }
     };
     checkAuth();
-  }, [fetchRepos]);
+  }, [fetchRepos, router]);
 
   // Poll for missing AI descriptions generated asynchronously
   useEffect(() => {
@@ -370,7 +380,7 @@ export default function Dashboard() {
               </div>
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none">
-              Workspace Dashboard
+              {greeting}, <span className="text-[#ff6b00]">{user?.username || "Developer"}</span>
             </h1>
             <p className="text-[#a3a3a3] mt-3 text-base font-light max-w-xl leading-relaxed">
               Launch into high-fidelity code spaces, sync vectorized semantic context in Qdrant, and review parsing queue statuses.
