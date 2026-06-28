@@ -67,6 +67,8 @@ export const cleanupWorker = new Worker(
     settings: {
       stalledInterval: 300000, // Check for stalled jobs every 5 minutes (default is 30s)
       maxStalledCount: 1,
+      guardInterval: 300000,
+      drainDelay: 300000,
     },
     concurrency: 1, // Only run one cleanup job at a time
   }
