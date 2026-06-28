@@ -293,21 +293,21 @@ export default function Home() {
         {/* Tech Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_20%,transparent_100%)] pointer-events-none"></div>
 
-        <div className="max-w-6xl w-full text-center relative z-10 flex flex-col items-center">
+        <div className="max-w-[1600px] w-full text-center relative z-10 flex flex-col items-center px-2 sm:px-4">
           
 
           {/* Headline */}
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter mb-8 leading-[1.05] pb-2 text-white flex flex-col items-center">
-            <Shuffle text="Understand your codebase." />
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter mb-8 leading-[1.05] pb-2 text-white flex flex-col items-center w-full max-w-[1600px]">
+            <Shuffle text="Turn your entire codebase" />
             <Shuffle 
-              text="Faster than ever." 
+              text="into a searchable brain." 
               className="text-[#ff6b00] drop-shadow-[0_0_35px_rgba(255,107,0,0.25)]" 
             />
           </h1>
 
           {/* Subtitle */}
           <p className="text-lg md:text-2xl text-[#a3a3a3] mb-12 max-w-4xl leading-relaxed font-light px-4">
-            Mitorix is an AI-powered architectural copilot. We parse your repository’s AST, index semantic relationships in a <span className="text-white font-medium">Qdrant vector space</span>, and render an interactive <span className="text-[#ff6b00] font-medium">dependency force-graph</span>. Converse with your code through natural language chat or voice calls.
+            Mitorix is your ultimate architectural copilot. We instantly parse your codebase into a high-fidelity vector space via <span className="text-[#ffa800] font-medium">MitorixLabs</span> to map out every semantic relationship. Jump into <span className="text-[#ff6b00] font-medium">MitorixSpace</span> to explore an interactive dependency graph, or interrogate your architecture directly through natural language.
           </p>
 
           {/* CTA Buttons */}
