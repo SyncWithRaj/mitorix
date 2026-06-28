@@ -65,7 +65,7 @@ export default function LoginPage() {
       {/* Floating Back Button */}
       <Link 
         href="/" 
-        className="fixed top-8 left-8 z-50 w-12 h-12 rounded-full bg-[#ff6b00] text-black shadow-[0_0_15px_rgba(255,107,0,0.4)] hover:shadow-[0_0_25px_rgba(255,107,0,0.6)] overflow-hidden group flex items-center justify-center transition-all duration-300 hover:-translate-y-1 animate-in fade-in zoom-in duration-1000"
+        className="cursor-pointer fixed top-8 left-8 z-50 w-12 h-12 rounded-full bg-[#ff6b00] text-black shadow-[0_0_15px_rgba(255,107,0,0.4)] hover:shadow-[0_0_25px_rgba(255,107,0,0.6)] overflow-hidden group flex items-center justify-center transition-all duration-300 hover:-translate-y-1 animate-in fade-in zoom-in duration-1000"
         title="Back to Home"
       >
         <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>

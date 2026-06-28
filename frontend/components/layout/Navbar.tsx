@@ -168,7 +168,7 @@ export default function Navbar() {
             <button
               onClick={handleLogout}
               title="Logout"
-              className="w-10 h-10 rounded-xl bg-[#ff6b00] border border-[#ff8c00]/30 text-black hover:shadow-[0_0_25px_rgba(255,107,0,0.5)] shadow-[0_0_15px_rgba(255,107,0,0.3)] overflow-hidden group flex items-center justify-center transition-all duration-300 relative"
+              className="cursor-pointer w-10 h-10 rounded-xl bg-[#ff6b00] border border-[#ff8c00]/30 text-black hover:shadow-[0_0_25px_rgba(255,107,0,0.5)] shadow-[0_0_15px_rgba(255,107,0,0.3)] overflow-hidden group flex items-center justify-center transition-all duration-300 relative"
             >
               <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
               <LogOut className="relative z-10 w-4 h-4 group-hover:text-black transition-colors duration-500" />

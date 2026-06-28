@@ -625,7 +625,7 @@ export default function Dashboard() {
                         
                         <button
                           onClick={() => router.push(`/codeflow/${repo._id}`)}
-                          className="group/launch flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm text-black font-bold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(255,107,0,0.2)] hover:shadow-[0_0_30px_rgba(255,107,0,0.45)] border border-[#ff6b00]/40 overflow-hidden bg-[#ff6b00] relative"
+                          className="group/launch cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm text-black font-bold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(255,107,0,0.2)] hover:shadow-[0_0_30px_rgba(255,107,0,0.45)] border border-[#ff6b00]/40 overflow-hidden bg-[#ff6b00] relative"
                         >
                           <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/launch:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
                           <Activity size={15} className="relative z-10 group-hover/launch:text-black transition-colors duration-500" />
@@ -634,7 +634,7 @@ export default function Dashboard() {
                         
                         <button
                           onClick={() => router.push(`/mitorixlabs/${repo._id}`)}
-                          className="group/labs flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-white/10 bg-white/5 shadow-sm overflow-hidden relative"
+                          className="group/labs cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-white/10 bg-white/5 shadow-sm overflow-hidden relative"
                         >
                           <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/labs:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
                           <Search size={15} className="relative z-10 text-[#ffa800] group-hover/labs:text-[#ffa800] group-hover/labs:scale-110 transition-all duration-500" />
@@ -646,7 +646,7 @@ export default function Dashboard() {
                     <button
                       onClick={() => deleteRepo(repo._id)}
                       disabled={repo.status === "cloning" || repo.status === "indexing"}
-                      className="group/del flex-1 sm:flex-none flex items-center justify-center w-auto sm:w-11 py-2.5 bg-white/5 border border-white/10 rounded-xl transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden relative shadow-sm"
+                      className="group/del cursor-pointer flex-1 sm:flex-none flex items-center justify-center w-auto sm:w-11 py-2.5 bg-white/5 border border-white/10 rounded-xl transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden relative shadow-sm"
                       title="Destroy Clone"
                     >
                       <div className="absolute inset-0 bg-red-600 origin-bottom scale-y-0 group-hover/del:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0 disabled:hidden"></div>
