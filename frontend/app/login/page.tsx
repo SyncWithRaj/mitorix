@@ -3,8 +3,9 @@
 import api from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Github, Fingerprint, ChevronRight, FlaskConical, ShieldAlert, Cpu } from "lucide-react";
+import { Github, Fingerprint, FlaskConical, ShieldCheck, Sparkles, Box } from "lucide-react";
 import toast from "react-hot-toast";
+import Silk from "@/components/ui/Silk";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,109 +45,109 @@ export default function LoginPage() {
       }
     };
     checkAuth();
-  }, []);
+  }, [router]);
 
   const isDev = process.env.NODE_ENV === "development";
 
   return (
-    <div className="flex-grow flex items-center justify-center bg-[#000000] text-[#e5e5e5] relative overflow-hidden pt-32 pb-20 px-6">
-      {/* Immersive Background */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-tr from-[#ff6b00]/10 to-[#ffa800]/5 blur-[160px] rounded-full pointer-events-none mix-blend-screen animate-pulse-slow"></div>
+    <div className="w-full h-screen overflow-hidden bg-black text-[#e5e5e5] relative flex">
+      {/* Backgrounds spanning the whole page */}
+      <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
+        <Silk color="#ff6b00" speed={4} scale={1.5} noiseIntensity={2} />
+      </div>
       <div
-        className="absolute inset-0 opacity-[0.015] pointer-events-none"
+        className="absolute inset-0 opacity-[0.02] pointer-events-none z-0"
         style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}
       ></div>
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_20%,transparent_100%)] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_20%,transparent_100%)] pointer-events-none z-0"></div>
 
-      <div className="relative z-10 w-full max-w-5xl flex flex-col md:flex-row items-stretch justify-center gap-8 lg:gap-16">
+      {/* Split Grid Layout */}
+      <div className="relative z-10 w-full h-full grid lg:grid-cols-2">
         
-        {/* Left Side: Features / Tech Context */}
-        <div className="flex-1 flex flex-col justify-center space-y-8 max-w-lg hidden md:flex">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff6b00]/10 border border-[#ff6b00]/30 text-[#ff6b00] text-xs font-mono uppercase tracking-wider mb-6">
-              Authentication Node
-            </div>
-            <h2 className="text-4xl lg:text-5xl font-black text-white tracking-tighter mb-4 leading-tight">
-              Unlock Your <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b00] to-[#ffa800]">Vector RepoSpace</span>
-            </h2>
-            <p className="text-[#a3a3a3] leading-relaxed font-light text-lg">
-              Securely authenticate to begin indexing your GitHub repositories into our Qdrant vector space. Explore architectural force-graphs, calculate structural complexity, and run deep AST dependency traces.
-            </p>
+        {/* Left Column - Brand & Info */}
+        <div className="hidden lg:flex flex-col justify-between p-12 xl:p-16 border-r border-white/5 bg-black/20 backdrop-blur-sm">
+          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-8 duration-1000">
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-[#050505] border border-[#1a1a1a] rounded-xl p-4 flex flex-col items-start gap-3">
-              <Cpu className="text-[#ff6b00]" size={20} />
-              <div className="text-sm font-bold text-white">Ephemeral Cloning</div>
-              <div className="text-xs text-[#737373]">Code deleted instantly post-parse</div>
-            </div>
-            <div className="bg-[#050505] border border-[#1a1a1a] rounded-xl p-4 flex flex-col items-start gap-3">
-              <ShieldAlert className="text-[#ff8c00]" size={20} />
-              <div className="text-sm font-bold text-white">OAuth 2.0 Secure</div>
-              <div className="text-xs text-[#737373]">Authorized Github Application</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side: Login Card */}
-        <div className="w-full max-w-md flex flex-col justify-center">
-          <div className="bg-[#030303]/80 backdrop-blur-2xl p-10 sm:p-12 rounded-[2rem] text-center border border-[#1a1a1a] shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col items-center group relative overflow-hidden">
-            {/* Hover Glow inside card */}
-            <div className="absolute -top-[100px] -right-[100px] w-[250px] h-[250px] bg-[#ff6b00]/10 blur-3xl rounded-full group-hover:bg-[#ff6b00]/20 transition-colors duration-700"></div>
-
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#0a0a0a] to-[#030303] flex items-center justify-center mb-8 border border-[#1a1a1a] shadow-inner relative group-hover:border-[#ff6b00]/50 group-hover:shadow-[0_0_25px_rgba(255,107,0,0.2)] transition-all duration-500">
-              <Fingerprint
-                size={42}
-                className="text-[#ff6b00] absolute opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"
-              />
-              <Github
-                size={42}
-                className="text-[#e5e5e5] group-hover:opacity-0 transition-opacity duration-500"
-              />
-            </div>
-
-            <h1 className="text-3xl font-bold mb-3 text-white tracking-tight">
-              Welcome Back
+          <div className="max-w-md xl:max-w-lg">
+            <h1 className="text-5xl xl:text-6xl font-black text-white tracking-tighter mb-6 leading-[1.1] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 fill-mode-both">
+              AI-Powered <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b00] to-[#ffa800]">Code Intelligence</span>
             </h1>
-            <p className="mb-10 text-sm font-medium text-[#737373] leading-relaxed max-w-[280px]">
-              Access your personalized RepoSpace dashboards and repositories.
+            <p className="text-[#a3a3a3] leading-relaxed font-light text-lg mb-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both">
+              Connect your GitHub account to instantly map, visualize, and understand your codebases. Break down architecture and uncover hidden structural insights with ease.
             </p>
 
-            <button
-              onClick={loginWithGithub}
-              className="w-full bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] hover:from-[#ff8c00] hover:to-[#ffa200] text-white font-semibold text-[15px] px-6 py-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(255,107,0,0.25)] hover:shadow-[0_0_35px_rgba(255,107,0,0.4)] flex items-center justify-center gap-3 border border-transparent hover:border-[#ff8c00]/50 group/btn relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
-              <Github
-                size={20}
-                className="group-hover/btn:-rotate-12 transition-transform duration-300 relative z-10"
-              />
-              <span className="relative z-10">Continue with GitHub</span>
-              <ChevronRight
-                size={18}
-                className="absolute right-6 opacity-0 group-hover/btn:opacity-100 group-hover/btn:translate-x-2 transition-all duration-300 text-white"
-              />
-            </button>
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-700 fill-mode-both">
+              <div className="flex items-start gap-4">
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-[#ff6b00]">
+                  <Box size={20} />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white mb-1">Deep Analysis</div>
+                  <div className="text-sm text-[#737373] leading-relaxed">Instantly ingest and understand entire codebases at a structural level.</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-[#ff6b00]">
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white mb-1">Secure Access</div>
+                  <div className="text-sm text-[#737373] leading-relaxed">Safe, encrypted authentication directly via GitHub OAuth 2.0.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-xs font-mono text-[#52525b] animate-in fade-in duration-1000 delay-1000 fill-mode-both">
+            © {new Date().getFullYear()} RepoLens Inc.
+          </div>
+        </div>
 
-            {/* Dev Login — only visible in development */}
-            {isDev && (
+        {/* Right Column - Login */}
+        <div className="flex flex-col justify-center items-center p-8 lg:p-16 relative">
+          <div className="w-full max-w-sm">
+            <div className="bg-black/60 backdrop-blur-3xl p-10 rounded-[2rem] text-center border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] flex flex-col items-center group relative overflow-hidden animate-in fade-in zoom-in-95 duration-1000 delay-500 fill-mode-both">
+              {/* Glow */}
+              <div className="absolute -top-32 -right-32 w-64 h-64 bg-[#ff6b00]/15 blur-3xl rounded-full group-hover:bg-[#ff6b00]/25 transition-colors duration-700 pointer-events-none"></div>
+              
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#1a1a1a] to-black flex items-center justify-center mb-6 border border-white/10 shadow-inner relative group-hover:border-[#ff6b00]/50 group-hover:shadow-[0_0_30px_rgba(255,107,0,0.2)] transition-all duration-500">
+                <Fingerprint size={36} className="text-[#ff6b00] absolute opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
+                <Github size={36} className="text-white group-hover:opacity-0 transition-opacity duration-500" />
+              </div>
+
+              <h2 className="text-2xl font-bold mb-2 text-white tracking-tight">Welcome Back</h2>
+              <p className="mb-8 text-sm text-[#737373]">Access your personalized RepoSpace.</p>
+
               <button
-                onClick={loginAsDev}
-                disabled={devLoading}
-                className="w-full mt-4 bg-[#0a0a0a] hover:bg-[#121212] text-[#ff6b00] font-semibold text-[14px] px-6 py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2.5 border border-[#1a1a1a] hover:border-[#ff6b00]/30 hover:shadow-[0_0_20px_rgba(255,107,0,0.1)] disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={loginWithGithub}
+                className="w-full bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] hover:from-[#ff8c00] hover:to-[#ffa200] text-white font-semibold text-sm px-6 py-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(255,107,0,0.25)] hover:shadow-[0_0_35px_rgba(255,107,0,0.4)] flex items-center justify-center gap-3 group/btn relative overflow-hidden"
               >
-                <FlaskConical size={18} />
-                {devLoading ? "Authenticating..." : "Dev Login (Seeded Bypass)"}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
+                <Github size={18} className="relative z-10" />
+                <span className="relative z-10">Continue with GitHub</span>
               </button>
-            )}
 
-            <div className="mt-8 text-[11px] font-mono text-[#737373] flex items-center justify-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#ff6b00] animate-pulse"></span>
-              Encrypted Session Tokens
+              {isDev && (
+                <button
+                  onClick={loginAsDev}
+                  disabled={devLoading}
+                  className="w-full mt-4 bg-white/5 hover:bg-white/10 text-white font-semibold text-sm px-6 py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border border-white/10 disabled:opacity-50"
+                >
+                  <FlaskConical size={16} className="text-[#ff6b00]" />
+                  {devLoading ? "Authenticating..." : "Dev Login"}
+                </button>
+              )}
+
+              <div className="mt-8 text-xs font-medium text-[#52525b] flex items-center justify-center gap-1.5">
+                <ShieldCheck size={12} className="text-[#ff6b00]" />
+                Secure Session
+              </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
