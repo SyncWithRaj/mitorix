@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-// import axios from "axios"; // OpenAI — commented out (credits exhausted)
+import axios from "axios";
 import CircuitBreaker from "opossum";
 import logger from "../lib/logger.js";
 
@@ -10,64 +10,48 @@ const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
 });
 
-// ── OpenAI provider (commented out — credits exhausted) ──
-// const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-// const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5.5";
-//
-// if (!OPENAI_API_KEY) {
-//   logger.warn(
-//     "OPENAI_API_KEY is not set. LLM calls will fail until you configure it in backend/.env"
-//   );
-// }
-//
-// const OPENAI_BASE_URL = "https://api.openai.com/v1";
-//
-// const getOpenAIHeaders = () => ({
-//   Authorization: `Bearer ${OPENAI_API_KEY}`,
-//   "Content-Type": "application/json",
-// });
-//
-// const extractAssistantText = (data: any): string => {
-//   const firstChoice = data?.choices?.[0];
-//   const content = firstChoice?.message?.content;
-//
-//   if (typeof content === "string") return content;
-//
-//   if (Array.isArray(content)) {
-//     return content
-//       .map((c: any) => (typeof c?.text === "string" ? c.text : ""))
-//       .join("\n")
-//       .trim();
-//   }
-//
-//   return "";
-// };
-//
-// const callOpenAICompletion = async (messages: Array<{ role: string; content: string }>) => {
-//   if (!OPENAI_API_KEY) {
-//     throw new Error("OPENAI_API_KEY is missing");
-//   }
-//
-//   const res = await axios.post(
-//     `${OPENAI_BASE_URL}/chat/completions`,
-//     {
-//       model: OPENAI_MODEL,
-//       messages,
-//     },
-//     {
-//       headers: getOpenAIHeaders(),
-//       timeout: 45000,
-//     }
-//   );
-//
-//   const text = extractAssistantText(res.data);
-//   return text || "Mitorix AI returned an empty response. Please try again.";
-// };
+// ── Groq Fallback Provider ──
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_MODEL = "llama-3.3-70b-versatile"; // Latest stable fast model
+
+const callGroqCompletion = async (messages: Array<{ role: string; content: string }>) => {
+  if (!GROQ_API_KEY) {
+    throw new Error("GROQ_API_KEY is missing for fallback");
+  }
+  
+  logger.info({ model: GROQ_MODEL }, "Routing LLM request to Groq fallback");
+
+  const res = await axios.post(
+    `https://api.groq.com/openai/v1/chat/completions`,
+    {
+      model: GROQ_MODEL,
+      messages,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      timeout: 45000,
+    }
+  );
+
+  return res.data?.choices?.[0]?.message?.content || "No response from Groq fallback.";
+};
 
 // ── Legacy single-shot call (used by design docs, diagrams, etc.) ──
 const callGeminiAPI = async (prompt: string) => {
-  const result = await model.generateContent(prompt);
-  return result.response.text();
+  try {
+    logger.info({ provider: "Gemini" }, "Routing LLM request to Gemini (single-shot)");
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  } catch (error: any) {
+    logger.warn({ err: error.message }, "Gemini API failed, attempting Groq fallback...");
+    if (process.env.GROQ_API_KEY) {
+      return await callGroqCompletion([{ role: "user", content: prompt }]);
+    }
+    throw error;
+  }
 };
 
 // Configure the Circuit Breaker
@@ -117,17 +101,35 @@ const callGeminiChatAPI = async (
   history: ChatMessage[],
   userMessage: string
 ): Promise<string> => {
-  const chatModel = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
-    systemInstruction: systemInstruction,
-  });
+  try {
+    logger.info({ provider: "Gemini" }, "Routing LLM request to Gemini (chat)");
+    
+    const chatModel = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+      systemInstruction: systemInstruction,
+    });
 
-  const chat = chatModel.startChat({
-    history: history,
-  });
+    const chat = chatModel.startChat({
+      history: history,
+    });
 
-  const result = await chat.sendMessage(userMessage);
-  return result.response.text();
+    const result = await chat.sendMessage(userMessage);
+    return result.response.text();
+  } catch (error: any) {
+    logger.warn({ err: error.message }, "Gemini Chat API failed, attempting Groq fallback...");
+    if (process.env.GROQ_API_KEY) {
+      const groqMessages = [
+        { role: "system", content: systemInstruction },
+        ...history.map(msg => ({
+          role: msg.role === "model" ? "assistant" : "user",
+          content: msg.parts.map(p => p.text).join("\n")
+        })),
+        { role: "user", content: userMessage }
+      ];
+      return await callGroqCompletion(groqMessages);
+    }
+    throw error;
+  }
 };
 
 const chatBreaker = new CircuitBreaker(callGeminiChatAPI, breakerOptions);

@@ -225,6 +225,14 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
   {
     connection: redisConnection,
     concurrency: 5, // Allow processing up to 5 repos concurrently
+    
+    // Upstash Free Tier Optimization:
+    // BullMQ polls Redis aggressively by default for stalled jobs.
+    // Increasing these intervals dramatically reduces Redis command consumption when idle.
+    settings: {
+      stalledInterval: 300000, // Check for stalled jobs every 5 minutes (default is 30s)
+      maxStalledCount: 1,
+    }
   }
 );
 
