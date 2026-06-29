@@ -60,10 +60,10 @@ export default function Navbar() {
     }
   };
 
-  const inMitorixSpace = pathname.startsWith("/chat") || pathname.startsWith("/codeflow");
+  const inMitorixSpace = pathname.startsWith("/chat") || pathname.startsWith("/mitorixSpace");
   const inMitorixLabs = pathname.startsWith("/mitorixlabs");
 
-  if (pathname.startsWith("/codeflow") || pathname === "/login") return null;
+  if (pathname.startsWith("/mitorixSpace") || pathname === "/login") return null;
 
   return (
     <>

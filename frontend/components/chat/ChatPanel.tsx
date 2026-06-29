@@ -271,7 +271,7 @@ export default function ChatPanel({
 
   const handleBlastRadiusClick = (file: string, name: string) => {
     const nodeId = name ? `${file}::${name}` : file;
-    router.push(`/codeflow/${repoId}?blastRadius=${encodeURIComponent(nodeId)}`);
+    router.push(`/mitorixSpace/${repoId}?blastRadius=${encodeURIComponent(nodeId)}`);
   };
 
   const stopSilenceDetection = () => {
