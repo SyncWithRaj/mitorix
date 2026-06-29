@@ -69,22 +69,14 @@ export default function Navbar() {
     <>
       <div className={`fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none px-4 transition-transform duration-500 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
       <nav
-        className={`pointer-events-auto transition-all duration-500 text-[#e5e5e5] px-6 py-3.5 flex items-center justify-between w-full max-w-7xl relative ${
-          inMitorixLabs
-            ? "bg-[#000000] rounded-none border-b border-[#1a1a1a]"
-            : "bg-white/[0.03] backdrop-blur-2xl rounded-b-[28px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_inset_0_-1px_1px_rgba(255,255,255,0.05),_0_15px_40px_rgba(0,0,0,0.6)] border border-t-0 border-white/10"
-        }`}
+        className="pointer-events-auto transition-all duration-500 text-[#e5e5e5] px-6 py-3.5 flex items-center justify-between w-full max-w-7xl relative bg-white/[0.03] backdrop-blur-2xl rounded-b-[28px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_inset_0_-1px_1px_rgba(255,255,255,0.05),_0_15px_40px_rgba(0,0,0,0.6)] border border-t-0 border-white/10"
       >
-        {!inMitorixLabs && (
-          <>
-            <svg className="absolute top-0 -left-4 w-4 h-4 text-white/[0.03] fill-current backdrop-blur-2xl" viewBox="0 0 16 16">
-              <path d="M16 0L0 0C8.83656 0 16 7.16344 16 16Z" />
-            </svg>
-            <svg className="absolute top-0 -right-4 w-4 h-4 text-white/[0.03] fill-current backdrop-blur-2xl" viewBox="0 0 16 16">
-              <path d="M0 0L16 0C7.16344 0 0 7.16344 0 16Z" />
-            </svg>
-          </>
-        )}
+        <svg className="absolute top-0 -left-4 w-4 h-4 text-white/[0.03] fill-current backdrop-blur-2xl" viewBox="0 0 16 16">
+          <path d="M16 0L0 0C8.83656 0 16 7.16344 16 16Z" />
+        </svg>
+        <svg className="absolute top-0 -right-4 w-4 h-4 text-white/[0.03] fill-current backdrop-blur-2xl" viewBox="0 0 16 16">
+          <path d="M0 0L16 0C7.16344 0 0 7.16344 0 16Z" />
+        </svg>
       <div className="flex items-center space-x-6">
         {inMitorixSpace ? (
           <div className="flex items-center gap-4">
