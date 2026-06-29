@@ -227,7 +227,18 @@ export async function detectSemanticClones(
     if (!vector || !Array.isArray(vector)) continue;
 
     const anchorFilePath = point.payload?.metadata?.filePath;
-    if (!anchorFilePath) continue;
+    const symbolName = point.payload?.metadata?.symbolName || point.payload?.metadata?.name || "";
+    
+    // Skip un-named or generic callbacks — their metadata dominates the vector
+    // and causes completely unrelated code to cluster together (false positives)
+    const lowerName = symbolName.toLowerCase();
+    if (
+      !anchorFilePath ||
+      lowerName.includes("anonymous") ||
+      lowerName === "default"
+    ) {
+      continue;
+    }
 
     // Search for similar points, excluding same-file matches
     const similar = await qdrant.search(COLLECTION, {

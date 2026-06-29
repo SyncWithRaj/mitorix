@@ -254,10 +254,20 @@ export async function computeDrift(
     const oldMeta = oldPoint.payload?.metadata;
     if (!oldMeta) continue;
 
+    // Enforce file path matching: a function should only be compared against code in the same file.
+    // If the file doesn't exist in the new repo, the entity is correctly flagged as 100% deleted.
+    const pointSearchFilter = JSON.parse(JSON.stringify(newSearchFilter));
+    if (oldMeta.filePath) {
+      pointSearchFilter.must.push({
+        key: "metadata.filePath",
+        match: { value: oldMeta.filePath },
+      });
+    }
+
     const matches = await qdrant.search(COLLECTION, {
       vector,
       limit: 1,
-      filter: newSearchFilter,
+      filter: pointSearchFilter,
       with_payload: true,
       score_threshold: 0.50, // Raised from 0.1 — below 50% similarity means truly unrelated code
     });
