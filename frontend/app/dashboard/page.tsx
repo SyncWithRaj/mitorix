@@ -54,7 +54,7 @@ function RepoProgressTracker({ jobId, onComplete }: { jobId: string; onComplete:
             setTimeout(() => onComplete(), 1000);
           }
         }
-      } catch (e) {}
+      } catch (e) { }
     };
 
     eventSource.onerror = () => {
@@ -256,7 +256,7 @@ export default function Dashboard() {
 
   const deleteRepo = async (repoId: string) => {
     let warningMsg = "NUCLEAR OPTION: Are you sure you want to nuke this repository? This will instantly and irreversibly delete all your code data, vectors, and chat history.";
-    
+
     if (tier === "FREE" || tier === "BASIC") {
       warningMsg += `\n\n⚠️ RATE LIMIT WARNING:\nDeleting this repository DOES NOT reset your creation limit. You are allowed to provision up to ${repoLimit} repositor${repoLimit === 1 ? 'y' : 'ies'} every 3 days on the ${tier} plan. If you have reached this limit, you must wait before adding another one.`;
     }
@@ -280,7 +280,7 @@ export default function Dashboard() {
       if (!silent) {
         toastId = toast.loading("Connecting to Vector Engine...");
       }
-      
+
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
       const eventSource = new EventSource(`${baseUrl}/repos/${repoId}/trigger-embedding`, {
         withCredentials: true,
@@ -294,7 +294,7 @@ export default function Dashboard() {
       eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          
+
           if (data.status === "completed") {
             if (!silent) toast.success("Embeddings generated & stored in Qdrant successfully!", { id: toastId });
             setEmbeddingStates(prev => ({
@@ -360,7 +360,7 @@ export default function Dashboard() {
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_20%,transparent_100%)] pointer-events-none"></div>
 
       <div className="max-w-6xl mx-auto w-full px-6 flex-grow relative z-10 space-y-10">
-        
+
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-[#18181b] pb-8">
           <div>
@@ -371,7 +371,7 @@ export default function Dashboard() {
               Launch into high-fidelity code spaces, sync vectorized semantic context in Qdrant, and review parsing queue statuses.
             </p>
           </div>
-          
+
           {/* Quick Metrics */}
           <div className="flex flex-wrap gap-4 w-full md:w-auto">
             <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl px-5 py-4 flex items-center gap-4 shadow-xl shrink-0">
@@ -404,7 +404,7 @@ export default function Dashboard() {
             <Plus size={18} className="text-[#ff6b00] border border-[#ff6b00]/25 rounded-md p-0.5 bg-[#ff6b00]/5" />
             Provision a new MitorixSpace
           </h2>
-          
+
           <div className="flex flex-col md:flex-row gap-4 relative z-10">
             {/* Git URL Input */}
             <div className="flex-grow flex flex-col sm:flex-row gap-3">
@@ -448,7 +448,7 @@ export default function Dashboard() {
                 </>
               )}
             </div>
-            
+
             <div className="flex gap-3 w-full lg:w-auto">
               <input
                 type="file"
@@ -512,7 +512,7 @@ export default function Dashboard() {
           <div className="mt-5 px-4 py-3 bg-[#18181b]/50 border border-[#27272a] rounded-lg relative z-10 flex items-start gap-3">
             <Info size={16} className="text-[#a1a1aa] mt-0.5 shrink-0" />
             <p className="text-xs text-[#a1a1aa] leading-relaxed">
-              <strong className="text-[#e4e4e7]">Rate Limits:</strong> <span className="text-[#ff6b00]">FREE</span> tier can provision 1 repository every 3 days. <span className="text-[#ff6b00]">BASIC</span> tier can provision 5 repositories every 3 days. Deleting a repository does not reset your provisioning limit. Upgrade to <span className="text-[#ff6b00]">PRO</span> for unlimited provisions.
+              <span className="text-[#ff6b00]">FREE</span> tier can provision 1 repository every 3 days. <span className="text-[#ff6b00]">BASIC</span> tier can provision 5 repositories every 3 days. Deleting a repository does not reset your provisioning limit. Upgrade to <span className="text-[#ff6b00]">PRO</span> for unlimited provisions.
             </p>
           </div>
         </div>
@@ -551,105 +551,104 @@ export default function Dashboard() {
                   {/* Main Card Content */}
                   <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6 w-full relative z-10">
                     <div className="flex-grow space-y-3 ml-2">
-                    <div className="flex items-center gap-4">
-                      <div className="w-11 h-11 rounded-xl bg-[#0d0d0f] border border-[#1f1f23] flex items-center justify-center shadow-inner group-hover:bg-[#ff6b00]/10 group-hover:border-[#ff6b00]/30 transition-all duration-500 shrink-0">
-                        <Github className="w-5.5 h-5.5 text-[#a1a1aa] group-hover:text-[#ff6b00] transition-colors duration-500" />
-                      </div>
-                      <div className="space-y-1 min-w-0">
-                        <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#ff6b00] transition-colors truncate">
-                          {repo.name}
-                        </h3>
-                        <div className="flex flex-wrap items-center gap-2.5">
-                          <span className="flex items-center gap-1.5 text-[9px] font-mono font-bold bg-[#0d0d0f] px-2.5 py-1 rounded border border-[#1f1f23]">
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                repo.status === "failed"
-                                  ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse"
-                                  : repo.status === "cloning" || repo.status === "indexing"
-                                    ? "bg-[#ffb700] animate-pulse shadow-[0_0_8px_rgba(255,183,0,0.6)]"
-                                    : repo.status === "indexed"
-                                      ? "bg-[#ff6b00] shadow-[0_0_8px_rgba(255,107,0,0.6)]"
-                                      : "bg-orange-400"
-                              }`}
-                            ></span>
-                            <span className="text-[#a1a1aa] tracking-widest">{repo.status.toUpperCase()}</span>
-                          </span>
-
-                          <span className="text-xs font-mono text-[#52525b] truncate max-w-[200px] hidden sm:block">
-                            Branch: <code className="text-[#a1a1aa] bg-[#0c0c0e] px-1.5 py-0.5 rounded border border-[#1f1f23]">{repo.defaultBranch}</code>
-                          </span>
-
-                          {repo.commitHash && (
-                            <span className="text-xs font-mono text-[#52525b] hidden md:block">
-                              Hash: <code className="text-[#888]">{repo.commitHash.substring(0, 7)}</code>
+                      <div className="flex items-center gap-4">
+                        <div className="w-11 h-11 rounded-xl bg-[#0d0d0f] border border-[#1f1f23] flex items-center justify-center shadow-inner group-hover:bg-[#ff6b00]/10 group-hover:border-[#ff6b00]/30 transition-all duration-500 shrink-0">
+                          <Github className="w-5.5 h-5.5 text-[#a1a1aa] group-hover:text-[#ff6b00] transition-colors duration-500" />
+                        </div>
+                        <div className="space-y-1 min-w-0">
+                          <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#ff6b00] transition-colors truncate">
+                            {repo.name}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-2.5">
+                            <span className="flex items-center gap-1.5 text-[9px] font-mono font-bold bg-[#0d0d0f] px-2.5 py-1 rounded border border-[#1f1f23]">
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${repo.status === "failed"
+                                    ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse"
+                                    : repo.status === "cloning" || repo.status === "indexing"
+                                      ? "bg-[#ffb700] animate-pulse shadow-[0_0_8px_rgba(255,183,0,0.6)]"
+                                      : repo.status === "indexed"
+                                        ? "bg-[#ff6b00] shadow-[0_0_8px_rgba(255,107,0,0.6)]"
+                                        : "bg-orange-400"
+                                  }`}
+                              ></span>
+                              <span className="text-[#a1a1aa] tracking-widest">{repo.status.toUpperCase()}</span>
                             </span>
-                          )}
-                          
-                          {repo.status === "failed" && (
-                            <span className="text-xs text-red-500 font-medium flex items-center gap-1.5 bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">
-                              <AlertTriangle size={12} /> Pipeline failed
+
+                            <span className="text-xs font-mono text-[#52525b] truncate max-w-[200px] hidden sm:block">
+                              Branch: <code className="text-[#a1a1aa] bg-[#0c0c0e] px-1.5 py-0.5 rounded border border-[#1f1f23]">{repo.defaultBranch}</code>
                             </span>
-                          )}
+
+                            {repo.commitHash && (
+                              <span className="text-xs font-mono text-[#52525b] hidden md:block">
+                                Hash: <code className="text-[#888]">{repo.commitHash.substring(0, 7)}</code>
+                              </span>
+                            )}
+
+                            {repo.status === "failed" && (
+                              <span className="text-xs text-red-500 font-medium flex items-center gap-1.5 bg-red-500/5 px-2 py-0.5 rounded border border-red-500/10">
+                                <AlertTriangle size={12} /> Pipeline failed
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
+
+                      {/* Progress Bar Injector */}
+                      {repo.jobId && repo.status !== "indexed" && repo.status !== "failed" && (
+                        <RepoProgressTracker jobId={repo.jobId} onComplete={fetchRepos} />
+                      )}
                     </div>
 
-                    {/* Progress Bar Injector */}
-                    {repo.jobId && repo.status !== "indexed" && repo.status !== "failed" && (
-                      <RepoProgressTracker jobId={repo.jobId} onComplete={fetchRepos} />
-                    )}
-                  </div>
+                    {/* Actions Section */}
+                    <div className="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap gap-2.5 shrink-0 lg:ml-8 ml-2">
+                      {repo.status === "indexed" && (
+                        <>
+                          {(repo.isEmbedding || (embeddingStates[repo._id] && !embeddingStates[repo._id].completed)) ? (
+                            <div className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs font-semibold px-4.5 py-2.5 rounded-xl border border-[#ffa800]/40 text-[#ffa800] bg-[#ffa800]/10">
+                              <Loader2 size={14} className="animate-spin" />
+                              <span>{embeddingStates[repo._id]?.current || 0} / {embeddingStates[repo._id]?.total || '-'}</span>
+                            </div>
+                          ) : !repo.isEmbedded && (
+                            <button
+                              onClick={() => embedRepo(repo._id)}
+                              className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs font-semibold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#1f1f23] hover:border-[#ffa800]/40 text-[#a1a1aa] bg-[#0d0d0f] hover:bg-[#ffa800]/10"
+                              title="Create Embeddings"
+                            >
+                              <Database size={14} className="text-[#ffa800]" />
+                              <span>Create Embeddings</span>
+                            </button>
+                          )}
 
-                  {/* Actions Section */}
-                  <div className="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap gap-2.5 shrink-0 lg:ml-8 ml-2">
-                    {repo.status === "indexed" && (
-                      <>
-                        {(repo.isEmbedding || (embeddingStates[repo._id] && !embeddingStates[repo._id].completed)) ? (
-                          <div className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs font-semibold px-4.5 py-2.5 rounded-xl border border-[#ffa800]/40 text-[#ffa800] bg-[#ffa800]/10">
-                            <Loader2 size={14} className="animate-spin" />
-                            <span>{embeddingStates[repo._id]?.current || 0} / {embeddingStates[repo._id]?.total || '-'}</span>
-                          </div>
-                        ) : !repo.isEmbedded && (
                           <button
-                            onClick={() => embedRepo(repo._id)}
-                            className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs font-semibold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#1f1f23] hover:border-[#ffa800]/40 text-[#a1a1aa] bg-[#0d0d0f] hover:bg-[#ffa800]/10"
-                            title="Store codebase in Qdrant"
+                            onClick={() => router.push(`/codeflow/${repo._id}`)}
+                            className="group/launch cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm text-black font-bold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(255,107,0,0.2)] hover:shadow-[0_0_30px_rgba(255,107,0,0.45)] border border-[#ff6b00]/40 overflow-hidden bg-[#ff6b00] relative"
                           >
-                            <Database size={14} className="text-[#ffa800]" />
-                            <span>Init Qdrant</span>
+                            <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/launch:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+                            <Activity size={15} className="relative z-10 group-hover/launch:text-black transition-colors duration-500" />
+                            <span className="relative z-10 group-hover/launch:text-black transition-colors duration-500">Launch MitorixSpace</span>
                           </button>
-                        )}
-                        
-                        <button
-                          onClick={() => router.push(`/codeflow/${repo._id}`)}
-                          className="group/launch cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm text-black font-bold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(255,107,0,0.2)] hover:shadow-[0_0_30px_rgba(255,107,0,0.45)] border border-[#ff6b00]/40 overflow-hidden bg-[#ff6b00] relative"
-                        >
-                          <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/launch:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
-                          <Activity size={15} className="relative z-10 group-hover/launch:text-black transition-colors duration-500" />
-                          <span className="relative z-10 group-hover/launch:text-black transition-colors duration-500">Launch MitorixSpace</span>
-                        </button>
-                        
-                        <button
-                          onClick={() => router.push(`/mitorixlabs/${repo._id}`)}
-                          className="group/labs cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-white/10 bg-white/5 shadow-sm overflow-hidden relative"
-                        >
-                          <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/labs:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
-                          <Search size={15} className="relative z-10 text-[#ffa800] group-hover/labs:text-[#ffa800] group-hover/labs:scale-110 transition-all duration-500" />
-                          <span className="relative z-10 text-white group-hover/labs:text-black transition-colors duration-500">MitorixLabs</span>
-                        </button>
-                      </>
-                    )}
 
-                    <button
-                      onClick={() => deleteRepo(repo._id)}
-                      disabled={repo.status === "cloning" || repo.status === "indexing"}
-                      className="group/del cursor-pointer flex-1 sm:flex-none flex items-center justify-center w-auto sm:w-11 py-2.5 bg-white/5 border border-white/10 rounded-xl transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden relative shadow-sm"
-                      title="Destroy Clone"
-                    >
-                      <div className="absolute inset-0 bg-red-600 origin-bottom scale-y-0 group-hover/del:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0 disabled:hidden"></div>
-                      <Trash2 size={15} className="relative z-10 text-[#737373] group-hover/del:text-white transition-colors duration-500 group-hover/del:scale-110" />
-                    </button>
-                  </div>
+                          <button
+                            onClick={() => router.push(`/mitorixlabs/${repo._id}`)}
+                            className="group/labs cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-white/10 bg-white/5 shadow-sm overflow-hidden relative"
+                          >
+                            <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/labs:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+                            <Search size={15} className="relative z-10 text-[#ffa800] group-hover/labs:text-[#ffa800] group-hover/labs:scale-110 transition-all duration-500" />
+                            <span className="relative z-10 text-white group-hover/labs:text-black transition-colors duration-500">MitorixLabs</span>
+                          </button>
+                        </>
+                      )}
+
+                      <button
+                        onClick={() => deleteRepo(repo._id)}
+                        disabled={repo.status === "cloning" || repo.status === "indexing"}
+                        className="group/del cursor-pointer flex-1 sm:flex-none flex items-center justify-center w-auto sm:w-11 py-2.5 bg-white/5 border border-white/10 rounded-xl transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden relative shadow-sm"
+                        title="Destroy Clone"
+                      >
+                        <div className="absolute inset-0 bg-red-600 origin-bottom scale-y-0 group-hover/del:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0 disabled:hidden"></div>
+                        <Trash2 size={15} className="relative z-10 text-[#737373] group-hover/del:text-white transition-colors duration-500 group-hover/del:scale-110" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Expandable AI Insights Section */}
@@ -667,6 +666,15 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {repos.length > 0 && (
+            <div className="mt-4 px-4 py-3 bg-[#18181b]/50 border border-[#27272a] rounded-lg relative z-10 flex items-start gap-3">
+              <Info size={16} className="text-[#a1a1aa] mt-0.5 shrink-0" />
+              <p className="text-xs text-[#a1a1aa] leading-relaxed">
+                <strong className="text-[#e4e4e7]">Note:</strong> For features like CodeFlow, AI Chat, Semantic Search, and MitorixLabs, you must click <strong className="text-[#ffa800]">Create Embeddings</strong> first for the repository.
+              </p>
             </div>
           )}
         </div>
