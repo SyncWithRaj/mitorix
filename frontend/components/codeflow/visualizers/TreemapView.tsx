@@ -189,5 +189,5 @@ export default function TreemapView() {
     };
   }, [analysisData, folderFilter, colorMode, selectedFile, blastRadius, selectFile, filteredFiles]);
 
-  return <div ref={containerRef} className="w-full h-full relative bg-[#000000]" />;
+  return <div ref={containerRef} className="w-full h-full relative bg-transparent" />;
 }

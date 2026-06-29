@@ -324,7 +324,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full bg-[#000000] overflow-hidden relative group border border-[#1a1a1a] rounded-none flex-grow"
+      className="w-full h-full bg-transparent overflow-hidden relative group border border-[#1a1a1a] rounded-none flex-grow"
       onPointerMove={handlePointerMove}
     >
       <div className="absolute top-20 left-4 z-30 bg-[#050505] border border-[#1a1a1a] px-4 py-2 rounded-none shadow-lg">

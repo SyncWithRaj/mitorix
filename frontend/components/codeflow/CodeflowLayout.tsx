@@ -314,12 +314,13 @@ export default function CodeflowLayout({
   ];
 
   return (
-    <div className={`fixed inset-0 z-[100] flex flex-col text-gh-text overflow-hidden font-mono ${isLoading ? 'bg-transparent' : 'bg-gh-bg'}`}>
-      
+    <div className={`fixed inset-0 z-[100] flex flex-col text-gh-text overflow-hidden font-mono bg-transparent`}>
+      {/* Background is fully transparent to let global Silk background show through */}
+
       {/* Main Content Wrapper - Hidden during loading so global Silk shows through */}
-      <div className={`flex flex-col h-full w-full transition-opacity duration-700 ease-in-out ${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+      <div className={`flex flex-col h-full w-full transition-opacity duration-700 ease-in-out relative z-10 ${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         {/* Topbar */}
-        <div className="h-14 border-b border-gh-border bg-gh-panel flex items-center px-4 shrink-0 sticky top-0 z-[120] justify-between">
+        <div className="h-14 border-b border-white/5 bg-black/40 backdrop-blur-2xl flex items-center px-4 shrink-0 sticky top-0 z-[120] justify-between shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
         <div className="flex items-center gap-2 min-w-0">
           <Link
             href={`/dashboard`}
@@ -482,11 +483,11 @@ export default function CodeflowLayout({
             initialWidth={260}
             minWidth={180}
             maxWidth={400}
-            className="relative z-20 h-full bg-gh-panel border-r border-gh-border overflow-hidden"
+            className="relative z-20 h-full bg-black/40 backdrop-blur-xl overflow-hidden shadow-2xl"
             onWidthChange={setLeftPanelWidth}
           >
             {analysisData ? (
-              <div className="flex flex-col h-full bg-gh-bg w-full relative">
+              <div className="flex flex-col h-full bg-transparent w-full relative">
                 {/* Upper Section */}
                 <div className="flex-1 p-4 space-y-5 overflow-y-auto custom-scrollbar">
                   {folderFilter && (
@@ -522,8 +523,8 @@ export default function CodeflowLayout({
 
                 {/* Sliding File Explorer Drawer Overlapping Wholly */}
                 {explorerOpen && (
-                  <div className="absolute inset-0 z-50 bg-[#000000] flex flex-col animate-in slide-in-from-left duration-200">
-                    <div className="flex items-center justify-between p-3 border-b border-[#1a1a1a] bg-[#050505]">
+                  <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-2xl flex flex-col animate-in slide-in-from-left duration-200">
+                    <div className="flex items-center justify-between p-3 border-b border-white/5 bg-transparent">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-[#e5e5e5] uppercase tracking-wider">
                         <Folder size={14} className="text-[#ff6b00]" />
                         <span>File Tree Explorer</span>
@@ -554,18 +555,16 @@ export default function CodeflowLayout({
           </ResizablePanel>
         )}
 
-        {/* Explorer Overlay (independent of left panel) */}
-        {explorerOpen && (
-          <div
-            className="absolute z-60 bg-[#000000] border-r border-gh-border shadow-2xl flex flex-col min-h-0"
-            style={{
-              top: 0,
-              bottom: 0,
-              left: 0,
-              width: `${leftPanelOpen ? leftPanelWidth : 320}px`,
-            }}
+        {/* Explorer Overlay (independent of left panel, as a standard flex panel to push graph) */}
+        {!leftPanelOpen && explorerOpen && (
+          <ResizablePanel
+            side="left"
+            initialWidth={320}
+            minWidth={200}
+            maxWidth={500}
+            className="z-50 bg-black/60 backdrop-blur-2xl shadow-2xl flex flex-col min-h-0 h-full"
           >
-            <div className="flex items-center justify-between p-3 border-b border-[#1a1a1a] bg-[#050505]">
+            <div className="flex items-center justify-between p-3 border-b border-white/5 bg-transparent">
               <div className="flex items-center gap-1.5 text-xs font-bold text-[#e5e5e5] uppercase tracking-wider">
                 <Folder size={14} className="text-[#ff6b00]" />
                 <span>File Tree Explorer</span>
@@ -581,11 +580,11 @@ export default function CodeflowLayout({
             <div className="flex-1 overflow-auto p-3 custom-scrollbar">
               <TreeExplorer />
             </div>
-          </div>
+          </ResizablePanel>
         )}
 
         {/* Center Canvas */}
-        <div className="flex-1 flex flex-col min-w-0 bg-gh-bg relative overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 bg-black/60 backdrop-blur-2xl relative overflow-hidden">
           {analysisData && <VizSelector />}
 
           <div className="absolute inset-0 z-0">
@@ -609,10 +608,10 @@ export default function CodeflowLayout({
             initialWidth={360}
             minWidth={280}
             maxWidth={500}
-            className="relative z-20 h-full"
+            className="relative z-20 h-full shadow-[-10px_0_30px_rgba(0,0,0,0.2)]"
           >
             {/* Tab Bar */}
-            <div className="flex border-b border-gh-border bg-gh-panel shrink-0">
+            <div className="flex border-b border-white/5 bg-black/40 backdrop-blur-xl shrink-0">
               {tabs.map((tab) => (
                 <button
                   key={tab.key}
@@ -634,10 +633,10 @@ export default function CodeflowLayout({
 
             {/* Panel Content */}
             <div
-              className={`flex-1 overflow-y-auto bg-gh-bg custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}
+              className={`flex-1 overflow-y-auto bg-black/40 backdrop-blur-xl custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}
             >
               {analysisData ? (
-                <div className="flex-1 flex flex-col relative bg-gh-bg">
+                <div className="flex-1 flex flex-col relative bg-transparent">
                   {rightTab === "details" && (selectedFile ? <FileInspector /> : <IssuesPanel />)}
                   {rightTab === "patterns" && <PatternsPanel />}
                   {rightTab === "security" && <SecurityPanel />}
@@ -659,7 +658,13 @@ export default function CodeflowLayout({
 
         {/* ── Chat Slide-Out Panel ── */}
         {chatOpen && (
-          <div className="w-[380px] shrink-0 z-20 border-l border-gh-border bg-[#000000] shadow-[-10px_0_20px_rgba(0,0,0,0.5)] flex flex-col animate-in slide-in-from-right duration-300 relative min-h-0">
+          <ResizablePanel
+            side="right"
+            initialWidth={380}
+            minWidth={280}
+            maxWidth={600}
+            className="z-20 bg-black/60 backdrop-blur-2xl shadow-[-10px_0_40px_rgba(0,0,0,0.5)] flex flex-col min-h-0 h-full"
+          >
             <ChatPanel
               repoId={repoId}
               chatMessages={chatMessages}
@@ -676,7 +681,7 @@ export default function CodeflowLayout({
               attachedNodes={attachedNodes}
               setAttachedNodes={setAttachedNodes}
             />
-          </div>
+          </ResizablePanel>
         )}
       </div>
 

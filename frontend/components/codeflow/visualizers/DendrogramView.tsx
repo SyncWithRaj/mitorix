@@ -210,5 +210,5 @@ export default function DendrogramView() {
     };
   }, [analysisData, folderFilter, selectFile, setFolderFilter, filteredFiles]);
 
-  return <div ref={containerRef} className="w-full h-full relative bg-[#000000]" />;
+  return <div ref={containerRef} className="w-full h-full relative bg-transparent" />;
 }
