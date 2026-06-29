@@ -94,6 +94,7 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
   const [user, setUser] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [greeting, setGreeting] = useState("Good Morning");
   const [embeddingStates, setEmbeddingStates] = useState<Record<string, { current: number; total: number; completed: boolean }>>({});
   const activeEventSources = useRef<Set<string>>(new Set());
@@ -198,6 +199,8 @@ export default function Dashboard() {
         fetchRepos();
       } catch {
         router.push("/login");
+      } finally {
+        setAuthLoading(false);
       }
     };
     checkAuth();
@@ -346,6 +349,14 @@ export default function Dashboard() {
 
   const indexedRepos = repos.filter(r => r.status === "indexed");
   const embeddedCount = repos.filter(r => r.isEmbedded).length;
+
+  if (authLoading || !user) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-black">
+        <Loader2 className="w-10 h-10 animate-spin text-[#ff6b00]" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-transparent flex flex-col pt-32 pb-24 relative selection:bg-[#ff6b00] selection:text-white overflow-hidden text-[#e5e5e5]">

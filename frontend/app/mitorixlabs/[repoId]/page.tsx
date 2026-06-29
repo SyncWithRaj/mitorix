@@ -8,6 +8,7 @@ import api from "@/lib/axios";
 import SearchTab from "./SearchTab";
 import ClonesTab from "./ClonesTab";
 import DriftTab from "./DriftTab";
+import AuthGuard from "../../../components/auth/AuthGuard";
 
 const TABS = [
   { key: "search", label: "Semantic Search", icon: Search, desc: "Natural language code search" },
@@ -46,6 +47,7 @@ export default function MitorixLabsPage({ params }: { params: Promise<{ repoId: 
   }, [repoId]);
 
   return (
+    <AuthGuard>
     <div className="w-full min-h-screen bg-transparent flex flex-col pt-32 pb-24 relative selection:bg-[#ff6b00] selection:text-white overflow-hidden text-[#e5e5e5]">
       {/* Noise overlay */}
       <div
@@ -129,6 +131,7 @@ export default function MitorixLabsPage({ params }: { params: Promise<{ repoId: 
         </div>
       </div>
     </div>
+    </AuthGuard>
   );
 }
 
