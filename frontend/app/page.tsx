@@ -870,7 +870,15 @@ export default function Home() {
               </li>
               <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
-                <span>AI Chat — <span className="text-white font-medium">5 msg/day</span></span>
+                <span>Up to 1 repository</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
+                <span>5 AI chat queries/day</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
+                <span>2 visualizations</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
@@ -886,11 +894,43 @@ export default function Home() {
               </li>
               <li className="flex items-start gap-3 text-sm text-[#525252]">
                 <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
-                <span>Local Folder/ZIP Upload</span>
+                <span>Local folder/ZIP upload</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#525252]">
                 <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
-                <span>Blast Radius & Export Data</span>
+                <span>Blast radius & impact analysis</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Export analysis data</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Voice call mode (STT + TTS)</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>System design doc generation</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Onboarding guide generation</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>PR risk analysis</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Semantic clone detection</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Codebase drift detection</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Cross-repo comparison</span>
               </li>
             </ul>
 
@@ -916,7 +956,7 @@ export default function Home() {
             {/* Most Popular + Tier badge */}
             <div className="flex items-center gap-2 mb-5 flex-wrap">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] text-[10px] font-bold text-white uppercase tracking-wider">
-                Most Popular
+                BASIC
               </div>
             </div>
 
@@ -941,27 +981,71 @@ export default function Home() {
             <ul className="space-y-3.5 mb-10 flex-1 relative z-10">
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
-                <span>Everything in FREE</span>
+                <span>Basic Codebase Analysis</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
-                <span>Local Folder/ZIP Upload</span>
+                <span>Up to 5 repositories</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
-                <span>All 8 Visualizations</span>
+                <span>50 AI chat queries/day</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
-                <span>Blast Radius & Action Items</span>
+                <span>All 8 visualizations</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
-                <span>Export Analysis Data</span>
+                <span>Force-Graph & Semantic Search</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
+                <span>Security & Architecture Scans</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
+                <span>Unused Function Detection</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
+                <span>Local folder/ZIP upload</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
+                <span>Blast radius & impact analysis</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
+                <span>Export analysis data</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#525252]">
                 <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
-                <span>Voice Chat & Docs Generation</span>
+                <span>Voice call mode (STT + TTS)</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>System design doc generation</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Onboarding guide generation</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>PR risk analysis</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Semantic clone detection</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Codebase drift detection</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#525252]">
+                <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
+                <span>Cross-repo comparison</span>
               </li>
             </ul>
 
@@ -1000,10 +1084,10 @@ export default function Home() {
             {/* Tier badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffa800]/10 border border-[#ffa800]/30 text-[#ffa800] text-[10px] font-bold uppercase tracking-widest mb-5 w-fit">
               <Sparkles size={12} />
-              Enterprise
+              PRO
             </div>
 
-            <h2 className="text-2xl font-bold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-[#ffa800] to-[#ffc85a]">Enterprise</h2>
+            <h2 className="text-2xl font-bold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-[#ffa800] to-[#ffc85a]">PRO</h2>
 
             <div className="text-5xl font-extrabold mb-1 text-white">
               ₹299 <span className="text-xl text-[#737373] font-medium">/month</span>
@@ -1029,27 +1113,71 @@ export default function Home() {
             <ul className="space-y-3.5 mb-10 flex-1 relative z-10">
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
-                <span>Everything in BASIC</span>
+                <span>Basic Codebase Analysis</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
-                <span>System Design & Onboarding Docs</span>
+                <span>Unlimited repositories</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
-                <span>PR Risk Analysis</span>
+                <span>Unlimited AI chat queries</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
-                <span>Voice Call Mode (STT + TTS)</span>
+                <span>All 8 visualizations</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
-                <span>Semantic Clone Detection</span>
+                <span>Force-Graph & Semantic Search</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
-                <span>Codebase Drift Detection</span>
+                <span>Security & Architecture Scans</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Unused Function Detection</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Local folder/ZIP upload</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Blast radius & impact analysis</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Export analysis data</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Voice call mode (STT + TTS)</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>System design doc generation</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Onboarding guide generation</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>PR risk analysis</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Semantic clone detection</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Codebase drift detection</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Cross-repo comparison</span>
               </li>
             </ul>
 
