@@ -322,391 +322,401 @@ export default function CodeflowLayout({
       <div className={`flex flex-col h-full w-full transition-opacity duration-700 ease-in-out relative z-10 ${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         {/* Topbar */}
         <div className="h-14 border-b border-white/5 bg-black/40 backdrop-blur-2xl flex items-center px-4 shrink-0 sticky top-0 z-[120] justify-between shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
-        <div className="flex items-center gap-2 min-w-0">
-          <Link
-            href={`/dashboard`}
-            className="group relative flex shrink-0 items-center justify-center w-8 h-8 rounded-full bg-[#ff6b00] overflow-hidden transition-all shadow-sm"
-            title="Back to Dashboard"
-          >
-            <span className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></span>
-            <ArrowLeft size={16} className="text-white group-hover:text-[#ff6b00] relative z-10 transition-colors duration-300" />
-          </Link>
+          <div className="flex items-center gap-2 min-w-0">
+            <Link
+              href={`/dashboard`}
+              className="group relative flex shrink-0 items-center justify-center w-8 h-8 rounded-full bg-[#ff6b00] overflow-hidden transition-all shadow-sm"
+              title="Back to Dashboard"
+            >
+              <span className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></span>
+              <ArrowLeft size={16} className="text-white group-hover:text-[#ff6b00] relative z-10 transition-colors duration-300" />
+            </Link>
 
-          <button
-            className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${
-              leftPanelOpen
-                ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
-                : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
-            }`}
-            onClick={() => setLeftPanelOpen((prev) => !prev)}
-            title="Toggle Left Panel (Ctrl+B)"
-          >
-            <Menu size={15} />
-            <span className="text-[10px] uppercase font-bold hidden xl:inline">Left</span>
-          </button>
+            <button
+              className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${leftPanelOpen
+                  ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
+                  : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
+                }`}
+              onClick={() => setLeftPanelOpen((prev) => !prev)}
+              title="Toggle Left Panel (Ctrl+B)"
+            >
+              <Menu size={15} />
+              <span className="text-[10px] uppercase font-bold hidden xl:inline">Left</span>
+            </button>
 
-          <button
-            className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${
-              explorerOpen
-                ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
-                : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
-            }`}
-            onClick={() => setExplorerOpen((prev) => !prev)}
-            title="Toggle Explorer Drawer (Ctrl+D)"
-          >
-            <Folder size={15} />
-            <span className="text-[10px] uppercase font-bold hidden xl:inline">Explorer</span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2 flex-1 max-w-2xl px-2 sm:px-6">
-          <input
-            type="text"
-            className="flex-1 bg-gh-input border border-gh-border rounded-md px-3 py-1.5 text-xs text-gh-text focus:outline-none focus:border-gh-accent hidden sm:block"
-            placeholder="owner/repo or GitHub URL"
-            value={repoId}
-            readOnly
-          />
-          <button
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gh-btn-secondary border border-gh-border hover:bg-gh-btn-secondary-hover rounded-md transition text-gh-text"
-            onClick={() => setShowExcludeModal(true)}
-          >
-            <Ban size={14} /> Excludes
-          </button>
-          <button
-            className="hidden sm:flex items-center gap-2 px-4 py-1.5 text-xs bg-gh-btn-primary hover:bg-gh-btn-primary-hover border border-gh-border rounded-md transition text-white font-medium"
-            onClick={triggerAnalysis}
-          >
-            Analyze
-          </button>
-        </div>
-
-        <div className="flex items-center gap-1 sm:gap-2">
-          <button
-            className="p-1.5 rounded-md transition flex items-center gap-1.5 text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover"
-            title={hasFeature('repo:design-doc') ? "Generate System Design" : "System Design requires PRO plan"}
-            onClick={() => {
-              if (!hasFeature('repo:design-doc')) {
-                toast.error("🔒 System Design requires the PRO plan. Upgrade to unlock.");
-                return;
-              }
-              setIsDesignDocOpen(true);
-            }}
-          >
-            <FileText size={16} />
-            <span className="text-[10px] uppercase font-bold hidden xl:inline">Design Doc</span>
-          </button>
-          <button
-            className="p-1.5 rounded-md transition flex items-center gap-1.5 text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover"
-            title={hasFeature('repo:onboarding') ? "Onboarding Guide" : "Onboarding Guide requires PRO plan"}
-            onClick={() => {
-              if (!hasFeature('repo:onboarding')) {
-                toast.error("🔒 Onboarding Guide requires the PRO plan. Upgrade to unlock.");
-                return;
-              }
-              setIsOnboardingOpen(true);
-            }}
-          >
-            <BookOpen size={16} />
-            <span className="text-[10px] uppercase font-bold hidden xl:inline">Onboarding</span>
-          </button>
-          <button
-            className="p-1.5 rounded-md transition text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover"
-            title={hasFeature('codeflow:pr') ? "Pull Request Analysis" : "PR Analysis requires PRO plan"}
-            onClick={() => {
-              if (!hasFeature('codeflow:pr')) {
-                toast.error("🔒 Pull Request Analysis requires the PRO plan. Upgrade to unlock.");
-                return;
-              }
-              setShowPRModal(true);
-            }}
-          >
-            <GitPullRequest size={16} />
-          </button>
-          <button
-            className="p-1.5 rounded-md transition text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover"
-            title={hasFeature('export:data') ? "Export Analysis" : "Export requires BASIC plan"}
-            onClick={() => {
-              if (!hasFeature('export:data')) {
-                toast.error("🔒 Export Analysis requires the BASIC plan. Upgrade to unlock.");
-                return;
-              }
-              setShowExportModal(true);
-            }}
-          >
-            <Download size={16} />
-          </button>
-          <button
-            className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition"
-            title="Share"
-          >
-            <Share2 size={16} />
-          </button>
-          <div className="hidden sm:block">{/* <ThemeToggle /> */}</div>
-          <button
-            className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${
-              chatOpen
-                ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
-                : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
-            }`}
-            title="AI Chat (Ctrl+K)"
-            onClick={() => setChatOpen((prev) => !prev)}
-          >
-            <MessageSquare size={16} />
-            <span className="text-[10px] uppercase font-bold hidden xl:inline">AI Chat</span>
-          </button>
-
-          <button
-            className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${
-              rightPanelOpen
-                ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
-                : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
-            }`}
-            title="Toggle Right Panel (Ctrl+J)"
-            onClick={() => setRightPanelOpen((prev) => !prev)}
-          >
-            <Settings size={16} />
-            <span className="text-[10px] uppercase font-bold hidden xl:inline">Right</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main 3-Panel Area */}
-      <div className="flex flex-1 overflow-hidden relative min-h-0 gap-1.5 p-1.5">
-        {/* Left Sidebar */}
-        {leftPanelOpen && (
-          <ResizablePanel
-            side="left"
-            initialWidth={260}
-            minWidth={180}
-            maxWidth={400}
-            className="relative z-20 h-full shadow-2xl"
-            onWidthChange={setLeftPanelWidth}
-          >
-            {analysisData ? (
-              <div className="flex flex-col h-full bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 w-full relative overflow-hidden">
-                {/* Upper Section */}
-                <div className="flex-1 p-4 space-y-5 overflow-y-auto custom-scrollbar">
-                  {folderFilter && (
-                    <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-2 flex items-center justify-between gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <div className="flex items-center gap-2 overflow-hidden">
-                        <Folder size={14} className="text-[#ff6b00] shrink-0" />
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-[10px] text-[#737373] uppercase font-bold tracking-tight">
-                            Active Filter
-                          </span>
-                          <span className="text-xs text-[#e5e5e5] font-medium truncate">
-                            {folderFilter}
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setFolderFilter(null)}
-                        className="p-1.5 hover:bg-[#1a1a1a] rounded-md text-[#737373] hover:text-[#ff4500] transition-colors"
-                        title="Clear Filter"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  )}
-                  <HealthRing
-                    score={analysisData.health?.score || 0}
-                    grade={analysisData.health?.grade || "F"}
-                  />
-                  <ColorModeSelector />
-                  <StatsGrid />
-                  <LanguageBar />
-                </div>
-
-                {/* Sliding File Explorer Drawer Overlapping Wholly */}
-                {explorerOpen && (
-                  <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-2xl flex flex-col animate-in slide-in-from-left duration-200">
-                    <div className="flex items-center justify-between p-3 border-b border-white/5 bg-transparent">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#e5e5e5] uppercase tracking-wider">
-                        <Folder size={14} className="text-[#ff6b00]" />
-                        <span>File Tree Explorer</span>
-                      </div>
-                      <button
-                        onClick={() => setExplorerOpen(false)}
-                        className="p-1 hover:bg-[#1a1a1a] rounded text-[#737373] hover:text-[#e5e5e5]"
-                        title="Close Explorer"
-                      >
-                        <Ban size={14} />
-                      </button>
-                    </div>
-                    <div className="flex-1 overflow-auto p-3 custom-scrollbar">
-                      <TreeExplorer />
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-gh-text-muted bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden">
-                <div className="w-12 h-12 mb-4 opacity-50 flex items-center justify-center rounded-full bg-gh-btn-secondary">
-                  <Menu size={24} />
-                </div>
-                <h3 className="text-gh-text font-bold text-sm mb-1">No Repository</h3>
-                <p className="text-xs">Analyzing architecture and calculating metrics...</p>
-              </div>
-            )}
-          </ResizablePanel>
-        )}
-
-        {/* Explorer Overlay (independent of left panel, as a standard flex panel to push graph) */}
-        {!leftPanelOpen && explorerOpen && (
-          <ResizablePanel
-            side="left"
-            initialWidth={320}
-            minWidth={200}
-            maxWidth={500}
-            className="z-50 shadow-2xl flex flex-col min-h-0 h-full"
-          >
-            <div className="flex-1 flex flex-col w-full h-full bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden">
-              <div className="flex items-center justify-between p-3 border-b border-white/5 bg-transparent">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#e5e5e5] uppercase tracking-wider">
-                <Folder size={14} className="text-[#ff6b00]" />
-                <span>File Tree Explorer</span>
-              </div>
-              <button
-                onClick={() => setExplorerOpen(false)}
-                className="p-1 hover:bg-[#1a1a1a] rounded text-[#737373] hover:text-[#e5e5e5]"
-                title="Close Explorer"
-              >
-                <Ban size={14} />
-              </button>
-            </div>
-              <div className="flex-1 overflow-auto p-3 custom-scrollbar">
-                <TreeExplorer />
-              </div>
-            </div>
-          </ResizablePanel>
-        )}
-
-        {/* Center Canvas */}
-        <div className="flex-1 flex flex-col min-w-0 bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 relative overflow-hidden">
-          {analysisData && <VizSelector />}
-
-          <div className="absolute inset-0 z-0">
-            {graphConfig.vizType === "visual" && <GraphView repoId={repoId} />}
-            {graphConfig.vizType === "force" && children}
-            {graphConfig.vizType === "treemap" && <TreemapView />}
-            {graphConfig.vizType === "matrix" && <MatrixView />}
-            {graphConfig.vizType === "dendro" && <DendrogramView />}
-            {graphConfig.vizType === "sankey" && <SankeyView />}
-            {graphConfig.vizType === "disjoint" && <DisjointView />}
-            {graphConfig.vizType === "bundle" && <BundleView />}
+            <button
+              className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${explorerOpen
+                  ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
+                  : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
+                }`}
+              onClick={() => setExplorerOpen((prev) => !prev)}
+              title="Toggle Explorer Drawer (Ctrl+D)"
+            >
+              <Folder size={15} />
+              <span className="text-[10px] uppercase font-bold hidden xl:inline">Explorer</span>
+            </button>
           </div>
 
-          {analysisData && <CanvasToolbar />}
+          <div className="flex items-center gap-2 flex-1 max-w-2xl px-2 sm:px-6">
+            <input
+              type="text"
+              className="flex-1 bg-gh-input border border-gh-border rounded-md px-3 py-1.5 text-xs text-gh-text focus:outline-none focus:border-gh-accent hidden sm:block"
+              placeholder="owner/repo or GitHub URL"
+              value={repoId}
+              readOnly
+            />
+            <button
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gh-btn-secondary border border-gh-border hover:bg-gh-btn-secondary-hover rounded-md transition text-gh-text"
+              onClick={() => setShowExcludeModal(true)}
+            >
+              <Ban size={14} /> Excludes
+            </button>
+            <button
+              className="hidden sm:flex items-center gap-2 px-4 py-1.5 text-xs bg-gh-btn-primary hover:bg-gh-btn-primary-hover border border-gh-border rounded-md transition text-white font-medium"
+              onClick={triggerAnalysis}
+            >
+              Analyze
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button
+              className="p-1.5 rounded-md transition flex items-center gap-1.5 text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover"
+              title={hasFeature('repo:design-doc') ? "Generate System Design" : "System Design requires PRO plan"}
+              onClick={() => {
+                if (!hasFeature('repo:design-doc')) {
+                  toast.error("🔒 System Design requires the PRO plan. Upgrade to unlock.");
+                  return;
+                }
+                setIsDesignDocOpen(true);
+              }}
+            >
+              <FileText size={16} />
+              <span className="text-[10px] uppercase font-bold hidden xl:inline">Design Doc</span>
+            </button>
+            <button
+              className="p-1.5 rounded-md transition flex items-center gap-1.5 text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover"
+              title={hasFeature('repo:onboarding') ? "Onboarding Guide" : "Onboarding Guide requires PRO plan"}
+              onClick={() => {
+                if (!hasFeature('repo:onboarding')) {
+                  toast.error("🔒 Onboarding Guide requires the PRO plan. Upgrade to unlock.");
+                  return;
+                }
+                setIsOnboardingOpen(true);
+              }}
+            >
+              <BookOpen size={16} />
+              <span className="text-[10px] uppercase font-bold hidden xl:inline">Onboarding</span>
+            </button>
+            <button
+              className="p-1.5 rounded-md transition text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover"
+              title={hasFeature('codeflow:pr') ? "Pull Request Analysis" : "PR Analysis requires PRO plan"}
+              onClick={() => {
+                if (!hasFeature('codeflow:pr')) {
+                  toast.error("🔒 Pull Request Analysis requires the PRO plan. Upgrade to unlock.");
+                  return;
+                }
+                setShowPRModal(true);
+              }}
+            >
+              <GitPullRequest size={16} />
+            </button>
+            <button
+              className="p-1.5 rounded-md transition text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover"
+              title={hasFeature('export:data') ? "Export Analysis" : "Export requires BASIC plan"}
+              onClick={() => {
+                if (!hasFeature('export:data')) {
+                  toast.error("🔒 Export Analysis requires the BASIC plan. Upgrade to unlock.");
+                  return;
+                }
+                setShowExportModal(true);
+              }}
+            >
+              <Download size={16} />
+            </button>
+            <button
+              className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition"
+              title="Download Chat JSON"
+              onClick={() => {
+                const dataToExport = {
+                  chatMessages,
+                  callMessages,
+                  exportedAt: new Date().toISOString()
+                };
+                const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `repolens-chat.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                toast.success("Chat exported as JSON!");
+              }}
+            >
+              <Share2 size={16} />
+            </button>
+            <div className="hidden sm:block">{/* <ThemeToggle /> */}</div>
+            <button
+              className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${chatOpen
+                  ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
+                  : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
+                }`}
+              title="AI Chat (Ctrl+K)"
+              onClick={() => setChatOpen((prev) => !prev)}
+            >
+              <MessageSquare size={16} />
+              <span className="text-[10px] uppercase font-bold hidden xl:inline">AI Chat</span>
+            </button>
+
+            <button
+              className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${rightPanelOpen
+                  ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
+                  : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
+                }`}
+              title="Toggle Right Panel (Ctrl+J)"
+              onClick={() => setRightPanelOpen((prev) => !prev)}
+            >
+              <Settings size={16} />
+              <span className="text-[10px] uppercase font-bold hidden xl:inline">Right</span>
+            </button>
+          </div>
         </div>
 
-        {/* Right Panel */}
-        {rightPanelOpen && (
-          <ResizablePanel
-            side="right"
-            initialWidth={360}
-            minWidth={280}
-            maxWidth={500}
-            className="relative z-20 h-full shadow-[-10px_0_30px_rgba(0,0,0,0.2)]"
-          >
-            <div className="flex-1 flex flex-col w-full h-full bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden relative">
-              {/* Tab Bar */}
-              <div className="flex border-b border-white/5 bg-transparent shrink-0">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.key}
-                  className={`flex-1 py-2 text-[10px] font-bold transition flex items-center justify-center gap-1 ${
-                    rightTab === tab.key
-                      ? "text-gh-accent border-b-2 border-gh-accent"
-                      : "text-gh-text-muted hover:text-gh-text border-b-2 border-transparent hover:border-gh-border"
-                  }`}
-                  onClick={() => {
-                    setRightTab(tab.key as RightTab);
-                    setDrillDown(null);
-                  }}
-                >
-                  {tab.icon}
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Panel Content */}
-            <div
-              className={`flex-1 overflow-y-auto bg-transparent custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}
+        {/* Main 3-Panel Area */}
+        <div className="flex flex-1 overflow-hidden relative min-h-0 gap-1.5 p-1.5">
+          {/* Left Sidebar */}
+          {leftPanelOpen && (
+            <ResizablePanel
+              side="left"
+              initialWidth={260}
+              minWidth={180}
+              maxWidth={400}
+              className="relative z-20 h-full shadow-2xl"
+              onWidthChange={setLeftPanelWidth}
             >
               {analysisData ? (
-                <div className="flex-1 flex flex-col relative bg-transparent">
-                  {rightTab === "details" && (selectedFile ? <FileInspector /> : <IssuesPanel />)}
-                  {rightTab === "patterns" && <PatternsPanel />}
-                  {rightTab === "security" && <SecurityPanel />}
-                  {rightTab === "suggestions" && <SuggestionsPanel />}
-                  {rightTab === "code" && <CodePanel repoId={repoId} />}
+                <div className="flex flex-col h-full bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 w-full relative overflow-hidden">
+                  {/* Upper Section */}
+                  <div className="flex-1 p-4 space-y-5 overflow-y-auto custom-scrollbar">
+                    {folderFilter && (
+                      <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-2 flex items-center justify-between gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <Folder size={14} className="text-[#ff6b00] shrink-0" />
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-[10px] text-[#737373] uppercase font-bold tracking-tight">
+                              Active Filter
+                            </span>
+                            <span className="text-xs text-[#e5e5e5] font-medium truncate">
+                              {folderFilter}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setFolderFilter(null)}
+                          className="p-1.5 hover:bg-[#1a1a1a] rounded-md text-[#737373] hover:text-[#ff4500] transition-colors"
+                          title="Clear Filter"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    )}
+                    <HealthRing
+                      score={analysisData.health?.score || 0}
+                      grade={analysisData.health?.grade || "F"}
+                    />
+                    <ColorModeSelector />
+                    <StatsGrid />
+                    <LanguageBar />
+                  </div>
+
+                  {/* Sliding File Explorer Drawer Overlapping Wholly */}
+                  {explorerOpen && (
+                    <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-2xl flex flex-col animate-in slide-in-from-left duration-200">
+                      <div className="flex items-center justify-between p-3 border-b border-white/5 bg-transparent">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-[#e5e5e5] uppercase tracking-wider">
+                          <Folder size={14} className="text-[#ff6b00]" />
+                          <span>File Tree Explorer</span>
+                        </div>
+                        <button
+                          onClick={() => setExplorerOpen(false)}
+                          className="p-1 hover:bg-[#1a1a1a] rounded text-[#737373] hover:text-[#e5e5e5]"
+                          title="Close Explorer"
+                        >
+                          <Ban size={14} />
+                        </button>
+                      </div>
+                      <div className="flex-1 overflow-auto p-3 custom-scrollbar">
+                        <TreeExplorer />
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-gh-text-muted">
-                  <div className="text-3xl mb-3 opacity-30">📊</div>
-                  <div className="text-xs font-semibold mb-1">Analysis</div>
-                  <div className="text-[10px] text-center opacity-60">
-                    Analyze a repo to see insights
+                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-gh-text-muted bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden">
+                  <div className="w-12 h-12 mb-4 opacity-50 flex items-center justify-center rounded-full bg-gh-btn-secondary">
+                    <Menu size={24} />
                   </div>
+                  <h3 className="text-gh-text font-bold text-sm mb-1">No Repository</h3>
+                  <p className="text-xs">Analyzing architecture and calculating metrics...</p>
                 </div>
               )}
-            </div>
-            </div>
-          </ResizablePanel>
-        )}
+            </ResizablePanel>
+          )}
 
-        {/* ── Chat Slide-Out Panel ── */}
-        {chatOpen && (
-          <ResizablePanel
-            side="right"
-            initialWidth={380}
-            minWidth={280}
-            maxWidth={600}
-            className="z-20 shadow-[-10px_0_40px_rgba(0,0,0,0.5)] flex flex-col min-h-0 h-full"
-          >
-            <div className="flex-1 flex flex-col w-full h-full bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden">
-              <ChatPanel
-              repoId={repoId}
-              chatMessages={chatMessages}
-              callMessages={callMessages}
-              input={chatInput}
-              setInput={setChatInput}
-              sendMessage={sendMessage}
-              addCallMessages={(newMsgs: ChatMessage[]) =>
-                setCallMessages((prev) => [...prev, ...newMsgs])
-              }
-              loading={chatLoading}
-              streamingIndex={streamingIndex}
-              onDeleteChat={handleDeleteChat}
-              attachedNodes={attachedNodes}
-              setAttachedNodes={setAttachedNodes}
-            />
-            </div>
-          </ResizablePanel>
-        )}
-      </div>
+          {/* Explorer Overlay (independent of left panel, as a standard flex panel to push graph) */}
+          {!leftPanelOpen && explorerOpen && (
+            <ResizablePanel
+              side="left"
+              initialWidth={320}
+              minWidth={200}
+              maxWidth={500}
+              className="z-50 shadow-2xl flex flex-col min-h-0 h-full"
+            >
+              <div className="flex-1 flex flex-col w-full h-full bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden">
+                <div className="flex items-center justify-between p-3 border-b border-white/5 bg-transparent">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#e5e5e5] uppercase tracking-wider">
+                    <Folder size={14} className="text-[#ff6b00]" />
+                    <span>File Tree Explorer</span>
+                  </div>
+                  <button
+                    onClick={() => setExplorerOpen(false)}
+                    className="p-1 hover:bg-[#1a1a1a] rounded text-[#737373] hover:text-[#e5e5e5]"
+                    title="Close Explorer"
+                  >
+                    <Ban size={14} />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-auto p-3 custom-scrollbar">
+                  <TreeExplorer />
+                </div>
+              </div>
+            </ResizablePanel>
+          )}
 
-      {/* Global Modals */}
-      <DragGhost />
-      <DrillDownModal />
-      <FilePreviewModal />
-      <PRAnalysisModal repoId={repoId} />
-      <ExportModal />
-      <UnusedFunctionsModal />
-      <ExcludePatternsModal />
-      <ConfirmDialog />
-      <DesignDocModal
-        repoId={repoId}
-        isOpen={isDesignDocOpen}
-        onClose={() => setIsDesignDocOpen(false)}
-      />
-      <OnboardingModal
-        repoId={repoId}
-        isOpen={isOnboardingOpen}
-        onClose={() => setIsOnboardingOpen(false)}
-      />
+          {/* Center Canvas */}
+          <div className="flex-1 flex flex-col min-w-0 bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 relative overflow-hidden">
+            {analysisData && <VizSelector />}
+
+            <div className="absolute inset-0 z-0">
+              {graphConfig.vizType === "visual" && <GraphView repoId={repoId} />}
+              {graphConfig.vizType === "force" && children}
+              {graphConfig.vizType === "treemap" && <TreemapView />}
+              {graphConfig.vizType === "matrix" && <MatrixView />}
+              {graphConfig.vizType === "dendro" && <DendrogramView />}
+              {graphConfig.vizType === "sankey" && <SankeyView />}
+              {graphConfig.vizType === "disjoint" && <DisjointView />}
+              {graphConfig.vizType === "bundle" && <BundleView />}
+            </div>
+
+            {analysisData && <CanvasToolbar />}
+          </div>
+
+          {/* Right Panel */}
+          {rightPanelOpen && (
+            <ResizablePanel
+              side="right"
+              initialWidth={360}
+              minWidth={280}
+              maxWidth={500}
+              className="relative z-20 h-full shadow-[-10px_0_30px_rgba(0,0,0,0.2)]"
+            >
+              <div className="flex-1 flex flex-col w-full h-full bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden relative">
+                {/* Tab Bar */}
+                <div className="flex border-b border-white/5 bg-transparent shrink-0">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.key}
+                      className={`flex-1 py-2 text-[10px] font-bold transition flex items-center justify-center gap-1 ${rightTab === tab.key
+                          ? "text-gh-accent border-b-2 border-gh-accent"
+                          : "text-gh-text-muted hover:text-gh-text border-b-2 border-transparent hover:border-gh-border"
+                        }`}
+                      onClick={() => {
+                        setRightTab(tab.key as RightTab);
+                        setDrillDown(null);
+                      }}
+                    >
+                      {tab.icon}
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Panel Content */}
+                <div
+                  className={`flex-1 overflow-y-auto bg-transparent custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}
+                >
+                  {analysisData ? (
+                    <div className="flex-1 flex flex-col relative bg-transparent">
+                      {rightTab === "details" && (selectedFile ? <FileInspector /> : <IssuesPanel />)}
+                      {rightTab === "patterns" && <PatternsPanel />}
+                      {rightTab === "security" && <SecurityPanel />}
+                      {rightTab === "suggestions" && <SuggestionsPanel />}
+                      {rightTab === "code" && <CodePanel repoId={repoId} />}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-gh-text-muted">
+                      <div className="text-3xl mb-3 opacity-30">📊</div>
+                      <div className="text-xs font-semibold mb-1">Analysis</div>
+                      <div className="text-[10px] text-center opacity-60">
+                        Analyze a repo to see insights
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </ResizablePanel>
+          )}
+
+          {/* ── Chat Slide-Out Panel ── */}
+          {chatOpen && (
+            <ResizablePanel
+              side="right"
+              initialWidth={380}
+              minWidth={280}
+              maxWidth={600}
+              className="z-20 shadow-[-10px_0_40px_rgba(0,0,0,0.5)] flex flex-col min-h-0 h-full"
+            >
+              <div className="flex-1 flex flex-col w-full h-full bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden">
+                <ChatPanel
+                  repoId={repoId}
+                  chatMessages={chatMessages}
+                  callMessages={callMessages}
+                  input={chatInput}
+                  setInput={setChatInput}
+                  sendMessage={sendMessage}
+                  addCallMessages={(newMsgs: ChatMessage[]) =>
+                    setCallMessages((prev) => [...prev, ...newMsgs])
+                  }
+                  loading={chatLoading}
+                  streamingIndex={streamingIndex}
+                  onDeleteChat={handleDeleteChat}
+                  attachedNodes={attachedNodes}
+                  setAttachedNodes={setAttachedNodes}
+                />
+              </div>
+            </ResizablePanel>
+          )}
+        </div>
+
+        {/* Global Modals */}
+        <DragGhost />
+        <DrillDownModal />
+        <FilePreviewModal />
+        <PRAnalysisModal repoId={repoId} />
+        <ExportModal />
+        <UnusedFunctionsModal />
+        <ExcludePatternsModal />
+        <ConfirmDialog />
+        <DesignDocModal
+          repoId={repoId}
+          isOpen={isDesignDocOpen}
+          onClose={() => setIsDesignDocOpen(false)}
+        />
+        <OnboardingModal
+          repoId={repoId}
+          isOpen={isOnboardingOpen}
+          onClose={() => setIsOnboardingOpen(false)}
+        />
       </div> {/* End Main Content Wrapper */}
 
       {/* Analysis Progress Overlay */}
