@@ -15,6 +15,8 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { Repository } from "../models/repo.model.js";
+import { FileContent } from "../models/fileContent.model.js";
+import mongoose from "mongoose";
 import path from "path";
 import logger from "../lib/logger.js";
 import { getRepositoryForUserOrThrow } from "../utils/repositoryAccess.util.js";
@@ -61,11 +63,52 @@ export interface CloneDetectionResult {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /**
+ * Batch-fetch file contents from FileContent model.
+ * Returns a Map of relativePath → full file content string.
+ */
+async function batchFetchFileContents(
+  repoId: string,
+  filePaths: string[]
+): Promise<Map<string, string>> {
+  const cache = new Map<string, string>();
+  if (filePaths.length === 0) return cache;
+
+  const repoObjectId = new mongoose.Types.ObjectId(repoId);
+  const files = await FileContent.find({
+    repoId: repoObjectId,
+    relativePath: { $in: filePaths },
+  }).lean();
+
+  for (const file of files) {
+    cache.set((file as any).relativePath, (file as any).content || "");
+  }
+  return cache;
+}
+
+/**
+ * Extract code content for an entity from the file content cache.
+ */
+function extractEntityCode(
+  filePath: string,
+  startLine: number,
+  endLine: number,
+  fileContentCache: Map<string, string>
+): string {
+  const fullContent = fileContentCache.get(filePath) || "";
+  if (!fullContent) return "";
+
+  const lines = fullContent.split("\n");
+  return lines.slice(Math.max(0, startLine - 1), endLine).join("\n").substring(0, 500);
+}
+
+/**
  * Resolve a Qdrant point payload into a CloneEntity by fetching from MongoDB.
+ * Uses file content cache to provide actual code content.
  */
 async function resolveEntity(
   payload: any,
-  basePath: string
+  basePath: string,
+  fileContentCache: Map<string, string>
 ): Promise<CloneEntity | null> {
   const mongoId = payload?.metadata?.mongoId;
   if (!mongoId) return null;
@@ -73,17 +116,26 @@ async function resolveEntity(
   const entity = await CodeEntity.findById(mongoId).lean();
   if (!entity) return null;
 
+  const relativePath = path
+    .relative(basePath, (entity as any).filePath)
+    .replace(/\\/g, "/");
+
+  const content = extractEntityCode(
+    relativePath,
+    (entity as any).startLine,
+    (entity as any).endLine,
+    fileContentCache
+  );
+
   return {
     mongoId: (entity as any)._id.toString(),
     name: (entity as any).name,
     type: (entity as any).type,
-    filePath: path
-      .relative(basePath, (entity as any).filePath)
-      .replace(/\\/g, "/"),
+    filePath: relativePath,
     language: (entity as any).language || "unknown",
     startLine: (entity as any).startLine,
     endLine: (entity as any).endLine,
-    content: ((entity as any).content || "").substring(0, 500),
+    content,
   };
 }
 
@@ -148,7 +200,20 @@ export async function detectSemanticClones(
     "Qdrant scroll complete — starting pairwise similarity search"
   );
 
-  // ── Step 2: For each point, find nearest neighbours (different file) ──
+  // ── Step 2: Pre-fetch file contents for code display ──
+  // Collect all unique relative file paths from the scrolled points
+  const uniqueFilePaths = new Set<string>();
+  for (const point of allPoints) {
+    const meta = point.payload?.metadata;
+    if (meta?.filePath) {
+      const relPath = path.relative(repo.localPath, meta.filePath).replace(/\\/g, "/");
+      uniqueFilePaths.add(relPath);
+    }
+  }
+  const fileContentCache = await batchFetchFileContents(repoId, [...uniqueFilePaths]);
+  logger.info({ repoId, cachedFiles: fileContentCache.size }, "File contents pre-fetched for code display");
+
+  // ── Step 3: For each point, find nearest neighbours (different file) ──
   const processedIds = new Set<string>();
   const clusters: CloneCluster[] = [];
   let totalComparisons = 0;
@@ -183,8 +248,8 @@ export async function detectSemanticClones(
     totalComparisons++;
 
     if (similar.length > 0) {
-      // Resolve anchor entity
-      const anchorEntity = await resolveEntity(point.payload, repo.localPath);
+      // Resolve anchor entity (with file content cache for code display)
+      const anchorEntity = await resolveEntity(point.payload, repo.localPath, fileContentCache);
       if (!anchorEntity) continue;
 
       // Resolve clone entities
@@ -194,7 +259,7 @@ export async function detectSemanticClones(
         const matchId = String(match.id);
         if (processedIds.has(matchId)) continue;
 
-        const cloneEntity = await resolveEntity(match.payload, repo.localPath);
+        const cloneEntity = await resolveEntity(match.payload, repo.localPath, fileContentCache);
         if (!cloneEntity) continue;
 
         cloneEntities.push({

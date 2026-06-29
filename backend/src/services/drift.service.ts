@@ -72,6 +72,43 @@ export interface DriftReport {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+/**
+ * Non-linear drift calibration curve.
+ *
+ * Code embeddings have a naturally high baseline cosine similarity (~0.6-0.7)
+ * even for completely unrelated code. A naive `(1 - similarity) * 100` formula
+ * would report only ~18% drift for repos that share nothing.
+ *
+ * This curve maps similarity → drift in a way that reflects actual semantic
+ * relatedness:
+ *   - 0.95-1.00  → 0-5%   drift  (nearly identical)
+ *   - 0.85-0.95  → 5-25%  drift  (minor changes)
+ *   - 0.70-0.85  → 25-65% drift  (significant changes)
+ *   - 0.50-0.70  → 65-90% drift  (mostly different code)
+ *   - 0.00-0.50  → 90-100% drift (completely unrelated)
+ */
+function calibrateDrift(similarity: number): number {
+  if (similarity >= 0.95) {
+    // Nearly identical: 0-5% drift
+    return Math.round((1 - similarity) * 100);
+  } else if (similarity >= 0.85) {
+    // Minor changes: 5-25% drift (linear interpolation in this band)
+    const t = (0.95 - similarity) / 0.10; // 0..1 within this band
+    return Math.round(5 + t * 20);
+  } else if (similarity >= 0.70) {
+    // Significant changes: 25-65% drift
+    const t = (0.85 - similarity) / 0.15;
+    return Math.round(25 + t * 40);
+  } else if (similarity >= 0.50) {
+    // Mostly different: 65-90% drift
+    const t = (0.70 - similarity) / 0.20;
+    return Math.round(65 + t * 25);
+  } else {
+    // Completely unrelated: 90-100% drift
+    return Math.round(90 + (0.50 - Math.max(similarity, 0)) * 20);
+  }
+}
+
 /** Scroll all points for a repo (optionally filtered by fingerprint). */
 async function scrollRepoPoints(
   repoId: string,
@@ -222,7 +259,7 @@ export async function computeDrift(
       limit: 1,
       filter: newSearchFilter,
       with_payload: true,
-      score_threshold: 0.1,
+      score_threshold: 0.50, // Raised from 0.1 — below 50% similarity means truly unrelated code
     });
 
     const relativePath = oldMeta.filePath
@@ -230,20 +267,21 @@ export async function computeDrift(
       : "unknown";
 
     const entityInfo: DriftEntity = {
-      name: oldPoint.payload?.pageContent?.substring(0, 100) || "Unknown",
+      name: oldMeta.symbolName || oldPoint.payload?.pageContent?.substring(0, 100) || "Unknown",
       filePath: relativePath,
-      type: oldMeta.language || "unknown",
+      type: oldMeta.entityType || oldMeta.language || "unknown",
       startLine: oldMeta.startLine || 0,
       endLine: oldMeta.endLine || 0,
     };
 
     if (matches.length > 0) {
-      const best = matches[0];
+      const best = matches[0]!;
       const similarity = best.score || 0;
-      const drift = Math.round((1 - similarity) * 100);
+      const drift = calibrateDrift(similarity);
       matchedNewIds.add(String(best.id));
 
-      if (drift > 5) {
+      if (drift > 15) {
+        // Raised threshold: entities with <85% similarity are considered modified
         driftItems.push({ entity: entityInfo, driftScore: drift, status: "modified", matchScore: Math.round(similarity * 100) });
         modifiedCount++;
         totalDrift += drift;
@@ -257,7 +295,7 @@ export async function computeDrift(
     }
   }
 
-  // Step 4: New entities
+  // Step 4: New entities — each counts as 100% drift
   const addedCount = newPoints.length - matchedNewIds.size;
   let addedSampled = 0;
   for (const np of newPoints) {
@@ -267,7 +305,7 @@ export async function computeDrift(
     if (!nm) continue;
     const rp = nm.filePath ? path.relative(newRepo.localPath, nm.filePath).replace(/\\/g, "/") : "unknown";
     driftItems.push({
-      entity: { name: np.payload?.pageContent?.substring(0, 100) || "New Entity", filePath: rp, type: nm.language || "unknown", startLine: nm.startLine || 0, endLine: nm.endLine || 0 },
+      entity: { name: nm.symbolName || np.payload?.pageContent?.substring(0, 100) || "New Entity", filePath: rp, type: nm.entityType || nm.language || "unknown", startLine: nm.startLine || 0, endLine: nm.endLine || 0 },
       driftScore: 100, status: "new",
     });
     addedSampled++;
@@ -288,8 +326,10 @@ export async function computeDrift(
 
   driftItems.sort((a, b) => b.driftScore - a.driftScore);
 
-  const totalAnalysed = modifiedCount + deletedCount + unchangedCount;
-  const overallDrift = totalAnalysed > 0 ? Math.round(totalDrift / totalAnalysed) : 0;
+  // Include ALL entities in overall drift — added and deleted entities are 100% drift each
+  const totalEntitiesConsidered = modifiedCount + deletedCount + unchangedCount + addedCount;
+  const totalDriftWithAdded = totalDrift + (addedCount * 100);
+  const overallDrift = totalEntitiesConsidered > 0 ? Math.round(totalDriftWithAdded / totalEntitiesConsidered) : 0;
   const elapsed = Date.now() - startTime;
 
   logger.info({ modified: modifiedCount, deleted: deletedCount, added: addedCount, unchanged: unchangedCount, overallDrift, elapsed }, "Drift detection complete");

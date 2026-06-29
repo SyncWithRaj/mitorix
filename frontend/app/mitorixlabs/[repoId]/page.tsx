@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { use } from "react";
 import { useRouter } from "next/navigation";
-import { Search, GitCompare, Activity, ArrowLeft, Sparkles } from "lucide-react";
+import { Search, GitCompare, Activity, ArrowLeft, Sparkles, Github } from "lucide-react";
+import api from "@/lib/axios";
 import SearchTab from "./SearchTab";
 import ClonesTab from "./ClonesTab";
 import DriftTab from "./DriftTab";
@@ -16,10 +17,33 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]["key"];
 
+interface RepoInfo {
+  name: string;
+  githubUrl: string;
+}
+
 export default function MitorixLabsPage({ params }: { params: Promise<{ repoId: string }> }) {
   const { repoId } = use(params);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>("search");
+  const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
+
+  // Fetch repository info on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get(`/repos/${repoId}`);
+        if (res.data?.repo) {
+          setRepoInfo({
+            name: res.data.repo.name,
+            githubUrl: res.data.repo.githubUrl,
+          });
+        }
+      } catch {
+        // Silently fail — header will just show "MitorixLabs" without repo name
+      }
+    })();
+  }, [repoId]);
 
   return (
     <div className="w-full min-h-screen bg-transparent flex flex-col pt-32 pb-24 relative selection:bg-[#ff6b00] selection:text-white overflow-hidden text-[#e5e5e5]">
@@ -49,8 +73,24 @@ export default function MitorixLabsPage({ params }: { params: Promise<{ repoId: 
                 <Sparkles size={18} className="text-[#FF6B00]" />
               </div>
               <div>
-                <h1 className="text-xl font-medium tracking-tight text-white">MitorixLabs</h1>
-                <p className="text-[12px] text-[#A3A3A3] tracking-wide mt-0.5">Vector-powered codebase intelligence</p>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-xl font-medium tracking-tight text-white">MitorixLabs</h1>
+                  {repoInfo && (
+                    <>
+                      <span className="text-[#404040] text-lg font-light">/</span>
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/10">
+                        <Github size={13} className="text-[#FF6B00] shrink-0" />
+                        <span className="text-[13px] font-medium text-[#E5E5E5] truncate max-w-[300px]">{repoInfo.name}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <p className="text-[12px] text-[#A3A3A3] tracking-wide mt-0.5">
+                  {repoInfo
+                    ? <span className="truncate block max-w-[400px]">{repoInfo.githubUrl}</span>
+                    : "Vector-powered codebase intelligence"
+                  }
+                </p>
               </div>
             </div>
           </div>
@@ -91,3 +131,4 @@ export default function MitorixLabsPage({ params }: { params: Promise<{ repoId: 
     </div>
   );
 }
+
