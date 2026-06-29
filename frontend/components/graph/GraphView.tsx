@@ -42,14 +42,19 @@ export default function GraphView({ repoId }: { repoId: string }) {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
 
     if (node) {
-      setHoverNode(node);
+      if (fgRef.current) {
+        const coords = fgRef.current.graph2ScreenCoords(node.x, node.y);
+        setHoverNode({ ...node, screenX: coords.x, screenY: coords.y });
+      } else {
+        setHoverNode(node);
+      }
     } else {
       // Delay closing so user can move mouse into tooltip
       hoverTimeoutRef.current = setTimeout(() => {
         if (!isHoveringTooltipRef.current) {
           setHoverNode(null);
         }
-      }, 300);
+      }, 400);
     }
   }, []);
 
@@ -327,8 +332,10 @@ export default function GraphView({ repoId }: { repoId: string }) {
       className="w-full h-full bg-transparent overflow-hidden relative group border border-[#1a1a1a] rounded-none flex-grow"
       onPointerMove={handlePointerMove}
     >
-      <div className="absolute top-20 left-4 z-30 bg-[#050505] border border-[#1a1a1a] px-4 py-2 rounded-none shadow-lg">
-        <h3 className="text-white text-sm font-semibold">Codebase Visualizer</h3>
+      <div className="absolute bottom-4 left-4 z-30 bg-[#050505] border border-[#1a1a1a] px-4 py-2 rounded-none shadow-lg pointer-events-none">
+        <h3 className="text-white text-sm font-semibold flex items-center gap-2">
+          <span className="text-[#ff6b00]">Note:</span> Codebase Visualizer
+        </h3>
         <p className="text-xs text-[#737373]">Click a folder to toggle collapse</p>
         <p className="text-xs text-[#737373]">Click a file to view code</p>
       </div>
@@ -359,7 +366,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
       {hoverNode && (
         <div
           className="absolute z-50 bg-[#050505] border border-[#1a1a1a] px-4 py-3 rounded-none shadow-2xl pointer-events-auto transition-opacity duration-150"
-          style={{ left: mousePos.x + 15, top: mousePos.y + 15, minWidth: "220px" }}
+          style={{ left: (hoverNode.screenX ?? mousePos.x) + 15, top: (hoverNode.screenY ?? mousePos.y) + 15, width: "320px", maxWidth: "320px" }}
           onMouseEnter={() => {
             isHoveringTooltipRef.current = true;
           }}
