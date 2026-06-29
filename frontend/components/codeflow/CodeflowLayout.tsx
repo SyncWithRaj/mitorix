@@ -475,7 +475,7 @@ export default function CodeflowLayout({
       </div>
 
       {/* Main 3-Panel Area */}
-      <div className="flex flex-1 overflow-hidden relative min-h-0 gap-1.5">
+      <div className="flex flex-1 overflow-hidden relative min-h-0 gap-1.5 pt-1.5">
         {/* Left Sidebar */}
         {leftPanelOpen && (
           <ResizablePanel
@@ -487,7 +487,7 @@ export default function CodeflowLayout({
             onWidthChange={setLeftPanelWidth}
           >
             {analysisData ? (
-              <div className="flex flex-col h-full bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 w-full relative overflow-hidden">
+              <div className="flex flex-col h-full bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 w-full relative overflow-hidden">
                 {/* Upper Section */}
                 <div className="flex-1 p-4 space-y-5 overflow-y-auto custom-scrollbar">
                   {folderFilter && (
@@ -544,7 +544,7 @@ export default function CodeflowLayout({
                 )}
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-gh-text-muted bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
+              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-gh-text-muted bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden">
                 <div className="w-12 h-12 mb-4 opacity-50 flex items-center justify-center rounded-full bg-gh-btn-secondary">
                   <Menu size={24} />
                 </div>
@@ -612,7 +612,7 @@ export default function CodeflowLayout({
             maxWidth={500}
             className="relative z-20 h-full shadow-[-10px_0_30px_rgba(0,0,0,0.2)]"
           >
-            <div className="flex-1 flex flex-col w-full h-full bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden relative">
+            <div className="flex-1 flex flex-col w-full h-full bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden relative">
               {/* Tab Bar */}
               <div className="flex border-b border-white/5 bg-transparent shrink-0">
               {tabs.map((tab) => (
