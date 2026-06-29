@@ -17,7 +17,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Mitorix - AI powered code assistant",
+  title: "Mitorix - The AI Cartographer for Your Code",
   description: "Chat with your codebase intelligently.",
 };
 
