@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Providers from "@/components/layout/Providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff2",
@@ -37,6 +38,7 @@ export default function RootLayout({
           <main className="flex-grow flex flex-col">{children}</main>
         </Providers>
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
