@@ -895,9 +895,9 @@ export default function Home() {
             </ul>
 
             {!userTier ? (
-              <a href="http://localhost:5000/api/v1/auth/github" className="w-full py-4 px-6 rounded-xl font-semibold bg-[#0a0a0a] hover:bg-[#121212] text-[#e5e5e5] border border-[#1a1a1a] hover:border-[#ff6b00]/40 transition-all text-center block shadow-md">
+              <Link href="/login" className="w-full py-4 px-6 rounded-xl font-semibold bg-[#0a0a0a] hover:bg-[#121212] text-[#e5e5e5] border border-[#1a1a1a] hover:border-[#ff6b00]/40 transition-all text-center block shadow-md">
                 Start for Free
-              </a>
+              </Link>
             ) : userTier === "FREE" ? (
               <button disabled className="w-full py-4 px-6 rounded-xl font-semibold bg-[#0a0a0a] text-[#ff6b00] cursor-not-allowed border border-[#ff6b00]/20 transition-all shadow-[inset_0_0_15px_rgba(255,107,0,0.1)]">
                 Current Plan
@@ -966,9 +966,9 @@ export default function Home() {
             </ul>
 
             {!userTier ? (
-              <a href="http://localhost:5000/api/v1/auth/github" className="w-full py-4 px-6 rounded-xl font-bold bg-[#1a1a1a] text-white hover:bg-[#262626] transition-all text-center block border border-[#333]">
+              <Link href="/login" className="w-full py-4 px-6 rounded-xl font-bold bg-[#1a1a1a] text-white hover:bg-[#262626] transition-all text-center block border border-[#333]">
                 Sign in to Upgrade
-              </a>
+              </Link>
             ) : userTier === "BASIC" ? (
               <button disabled className="w-full py-4 px-6 rounded-xl font-semibold bg-gradient-to-r from-[#ff6b00]/10 to-[#ff8c00]/10 text-[#ff6b00] cursor-not-allowed border border-[#ff6b00]/30 transition-all shadow-[inset_0_0_15px_rgba(255,107,0,0.15)]">
                 Current Plan
@@ -1054,9 +1054,9 @@ export default function Home() {
             </ul>
 
             {!userTier ? (
-              <a href="http://localhost:5000/api/v1/auth/github" className="w-full py-4 px-6 rounded-xl font-bold bg-[#1a1a1a] text-white hover:bg-[#262626] transition-all text-center block border border-[#333]">
+              <Link href="/login" className="w-full py-4 px-6 rounded-xl font-bold bg-[#1a1a1a] text-white hover:bg-[#262626] transition-all text-center block border border-[#333]">
                 Sign in to Upgrade
-              </a>
+              </Link>
             ) : userTier === "PRO" ? (
               <button disabled className="w-full py-4 px-6 rounded-xl font-semibold bg-[#ffa800]/10 text-[#ffa800] cursor-not-allowed border border-[#ffa800]/30 transition-all shadow-[inset_0_0_15px_rgba(255,168,0,0.15)]">
                 Current Plan
