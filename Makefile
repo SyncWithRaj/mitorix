@@ -4,6 +4,8 @@
 dev:
 	docker compose up -d mongodb redis qdrant ollama
 
+redis:
+	docker compose up -d redis
 # Start infra + auto-pull the embedding model (first-time setup)
 dev-full: dev pull-model
 

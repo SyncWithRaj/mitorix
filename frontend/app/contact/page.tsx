@@ -1,9 +1,40 @@
 "use client";
 
-import { Mail, MessageCircle, Linkedin, Send, MessageSquareText } from "lucide-react";
-
+import { Mail, MessageCircle, Linkedin, Send, MessageSquareText, Loader2 } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import api from "@/lib/axios";
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.message) {
+      toast.error("Please fill out all fields.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await api.post("/contact", formData);
+      if (res.data.success) {
+        toast.success("Message sent successfully!");
+        setFormData({ firstName: "", lastName: "", email: "", message: "" });
+      }
+    } catch (error: any) {
+      console.error("Error submitting contact form:", error);
+      toast.error(error.response?.data?.message || "Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   return (
     <div className="w-full h-screen overflow-hidden bg-transparent text-[#e5e5e5] selection:bg-[#ff6b00] selection:text-white relative flex flex-col">
       {/* Background decorations */}
@@ -78,7 +109,7 @@ export default function ContactPage() {
 
           {/* Right Column - Form Container */}
           <div className="flex flex-col justify-center h-full animate-in fade-in zoom-in-95 duration-1000 delay-500 fill-mode-both">
-            <form className="bg-black/40 backdrop-blur-2xl p-8 lg:p-10 rounded-[2rem] border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.4)] flex flex-col justify-between group/form relative overflow-hidden h-full max-h-[700px]">
+            <form onSubmit={handleSubmit} className="bg-black/40 backdrop-blur-2xl p-8 lg:p-10 rounded-[2rem] border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.4)] flex flex-col justify-between group/form relative overflow-hidden h-full max-h-[700px]">
               <div className="absolute top-0 right-0 w-80 h-80 bg-[#ff6b00]/10 blur-3xl rounded-full pointer-events-none group-hover/form:bg-[#ff6b00]/20 transition-colors duration-700"></div>
 
               <div className="space-y-6 relative z-10 flex-grow flex flex-col justify-center">
@@ -90,6 +121,9 @@ export default function ContactPage() {
                     <input
                       type="text"
                       placeholder="Linus"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      required
                       className="w-full bg-black/40 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-[#a1a1aa] focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all shadow-inner hover:border-white/20 text-sm"
                     />
                   </div>
@@ -100,6 +134,9 @@ export default function ContactPage() {
                     <input
                       type="text"
                       placeholder="Torvalds"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      required
                       className="w-full bg-black/40 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-[#a1a1aa] focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all shadow-inner hover:border-white/20 text-sm"
                     />
                   </div>
@@ -112,6 +149,9 @@ export default function ContactPage() {
                   <input
                     type="email"
                     placeholder="linus@linux.org"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
                     className="w-full bg-black/40 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-[#a1a1aa] focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all shadow-inner hover:border-white/20 text-sm"
                   />
                 </div>
@@ -122,6 +162,9 @@ export default function ContactPage() {
                   </label>
                   <textarea
                     placeholder="Detail your inquiry regarding architectural integration or enterprise requirements..."
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    required
                     className="w-full bg-black/40 backdrop-blur-md border border-white/10 rounded-xl px-4 py-4 text-white placeholder-[#a1a1aa] focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00] transition-all resize-none shadow-inner hover:border-white/20 text-sm leading-relaxed flex-grow min-h-[120px]"
                   ></textarea>
                 </div>
@@ -129,16 +172,25 @@ export default function ContactPage() {
 
               <div className="pt-6 relative z-10 w-full mt-auto">
                 <button
-                  type="button"
-                  className="relative w-full py-4 rounded-xl flex items-center justify-center gap-3 bg-[#ff6b00] text-white font-semibold text-sm transition-all duration-300 shadow-[0_0_20px_rgba(255,107,0,0.25)] border border-[#ff8c00]/30 group/btn overflow-hidden"
-                  onClick={() => alert("This is a demo UI. Messaging API is currently disabled.")}
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="relative w-full py-4 rounded-xl flex items-center justify-center gap-3 bg-[#ff6b00] text-white font-semibold text-sm transition-all duration-300 shadow-[0_0_20px_rgba(255,107,0,0.25)] border border-[#ff8c00]/30 group/btn overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {/* Fill up from bottom hover effect */}
                   <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/btn:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
                   
                   <span className="relative z-10 group-hover/btn:text-black transition-colors duration-500 flex items-center gap-3">
-                    Send Message
-                    <Send className="w-4 h-4 group-hover/btn:-translate-y-1 group-hover/btn:translate-x-1 group-hover/btn:text-black transition-all duration-500" />
+                    {isSubmitting ? (
+                      <>
+                        Sending...
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      </>
+                    ) : (
+                      <>
+                        Send Message
+                        <Send className="w-4 h-4 group-hover/btn:-translate-y-1 group-hover/btn:translate-x-1 group-hover/btn:text-black transition-all duration-500" />
+                      </>
+                    )}
                   </span>
                 </button>
               </div>

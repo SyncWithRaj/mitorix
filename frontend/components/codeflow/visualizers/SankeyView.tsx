@@ -317,7 +317,7 @@ export default function SankeyView() {
   }, [analysisData, folderFilter, setFolderFilter, filteredFiles, filteredConnections]);
 
   return (
-    <div className="w-full h-full relative bg-[#000000] overflow-hidden">
+    <div className="w-full h-full relative bg-transparent overflow-hidden">
       <div ref={containerRef} className="w-full h-full" />
       
       {/* Background decoration */}

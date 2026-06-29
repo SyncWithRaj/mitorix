@@ -13,7 +13,11 @@ import {
   Cog,
   Shapes,
   FlaskConical,
+  RefreshCw,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import BorderGlow from "@/components/ui/BorderGlow";
+import { useSubscription } from "@/context/SubscriptionContext";
 
 interface SectionItem {
   name: string;
@@ -125,100 +129,120 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "walkthrough">("overview");
 
-  useEffect(() => {
+  const { hasFeature } = useSubscription();
+
+  const fetchGuide = React.useCallback(async (force = false) => {
     if (!isOpen) return;
-
-    const fetchGuide = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await api.get(`/repos/${repoId}/onboarding`);
-        if (res.data.success && res.data.guide) {
-          // Normalize legacy or new format
-          const normalized = normalizeLegacyGuide(res.data.guide);
-          setGuide(normalized);
-        } else {
-          setError("Failed to parse guide data.");
-        }
-      } catch (err: any) {
-        console.error("Error generating onboarding guide:", err);
-        setError(err.response?.data?.message || err.message || "An error occurred");
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    setError(null);
+    if (force) setGuide(null);
+    try {
+      const res = await api.get(`/repos/${repoId}/onboarding${force ? "?force=true" : ""}`);
+      if (res.data.success && res.data.guide) {
+        // Normalize legacy or new format
+        const normalized = normalizeLegacyGuide(res.data.guide);
+        setGuide(normalized);
+      } else {
+        setError("Failed to parse guide data.");
       }
-    };
-
-    fetchGuide();
+    } catch (err: any) {
+      console.error("Error generating onboarding guide:", err);
+      setError(err.response?.data?.message || err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
   }, [repoId, isOpen]);
+
+  useEffect(() => {
+    fetchGuide();
+  }, [fetchGuide]);
+
+  const handleRegenerate = () => {
+    if (!hasFeature('repo:onboarding')) {
+      toast.error("🔒 Regenerating requires the PRO plan. Upgrade to unlock.");
+      return;
+    }
+    fetchGuide(true);
+  };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-[#0d1117] border border-[#30363d] rounded-xl w-full max-w-6xl h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-fadeInUp">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 backdrop-blur-md p-4 sm:p-6 transition-all">
+      <BorderGlow
+        className="w-full max-w-6xl h-[85vh] shadow-2xl animate-fadeInUp"
+        borderRadius={16}
+        backgroundColor="#050505"
+        colors={['#ff6b00', '#ff8c00', '#ffa800']}
+        glowColor="24 100 50"
+        glowRadius={15}
+        glowIntensity={0.6}
+        coneSpread={12}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[#30363d] bg-[#161b22]">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#58a6ff]/10 rounded-lg border border-[#58a6ff]/20">
-              <Map className="text-[#58a6ff]" size={20} />
+        <div className="flex items-center justify-between p-5 border-b border-white/10 bg-white/5">
+          <div className="flex items-center gap-4">
+            <div className="p-2.5 bg-[#ff6b00]/10 rounded-xl border border-[#ff6b00]/20 shadow-[0_0_15px_rgba(255,107,0,0.2)]">
+              <Map className="text-[#ff6b00]" size={22} />
             </div>
             <div>
-              <h2 className="text-[#c9d1d9] font-semibold text-lg">Onboarding Guide</h2>
-              <p className="text-xs text-[#8b949e]">AI-generated repository walkthrough</p>
+              <h2 className="text-gray-100 font-semibold text-lg tracking-wide">Onboarding Guide</h2>
+              <p className="text-xs text-gray-400 mt-0.5">AI-generated repository walkthrough</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-[#8b949e] hover:text-[#ff7b72] transition rounded p-1 hover:bg-[#30363d]"
-          >
-            <X size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRegenerate}
+              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#ff6b00] transition rounded-lg px-2.5 py-1.5 hover:bg-white/5 border border-transparent hover:border-[#ff6b00]/30"
+              disabled={loading}
+            >
+              <RefreshCw size={14} className={loading ? "animate-spin text-[#ff6b00]" : ""} />
+              {loading ? "Regenerating..." : "Regenerate"}
+            </button>
+            <div className="w-px h-4 bg-white/10 mx-1"></div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white transition rounded-lg p-1.5 hover:bg-white/10"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="flex-grow flex flex-col overflow-hidden bg-[#010409]">
+        <div className="flex-grow flex flex-col overflow-hidden bg-transparent">
           {loading ? (
-            <div className="flex-grow flex flex-col items-center justify-center text-[#8b949e]">
-              <svg
-                className="animate-spin h-10 w-10 text-[#58a6ff] mb-4"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              <p className="animate-pulse font-mono text-sm">
-                Analyzing architecture & generating guide...
-              </p>
+            <div className="flex-grow flex flex-col items-center justify-center space-y-6">
+              <div className="relative flex items-center justify-center w-24 h-24">
+                <div className="absolute inset-0 border-2 border-[#ff6b00]/20 rounded-full animate-ping" style={{ animationDuration: '2s' }}></div>
+                <div className="absolute inset-2 border-2 border-[#ff6b00]/40 rounded-full animate-spin" style={{ animationDuration: '3s' }}></div>
+                <div className="absolute inset-4 border-2 border-[#ff6b00]/60 rounded-full animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }}></div>
+                <div className="absolute inset-6 bg-[#ff6b00]/20 rounded-full blur-sm animate-pulse"></div>
+                <div className="relative z-10 w-10 h-10 bg-black/80 rounded-full flex items-center justify-center border border-white/10 shadow-[0_0_15px_rgba(255,107,0,0.5)]">
+                  <BookOpen className="text-[#ff6b00]" size={18} />
+                </div>
+              </div>
+              <div className="flex flex-col items-center">
+                <h3 className="text-gray-200 font-semibold text-lg tracking-wide mb-2">MitorixAI is generating...</h3>
+                <p className="text-gray-500 text-sm animate-pulse">Building your onboarding guide</p>
+              </div>
             </div>
           ) : error ? (
             <div className="flex-grow flex items-center justify-center p-6">
-              <div className="text-[#ff7b72] bg-[#ff7b72]/10 border border-[#ff7b72]/30 p-4 rounded-lg max-w-md text-center whitespace-pre-wrap font-mono text-sm">
+              <div className="text-red-400 bg-red-400/10 border border-red-400/30 p-4 rounded-xl max-w-md text-center whitespace-pre-wrap font-mono text-sm shadow-[0_0_15px_rgba(248,113,113,0.1)]">
                 {error}
               </div>
             </div>
           ) : guide ? (
             <div className="flex flex-col h-full overflow-hidden">
               {/* Top Tabs */}
-              <div className="flex bg-[#0d1117] border-b border-[#30363d] px-6 pt-4 gap-6">
+              <div className="flex bg-white/5 border-b border-white/10 px-6 pt-5 gap-8">
                 <button
                   onClick={() => setActiveTab("overview")}
                   className={`flex items-center gap-2 pb-3 px-1 border-b-2 text-sm font-medium transition-colors ${
                     activeTab === "overview"
-                      ? "border-[#58a6ff] text-[#58a6ff]"
-                      : "border-transparent text-[#8b949e] hover:text-[#c9d1d9] hover:border-[#8b949e]"
+                      ? "border-[#ff6b00] text-[#ff6b00]"
+                      : "border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-500"
                   }`}
                 >
                   <BookOpen size={16} />
@@ -228,8 +252,8 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
                   onClick={() => setActiveTab("walkthrough")}
                   className={`flex items-center gap-2 pb-3 px-1 border-b-2 text-sm font-medium transition-colors ${
                     activeTab === "walkthrough"
-                      ? "border-[#3fb950] text-[#3fb950]"
-                      : "border-transparent text-[#8b949e] hover:text-[#c9d1d9] hover:border-[#8b949e]"
+                      ? "border-[#ff6b00] text-[#ff6b00]"
+                      : "border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-500"
                   }`}
                 >
                   <ListOrdered size={16} />
@@ -238,44 +262,44 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
               </div>
 
               {/* Main Content Area */}
-              <div className="flex-grow overflow-auto p-6 custom-scrollbar">
+              <div className="flex-grow overflow-auto p-6 sm:p-8 custom-scrollbar">
                 {activeTab === "overview" && (
-                  <div className="space-y-8 animate-fadeIn">
+                  <div className="space-y-10 animate-fadeIn">
                     {guide.sections.length === 0 ? (
-                      <div className="text-center text-[#8b949e] py-12">
-                        <BookOpen className="mx-auto mb-4 opacity-40" size={48} />
-                        <p className="text-sm">
+                      <div className="text-center text-gray-500 py-16">
+                        <BookOpen className="mx-auto mb-5 opacity-40" size={56} />
+                        <p className="text-base">
                           No architectural sections detected for this repository.
                         </p>
-                        <p className="text-xs mt-1">
+                        <p className="text-sm mt-2">
                           Try the Step-by-Step Tour tab for a reading guide.
                         </p>
                       </div>
                     ) : (
                       guide.sections.map((section, sIdx) => (
                         <section key={section.key || sIdx}>
-                          <h3 className="flex items-center gap-2 text-[#c9d1d9] font-medium mb-4 pb-2 border-b border-[#30363d]">
+                          <h3 className="flex items-center gap-2 text-gray-100 font-medium text-lg mb-5 pb-3 border-b border-white/10">
                             {ICON_MAP[section.icon] || (
-                              <FileCode2 size={18} className="text-[#8b949e]" />
+                              <FileCode2 size={20} className="text-gray-500" />
                             )}
                             {section.title}
-                            <span className="ml-auto text-xs text-[#484f58] font-normal">
+                            <span className="ml-auto text-xs text-gray-500 font-normal bg-white/5 px-2 py-1 rounded-md">
                               {section.items.length} items
                             </span>
                           </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             {section.items.map((item, idx) => (
                               <div
                                 key={idx}
-                                className="bg-[#161b22] border border-[#30363d] p-4 rounded-xl hover:border-[#8b949e] transition group"
+                                className="bg-white/5 border border-white/10 p-5 rounded-2xl hover:border-[#ff6b00]/50 hover:bg-white/10 transition-all duration-300 group shadow-sm hover:shadow-[0_4px_20px_rgba(255,107,0,0.1)]"
                               >
-                                <h4 className="font-semibold text-sm text-[#c9d1d9] mb-1 group-hover:text-[#58a6ff] transition">
+                                <h4 className="font-semibold text-sm text-gray-200 mb-1.5 group-hover:text-[#ff6b00] transition-colors">
                                   {item.name}
                                 </h4>
-                                <h5 className="font-mono text-xs text-[#58a6ff] mb-2 break-all">
+                                <h5 className="font-mono text-xs text-gray-400 mb-3 break-all">
                                   {formatPath(item.file)}
                                 </h5>
-                                <p className="text-sm text-[#8b949e]">{item.description}</p>
+                                <p className="text-sm text-gray-400 leading-relaxed">{item.description}</p>
                               </div>
                             ))}
                           </div>
@@ -286,31 +310,31 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
                 )}
 
                 {activeTab === "walkthrough" && (
-                  <div className="animate-fadeIn max-w-3xl">
-                    <div className="mb-6">
-                      <h3 className="text-[#c9d1d9] text-lg font-medium">
+                  <div className="animate-fadeIn max-w-4xl mx-auto py-4">
+                    <div className="mb-8">
+                      <h3 className="text-gray-100 text-xl font-semibold tracking-wide">
                         Recommended Reading Order
                       </h3>
-                      <p className="text-[#8b949e] text-sm mt-1">
+                      <p className="text-gray-400 text-sm mt-1.5">
                         Follow this sequence to understand the codebase efficiently.
                       </p>
                     </div>
 
-                    <div className="space-y-4 relative">
-                      <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-[#30363d] rounded-full z-0"></div>
+                    <div className="space-y-6 relative ml-2">
+                      <div className="absolute left-[21px] top-5 bottom-5 w-px bg-white/10 z-0"></div>
 
                       {guide.readingList
                         .sort((a, b) => a.order - b.order)
                         .map((item, idx) => (
-                          <div key={idx} className="relative z-10 flex gap-4">
-                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#161b22] border-2 border-[#3fb950] text-[#3fb950] flex items-center justify-center font-bold shadow-md">
+                          <div key={idx} className="relative z-10 flex gap-6 items-start">
+                            <div className="flex-shrink-0 w-11 h-11 rounded-full bg-black border-2 border-[#ff6b00] text-[#ff6b00] flex items-center justify-center font-bold shadow-[0_0_15px_rgba(255,107,0,0.3)] mt-0.5">
                               {item.order}
                             </div>
-                            <div className="flex-grow bg-[#161b22] border border-[#30363d] p-4 rounded-xl hover:border-[#8b949e] transition mt-1">
-                              <h4 className="font-mono text-sm text-[#58a6ff] mb-2 break-all">
+                            <div className="flex-grow bg-white/5 border border-white/10 p-5 rounded-2xl hover:border-[#ff6b00]/50 hover:bg-white/10 transition-all duration-300 shadow-sm hover:shadow-[0_4px_20px_rgba(255,107,0,0.1)]">
+                              <h4 className="font-mono text-sm text-[#ff6b00] mb-2.5 break-all">
                                 {formatPath(item.file)}
                               </h4>
-                              <p className="text-sm text-[#c9d1d9]">{item.reason}</p>
+                              <p className="text-sm text-gray-300 leading-relaxed">{item.reason}</p>
                             </div>
                           </div>
                         ))}
@@ -321,7 +345,7 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
             </div>
           ) : null}
         </div>
-      </div>
+      </BorderGlow>
     </div>
   );
 }

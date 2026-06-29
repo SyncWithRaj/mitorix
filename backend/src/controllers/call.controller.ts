@@ -27,7 +27,7 @@ export const processCall = async (
     const client = getAaiClient();
     const transcript = await client.transcripts.transcribe({
       audio: audioBuffer,
-      speech_model: "nano",
+      speech_models: ["universal-2"],
     });
 
     if (transcript.status === "error") {

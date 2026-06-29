@@ -280,5 +280,5 @@ export default function BundleView() {
       .attr("marker-mid", (l: any) => highlightLinks && isVisible(l.type) ? `url(#bundle-arr-${getColor(l.type)})` : "");
   }, [highlightLinks, relationFilters]);
 
-  return <div ref={containerRef} className="w-full h-full relative bg-[#000000]" />;
+  return <div ref={containerRef} className="w-full h-full relative bg-transparent" />;
 }
