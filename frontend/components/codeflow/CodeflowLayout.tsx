@@ -322,10 +322,10 @@ export default function CodeflowLayout({
       <div className={`flex flex-col h-full w-full transition-opacity duration-700 ease-in-out relative z-10 ${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         {/* Topbar */}
         <div className="h-14 border-b border-white/5 bg-black/40 backdrop-blur-2xl flex items-center px-4 shrink-0 sticky top-0 z-[120] justify-between shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1 sm:gap-2 min-w-0">
             <Link
               href={`/dashboard`}
-              className="group relative flex shrink-0 items-center justify-center w-8 h-8 rounded-full bg-[#ff6b00] overflow-hidden transition-all shadow-sm"
+              className="group relative flex shrink-0 items-center justify-center w-8 h-8 rounded-full bg-[#ff6b00] overflow-hidden transition-all shadow-sm mr-2"
               title="Back to Dashboard"
             >
               <span className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></span>
@@ -333,55 +333,53 @@ export default function CodeflowLayout({
             </Link>
 
             <button
-              className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${leftPanelOpen
-                  ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
-                  : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
+              className={`p-1.5 px-2 rounded-md transition flex items-center gap-1.5 border ${leftPanelOpen
+                  ? "text-[#ff6b00] bg-[#ff6b00]/10 border-[#ff6b00]/30"
+                  : "text-gray-400 border-transparent hover:text-gray-200 hover:bg-white/5"
                 }`}
               onClick={() => setLeftPanelOpen((prev) => !prev)}
-              title="Toggle Left Panel (Ctrl+B)"
+              title="Toggle Insights Panel (Ctrl+B)"
             >
               <Menu size={15} />
-              <span className="text-[10px] uppercase font-bold hidden xl:inline">Left</span>
+              <span className="text-[10px] uppercase font-bold hidden xl:inline tracking-wider">Insights</span>
             </button>
 
             <button
-              className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${explorerOpen
-                  ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
-                  : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
+              className={`p-1.5 px-2 rounded-md transition flex items-center gap-1.5 border ${explorerOpen
+                  ? "text-[#ff6b00] bg-[#ff6b00]/10 border-[#ff6b00]/30"
+                  : "text-gray-400 border-transparent hover:text-gray-200 hover:bg-white/5"
                 }`}
               onClick={() => setExplorerOpen((prev) => !prev)}
               title="Toggle Explorer Drawer (Ctrl+D)"
             >
               <Folder size={15} />
-              <span className="text-[10px] uppercase font-bold hidden xl:inline">Explorer</span>
+              <span className="text-[10px] uppercase font-bold hidden xl:inline tracking-wider">Explorer</span>
             </button>
-          </div>
 
-          <div className="flex items-center gap-2 flex-1 max-w-2xl px-2 sm:px-6">
-            <input
-              type="text"
-              className="flex-1 bg-gh-input border border-gh-border rounded-md px-3 py-1.5 text-xs text-gh-text focus:outline-none focus:border-gh-accent hidden sm:block"
-              placeholder="owner/repo or GitHub URL"
-              value={repoId}
-              readOnly
-            />
+            <div className="h-4 w-px bg-white/10 mx-1 hidden sm:block"></div>
+
             <button
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gh-btn-secondary border border-gh-border hover:bg-gh-btn-secondary-hover rounded-md transition text-gh-text"
+              className="hidden sm:flex items-center gap-1.5 p-1.5 px-2 rounded-md transition border border-transparent text-gray-400 hover:text-gray-200 hover:bg-white/5"
               onClick={() => setShowExcludeModal(true)}
+              title="Manage Excludes"
             >
-              <Ban size={14} /> Excludes
+              <Ban size={14} />
+              <span className="text-[10px] uppercase font-bold hidden xl:inline tracking-wider">Excludes</span>
             </button>
+
             <button
-              className="hidden sm:flex items-center gap-2 px-4 py-1.5 text-xs bg-gh-btn-primary hover:bg-gh-btn-primary-hover border border-gh-border rounded-md transition text-white font-medium"
+              className="hidden sm:flex items-center gap-1.5 p-1.5 px-3 ml-1 rounded-md transition font-medium border text-[#ff6b00] border-[#ff6b00]/40 hover:bg-[#ff6b00]/10"
               onClick={triggerAnalysis}
+              title="Run Analysis"
             >
-              Analyze
+              <Zap size={14} />
+              <span className="text-[10px] uppercase font-bold tracking-wider">Analyze</span>
             </button>
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
             <button
-              className="p-1.5 rounded-md transition flex items-center gap-1.5 text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover"
+              className="p-1.5 px-2 rounded-md transition flex items-center gap-1.5 border border-transparent text-gray-400 hover:text-gray-200 hover:bg-white/5"
               title={hasFeature('repo:design-doc') ? "Generate System Design" : "System Design requires PRO plan"}
               onClick={() => {
                 if (!hasFeature('repo:design-doc')) {
@@ -391,11 +389,11 @@ export default function CodeflowLayout({
                 setIsDesignDocOpen(true);
               }}
             >
-              <FileText size={16} />
-              <span className="text-[10px] uppercase font-bold hidden xl:inline">Design Doc</span>
+              <FileText size={15} />
+              <span className="text-[10px] uppercase font-bold hidden xl:inline tracking-wider">Design Doc</span>
             </button>
             <button
-              className="p-1.5 rounded-md transition flex items-center gap-1.5 text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover"
+              className="p-1.5 px-2 rounded-md transition flex items-center gap-1.5 border border-transparent text-gray-400 hover:text-gray-200 hover:bg-white/5"
               title={hasFeature('repo:onboarding') ? "Onboarding Guide" : "Onboarding Guide requires PRO plan"}
               onClick={() => {
                 if (!hasFeature('repo:onboarding')) {
@@ -405,11 +403,14 @@ export default function CodeflowLayout({
                 setIsOnboardingOpen(true);
               }}
             >
-              <BookOpen size={16} />
-              <span className="text-[10px] uppercase font-bold hidden xl:inline">Onboarding</span>
+              <BookOpen size={15} />
+              <span className="text-[10px] uppercase font-bold hidden xl:inline tracking-wider">Onboarding</span>
             </button>
+
+            <div className="h-4 w-px bg-white/10 mx-1 hidden sm:block"></div>
+
             <button
-              className="p-1.5 rounded-md transition text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover"
+              className="p-1.5 px-2 rounded-md transition flex items-center border border-transparent text-gray-400 hover:text-gray-200 hover:bg-white/5"
               title={hasFeature('codeflow:pr') ? "Pull Request Analysis" : "PR Analysis requires PRO plan"}
               onClick={() => {
                 if (!hasFeature('codeflow:pr')) {
@@ -419,10 +420,10 @@ export default function CodeflowLayout({
                 setShowPRModal(true);
               }}
             >
-              <GitPullRequest size={16} />
+              <GitPullRequest size={15} />
             </button>
             <button
-              className="p-1.5 rounded-md transition text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover"
+              className="p-1.5 px-2 rounded-md transition flex items-center border border-transparent text-gray-400 hover:text-gray-200 hover:bg-white/5"
               title={hasFeature('export:data') ? "Export Analysis" : "Export requires BASIC plan"}
               onClick={() => {
                 if (!hasFeature('export:data')) {
@@ -432,10 +433,10 @@ export default function CodeflowLayout({
                 setShowExportModal(true);
               }}
             >
-              <Download size={16} />
+              <Download size={15} />
             </button>
             <button
-              className="p-1.5 text-gh-text-muted hover:text-gh-text hover:bg-gh-btn-secondary-hover rounded-md transition"
+              className="p-1.5 px-2 rounded-md transition flex items-center border border-transparent text-gray-400 hover:text-gray-200 hover:bg-white/5"
               title="Download Chat JSON"
               onClick={() => {
                 const dataToExport = {
@@ -453,31 +454,33 @@ export default function CodeflowLayout({
                 toast.success("Chat exported as JSON!");
               }}
             >
-              <Share2 size={16} />
+              <Share2 size={15} />
             </button>
-            <div className="hidden sm:block">{/* <ThemeToggle /> */}</div>
+
+            <div className="h-4 w-px bg-white/10 mx-1 hidden sm:block"></div>
+
             <button
-              className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${chatOpen
-                  ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
-                  : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
+              className={`p-1.5 px-2 rounded-md transition flex items-center gap-1.5 border ${chatOpen
+                  ? "text-[#ff6b00] bg-[#ff6b00]/10 border-[#ff6b00]/30"
+                  : "text-gray-400 border-transparent hover:text-gray-200 hover:bg-white/5"
                 }`}
               title="AI Chat (Ctrl+K)"
               onClick={() => setChatOpen((prev) => !prev)}
             >
-              <MessageSquare size={16} />
-              <span className="text-[10px] uppercase font-bold hidden xl:inline">AI Chat</span>
+              <MessageSquare size={15} />
+              <span className="text-[10px] uppercase font-bold hidden xl:inline tracking-wider">AI Chat</span>
             </button>
 
             <button
-              className={`p-1.5 rounded-md transition flex items-center gap-1.5 border ${rightPanelOpen
-                  ? "text-gh-accent bg-gh-accent/10 border-gh-accent/30"
-                  : "text-gh-text-muted hover:text-gh-accent hover:bg-gh-btn-secondary-hover border-transparent"
+              className={`p-1.5 px-2 rounded-md transition flex items-center gap-1.5 border ${rightPanelOpen
+                  ? "text-[#ff6b00] bg-[#ff6b00]/10 border-[#ff6b00]/30"
+                  : "text-gray-400 border-transparent hover:text-gray-200 hover:bg-white/5"
                 }`}
-              title="Toggle Right Panel (Ctrl+J)"
+              title="Toggle Inspector Panel (Ctrl+J)"
               onClick={() => setRightPanelOpen((prev) => !prev)}
             >
-              <Settings size={16} />
-              <span className="text-[10px] uppercase font-bold hidden xl:inline">Right</span>
+              <Settings size={15} />
+              <span className="text-[10px] uppercase font-bold hidden xl:inline tracking-wider">Inspector</span>
             </button>
           </div>
         </div>
