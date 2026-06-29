@@ -37,7 +37,7 @@ const frontendUrl =
 
 app.use(
   cors({
-    origin: frontendUrl,
+    origin: [frontendUrl, frontendUrl.replace("https://", "https://www.")],
     credentials: true,
   })
 );
