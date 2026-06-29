@@ -14,6 +14,7 @@ import {
   type SubscriptionTier,
   PLAN_DETAILS,
 } from "../config/subscription.config.js";
+import { sendSubscriptionReceipt } from "../services/email.service.js";
 import logger from "../lib/logger.js";
 
 const router = Router();
@@ -180,6 +181,15 @@ router.post("/verify-payment", protect, async (req: Request, res: Response) => {
       "Subscription activated via payment verification"
     );
 
+    // Send the beautiful email receipt with PDF invoice!
+    if (user.email) {
+      await sendSubscriptionReceipt(
+        { name: user.username, email: user.email },
+        plan.tier,
+        razorpay_order_id
+      );
+    }
+
     res.json({
       success: true,
       message: "Payment verified and subscription activated",
@@ -260,6 +270,16 @@ router.post("/webhook", async (req: Request, res: Response) => {
         { userId, tier: plan.tier, paymentId: payment.id },
         "Webhook: subscription activated via payment.captured"
       );
+
+      // Async send receipt
+      const userDoc = await User.findById(userId);
+      if (userDoc && userDoc.email) {
+        await sendSubscriptionReceipt(
+          { name: userDoc.username, email: userDoc.email },
+          plan.tier,
+          payment.id
+        );
+      }
     } else if (event === "payment.failed") {
       const payment = payload?.payment?.entity;
       logger.warn(
