@@ -475,7 +475,7 @@ export default function CodeflowLayout({
       </div>
 
       {/* Main 3-Panel Area */}
-      <div className="flex flex-1 overflow-hidden relative min-h-0">
+      <div className="flex flex-1 overflow-hidden relative min-h-0 gap-1.5">
         {/* Left Sidebar */}
         {leftPanelOpen && (
           <ResizablePanel
@@ -483,11 +483,11 @@ export default function CodeflowLayout({
             initialWidth={260}
             minWidth={180}
             maxWidth={400}
-            className="relative z-20 h-full bg-black/40 backdrop-blur-xl overflow-hidden shadow-2xl"
+            className="relative z-20 h-full shadow-2xl"
             onWidthChange={setLeftPanelWidth}
           >
             {analysisData ? (
-              <div className="flex flex-col h-full bg-transparent w-full relative">
+              <div className="flex flex-col h-full bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 w-full relative overflow-hidden">
                 {/* Upper Section */}
                 <div className="flex-1 p-4 space-y-5 overflow-y-auto custom-scrollbar">
                   {folderFilter && (
@@ -544,7 +544,7 @@ export default function CodeflowLayout({
                 )}
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-gh-text-muted">
+              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-gh-text-muted bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
                 <div className="w-12 h-12 mb-4 opacity-50 flex items-center justify-center rounded-full bg-gh-btn-secondary">
                   <Menu size={24} />
                 </div>
@@ -562,9 +562,10 @@ export default function CodeflowLayout({
             initialWidth={320}
             minWidth={200}
             maxWidth={500}
-            className="z-50 bg-black/60 backdrop-blur-2xl shadow-2xl flex flex-col min-h-0 h-full"
+            className="z-50 shadow-2xl flex flex-col min-h-0 h-full"
           >
-            <div className="flex items-center justify-between p-3 border-b border-white/5 bg-transparent">
+            <div className="flex-1 flex flex-col w-full h-full bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden">
+              <div className="flex items-center justify-between p-3 border-b border-white/5 bg-transparent">
               <div className="flex items-center gap-1.5 text-xs font-bold text-[#e5e5e5] uppercase tracking-wider">
                 <Folder size={14} className="text-[#ff6b00]" />
                 <span>File Tree Explorer</span>
@@ -577,14 +578,15 @@ export default function CodeflowLayout({
                 <Ban size={14} />
               </button>
             </div>
-            <div className="flex-1 overflow-auto p-3 custom-scrollbar">
-              <TreeExplorer />
+              <div className="flex-1 overflow-auto p-3 custom-scrollbar">
+                <TreeExplorer />
+              </div>
             </div>
           </ResizablePanel>
         )}
 
         {/* Center Canvas */}
-        <div className="flex-1 flex flex-col min-w-0 bg-black/60 backdrop-blur-2xl relative overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 relative overflow-hidden">
           {analysisData && <VizSelector />}
 
           <div className="absolute inset-0 z-0">
@@ -610,8 +612,9 @@ export default function CodeflowLayout({
             maxWidth={500}
             className="relative z-20 h-full shadow-[-10px_0_30px_rgba(0,0,0,0.2)]"
           >
-            {/* Tab Bar */}
-            <div className="flex border-b border-white/5 bg-black/40 backdrop-blur-xl shrink-0">
+            <div className="flex-1 flex flex-col w-full h-full bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden relative">
+              {/* Tab Bar */}
+              <div className="flex border-b border-white/5 bg-transparent shrink-0">
               {tabs.map((tab) => (
                 <button
                   key={tab.key}
@@ -633,7 +636,7 @@ export default function CodeflowLayout({
 
             {/* Panel Content */}
             <div
-              className={`flex-1 overflow-y-auto bg-black/40 backdrop-blur-xl custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}
+              className={`flex-1 overflow-y-auto bg-transparent custom-scrollbar flex flex-col ${rightTab === "code" ? "p-0" : "p-3"}`}
             >
               {analysisData ? (
                 <div className="flex-1 flex flex-col relative bg-transparent">
@@ -653,6 +656,7 @@ export default function CodeflowLayout({
                 </div>
               )}
             </div>
+            </div>
           </ResizablePanel>
         )}
 
@@ -663,9 +667,10 @@ export default function CodeflowLayout({
             initialWidth={380}
             minWidth={280}
             maxWidth={600}
-            className="z-20 bg-black/60 backdrop-blur-2xl shadow-[-10px_0_40px_rgba(0,0,0,0.5)] flex flex-col min-h-0 h-full"
+            className="z-20 shadow-[-10px_0_40px_rgba(0,0,0,0.5)] flex flex-col min-h-0 h-full"
           >
-            <ChatPanel
+            <div className="flex-1 flex flex-col w-full h-full bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden">
+              <ChatPanel
               repoId={repoId}
               chatMessages={chatMessages}
               callMessages={callMessages}
@@ -681,6 +686,7 @@ export default function CodeflowLayout({
               attachedNodes={attachedNodes}
               setAttachedNodes={setAttachedNodes}
             />
+            </div>
           </ResizablePanel>
         )}
       </div>

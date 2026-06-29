@@ -77,14 +77,17 @@ export default function ResizablePanel({
 
       {/* Resize Handle */}
       <div
-        className={`absolute top-0 bottom-0 w-1.5 cursor-col-resize z-50 bg-neutral-800 hover:bg-[#ff6b00]/80 transition-colors ${
-          side === "left" ? "-right-[3px]" : "-left-[3px]"
+        className={`absolute top-0 bottom-0 w-1.5 cursor-col-resize z-50 flex items-center justify-center group ${
+          side === "left" ? "-right-1.5" : "-left-1.5"
         }`}
         onMouseDown={(e) => {
           e.preventDefault();
           setIsDragging(true);
         }}
-      />
+      >
+        {/* Visual Pill */}
+        <div className="w-1 h-12 rounded-full bg-[#ff6b00]/60 group-hover:bg-[#ff6b00] transition-colors shadow-sm" />
+      </div>
     </div>
   );
 }

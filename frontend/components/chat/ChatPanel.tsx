@@ -510,7 +510,7 @@ export default function ChatPanel({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#000000] relative">
+    <div className="flex flex-col h-full bg-transparent relative">
       <div className="border-b border-[#1a1a1a] bg-[#050505]/90 backdrop-blur-md sticky top-0 z-10 flex flex-col shadow-sm">
         <div className="p-4 flex flex-row items-center justify-between">
           <h3 className="text-xs font-bold tracking-widest uppercase text-[#e5e5e5] flex items-center gap-2">
@@ -586,7 +586,7 @@ export default function ChatPanel({
       </div>
 
       <div
-        className={`flex-1 overflow-y-auto p-4 space-y-6 bg-[#000000] custom-scrollbar relative z-0`}
+        className={`flex-1 overflow-y-auto p-4 space-y-6 bg-transparent custom-scrollbar relative z-0`}
         onScroll={handleScroll}
       >
         <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-l from-[#ff6b00]/5 to-transparent blur-3xl pointer-events-none -z-10"></div>
@@ -743,7 +743,7 @@ export default function ChatPanel({
       {activeTab === "chat" ? (
         <div
           ref={chatInputAreaRef}
-          className="px-4 py-4 bg-gradient-to-t from-[#000000] via-[#000000] to-[#000000]/10 relative z-10 w-full pt-10 mt-auto"
+          className="px-4 py-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent relative z-10 w-full pt-10 mt-auto"
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragEnter={handleDragOver}
