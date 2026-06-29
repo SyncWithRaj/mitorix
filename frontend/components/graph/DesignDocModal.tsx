@@ -30,16 +30,15 @@ export default function DesignDocModal({ repoId, isOpen, onClose }: DesignDocMod
     if (!container) return;
 
     const handleNativeWheel = (e: WheelEvent) => {
-      if (e.ctrlKey || e.metaKey || e.shiftKey) {
-        e.preventDefault();
-        const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
-        setScale(s => Math.min(Math.max(0.1, s * zoomFactor), 10));
-      }
+      // Prevent browser scroll/zoom and only zoom the diagram
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+      setScale(s => Math.min(Math.max(0.1, s * zoomFactor), 10));
     };
 
     container.addEventListener('wheel', handleNativeWheel, { passive: false });
     return () => container.removeEventListener('wheel', handleNativeWheel);
-  }, []);
+  }, [loading, error, mermaidSyntax]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     setIsDragging(true);
@@ -224,7 +223,6 @@ export default function DesignDocModal({ repoId, isOpen, onClose }: DesignDocMod
                   <button onClick={() => setScale(s => Math.min(10, s * 1.2))} className="p-1.5 rounded-md hover:bg-white/10 text-gray-400 hover:text-white transition-colors" title="Zoom In">
                     <ZoomIn size={16} />
                   </button>
-                  <span className="text-xs text-gray-500 ml-2">Tip: Use Shift+Scroll to zoom</span>
                 </div>
                 <button
                   onClick={handleCopy}
