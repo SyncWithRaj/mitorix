@@ -25,6 +25,7 @@ import {
   MessageSquare,
   Bot,
   Loader2,
+  ArrowLeft,
 } from "lucide-react";
 import ChatPanel from "../chat/ChatPanel";
 import DragGhost from "./DragGhost";
@@ -324,15 +325,11 @@ export default function CodeflowLayout({
         <div className="flex items-center gap-2 min-w-0">
           <Link
             href={`/dashboard`}
-            className="flex items-center gap-2 px-2 py-1.5 rounded-md border border-gh-border bg-gh-btn-secondary hover:bg-gh-btn-secondary-hover transition"
-            title="Mitorix"
+            className="group relative flex shrink-0 items-center justify-center w-8 h-8 rounded-full bg-[#ff6b00] overflow-hidden transition-all shadow-sm"
+            title="Back to Dashboard"
           >
-            <div className="w-5 h-5 rounded bg-gh-btn-secondary flex items-center justify-center text-gh-text border border-gh-border">
-              <span className="font-bold text-[10px]">RL</span>
-            </div>
-            <span className="font-bold text-gh-text tracking-wide text-xs sm:text-sm">
-              MITORIX
-            </span>
+            <span className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></span>
+            <ArrowLeft size={16} className="text-white group-hover:text-[#ff6b00] relative z-10 transition-colors duration-300" />
           </Link>
 
           <button
@@ -475,7 +472,7 @@ export default function CodeflowLayout({
       </div>
 
       {/* Main 3-Panel Area */}
-      <div className="flex flex-1 overflow-hidden relative min-h-0 gap-1.5 pt-1.5">
+      <div className="flex flex-1 overflow-hidden relative min-h-0 gap-1.5 p-1.5">
         {/* Left Sidebar */}
         {leftPanelOpen && (
           <ResizablePanel
