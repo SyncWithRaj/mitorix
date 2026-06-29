@@ -84,14 +84,14 @@ const generateInvoicePDF = (
       // Table Row
       doc.font("Helvetica").fontSize(11).fillColor("#18181b");
       doc.text(`MitorixAI ${planName} Subscription`, 60, tableTop + 45);
-      doc.font("Helvetica-Bold").text(`$${(amountInPaise / 100).toFixed(2)}`, 450, tableTop + 45, { width: 100, align: "right" });
+      doc.font("Helvetica-Bold").text(`Rs ${(amountInPaise / 100).toFixed(2)}`, 450, tableTop + 45, { width: 100, align: "right" });
       
       doc.moveTo(50, tableTop + 75).lineTo(562, tableTop + 75).strokeColor("#e4e4e7").stroke();
 
       // Total
       doc.font("Helvetica-Bold").fontSize(14).fillColor("#18181b");
       doc.text("TOTAL PAID:", 300, tableTop + 95, { align: "right", width: 150 });
-      doc.fillColor("#ff6b00").text(`$${(amountInPaise / 100).toFixed(2)}`, 450, tableTop + 95, { width: 100, align: "right" });
+      doc.fillColor("#ff6b00").text(`Rs ${(amountInPaise / 100).toFixed(2)}`, 450, tableTop + 95, { width: 100, align: "right" });
 
       doc.moveDown(6);
       doc.font("Helvetica").fontSize(10).fillColor("#a1a1aa").text("Thank you for choosing MitorixAI. If you have any questions, please contact support@mitorix.ai.", 50, doc.y, { align: "center", width: 512 });
