@@ -441,7 +441,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
                     }}
                     className="cursor-pointer w-full py-1.5 flex items-center justify-center gap-2 bg-[#ff5858]/10 hover:bg-[#ff5858]/20 text-[#ff5858] border border-[#ff5858]/30 hover:border-[#ff5858] rounded-none text-xs font-bold uppercase tracking-wider transition-all"
                   >
-                    <Flame size={14} /> Analyze Impact
+                    <Flame size={14} /> Blast Radius
                   </button>
                 </div>
               </>
@@ -479,7 +479,7 @@ export default function GraphView({ repoId }: { repoId: string }) {
                     }}
                     className="cursor-pointer w-full py-1.5 flex items-center justify-center gap-2 bg-[#ff5858]/10 hover:bg-[#ff5858]/20 text-[#ff5858] border border-[#ff5858]/30 hover:border-[#ff5858] rounded-none text-xs font-bold uppercase tracking-wider transition-all"
                   >
-                    <Flame size={14} /> Analyze Impact
+                    <Flame size={14} /> Blast Radius
                   </button>
                 </div>
               </>
