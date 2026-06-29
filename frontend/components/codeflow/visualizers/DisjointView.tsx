@@ -372,5 +372,5 @@ export default function DisjointView() {
       .attr("marker-end", (d: any) => highlightLinks && isVisible(d.type) ? `url(#disjoint-arr-${getColor(d.type)})` : "");
   }, [highlightLinks, relationFilters]);
 
-  return <div ref={containerRef} className="w-full h-full relative bg-[#000000]" />;
+  return <div ref={containerRef} className="w-full h-full relative bg-transparent" />;
 }

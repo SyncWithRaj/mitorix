@@ -71,22 +71,23 @@ export default function ResizablePanel({
     <div
       ref={panelRef}
       style={{ width: `${width}px` }}
-      className={`relative flex-shrink-0 flex flex-col bg-[#0d1117] border-[#30363d] ${
-        side === "left" ? "border-r" : "border-l"
-      } ${className}`}
+      className={`relative flex-shrink-0 flex flex-col ${className}`}
     >
       {children}
 
       {/* Resize Handle */}
       <div
-        className={`absolute top-0 bottom-0 w-2 cursor-col-resize z-50 hover:bg-[#58a6ff]/20 transition-colors ${
-          side === "left" ? "-right-1" : "-left-1"
+        className={`absolute top-0 bottom-0 w-1.5 cursor-col-resize z-50 flex items-center justify-center group ${
+          side === "left" ? "-right-1.5" : "-left-1.5"
         }`}
         onMouseDown={(e) => {
           e.preventDefault();
           setIsDragging(true);
         }}
-      />
+      >
+        {/* Visual Pill */}
+        <div className="w-1 h-12 rounded-full bg-[#ff6b00]/60 group-hover:bg-[#ff6b00] transition-colors shadow-sm" />
+      </div>
     </div>
   );
 }

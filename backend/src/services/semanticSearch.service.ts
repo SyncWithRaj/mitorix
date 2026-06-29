@@ -16,7 +16,9 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { embedDirect } from "./embedding.service.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
+import { FileContent } from "../models/fileContent.model.js";
 import { Repository } from "../models/repo.model.js";
+import mongoose from "mongoose";
 import path from "path";
 import logger from "../lib/logger.js";
 import { AppError } from "../middlewares/error.middleware.js";
@@ -152,6 +154,9 @@ function computeKeywordScore(
  *
  * So wrapping the query in a similar structure helps the model align
  * the query vector with the document vector space.
+ *
+ * For short queries (≤3 words), we skip the generic prefix because it can
+ * dilute the signal for specific searches like "books" or "mongoose".
  */
 function augmentQuery(query: string, filters: SearchFilters): string {
   let augmented = query;
@@ -161,8 +166,12 @@ function augmentQuery(query: string, filters: SearchFilters): string {
     augmented = `Entity Type: ${filters.entityType}\n${augmented}`;
   }
 
-  // Add a semantic framing to help the embedding model understand intent
-  augmented = `Find code related to: ${augmented}`;
+  // Only add semantic framing for longer queries — short queries work better
+  // as direct embedding matches without the generic "Find code related to" prefix
+  const wordCount = query.trim().split(/\s+/).length;
+  if (wordCount > 3) {
+    augmented = `Find code related to: ${augmented}`;
+  }
 
   return augmented;
 }
@@ -177,7 +186,7 @@ export async function semanticSearch(
   query: string,
   filters: SearchFilters = {},
   limit: number = 20,
-  scoreThreshold: number = 0.15 // Lower threshold — we re-rank afterwards
+  scoreThreshold: number = 0.35 // Raised from 0.15 — anything below 0.35 is noise for code search
 ): Promise<SearchResponse> {
   const repo = await getRepositoryForUserOrThrow(repoId, requesterUserId);
 
@@ -245,13 +254,30 @@ export async function semanticSearch(
 
   const entities = await CodeEntity.find(
     { _id: { $in: mongoIds } },
-    { name: 1, type: 1, filePath: 1, language: 1, startLine: 1, endLine: 1, content: 1, parameters: 1, returnType: 1 }
+    { name: 1, type: 1, filePath: 1, language: 1, startLine: 1, endLine: 1, parameters: 1, returnType: 1 }
   ).lean();
   const entityMap = new Map(entities.map((e: any) => [e._id.toString(), e]));
+
+  // ── Step 4b: Batch-fetch file contents for code display + keyword scoring ──
+  const uniqueRelativePaths = new Set<string>();
+  for (const entity of entities) {
+    const relPath = path.relative(repo.localPath, (entity as any).filePath).replace(/\\/g, "/");
+    uniqueRelativePaths.add(relPath);
+  }
+
+  const repoObjectId = new mongoose.Types.ObjectId(repoId);
+  const fileContents = await FileContent.find({
+    repoId: repoObjectId,
+    relativePath: { $in: [...uniqueRelativePaths] },
+  }).lean();
+  const fileContentMap = new Map(
+    fileContents.map((f: any) => [f.relativePath, f.content || ""])
+  );
 
   // ── Step 5: Score, re-rank, and build results ──
   const VECTOR_WEIGHT = 0.65; // Weight for Qdrant's cosine similarity
   const KEYWORD_WEIGHT = 0.35; // Weight for keyword/name relevance
+  const MIN_HYBRID_SCORE = 0.25; // Drop results below this combined score
 
   interface ScoredCandidate {
     entity: any;
@@ -260,6 +286,7 @@ export async function semanticSearch(
     hybridScore: number;
     relativePath: string;
     folder: string;
+    codeContent: string;
   }
 
   const candidates: ScoredCandidate[] = [];
@@ -279,12 +306,20 @@ export async function semanticSearch(
       .replace(/\\/g, "/");
     const folder = path.dirname(relativePath);
 
-    // Compute keyword relevance score
+    // Extract actual code content from FileContent for this entity
+    const fullFileContent = fileContentMap.get(relativePath) || "";
+    let codeContent = "";
+    if (fullFileContent) {
+      const lines = fullFileContent.split("\n");
+      codeContent = lines.slice(Math.max(0, entity.startLine - 1), entity.endLine).join("\n");
+    }
+
+    // Compute keyword relevance score with actual code content
     const keywordScore = computeKeywordScore(
       query,
       entity.name,
       entity.type,
-      entity.content || "",
+      codeContent,
       relativePath
     );
 
@@ -293,6 +328,9 @@ export async function semanticSearch(
     const hybridScore =
       vectorScore * VECTOR_WEIGHT + keywordScore * KEYWORD_WEIGHT;
 
+    // Drop results below minimum hybrid score
+    if (hybridScore < MIN_HYBRID_SCORE) continue;
+
     candidates.push({
       entity,
       vectorScore,
@@ -300,6 +338,7 @@ export async function semanticSearch(
       hybridScore,
       relativePath,
       folder,
+      codeContent,
     });
   }
 
@@ -313,7 +352,7 @@ export async function semanticSearch(
   const folderFacets: Record<string, number> = {};
 
   for (const candidate of candidates) {
-    const { entity, vectorScore, keywordScore, hybridScore, relativePath, folder } =
+    const { entity, vectorScore, keywordScore, hybridScore, relativePath, folder, codeContent } =
       candidate;
 
     // Accumulate facets (from ALL candidates, not just top results)
@@ -332,7 +371,7 @@ export async function semanticSearch(
         language: lang,
         startLine: entity.startLine,
         endLine: entity.endLine,
-        content: entity.content?.substring(0, 600) || "",
+        content: codeContent?.substring(0, 600) || "",
         score: Math.round(hybridScore * 100) / 100,
         vectorScore: Math.round(vectorScore * 100) / 100,
         keywordScore: Math.round(keywordScore * 100) / 100,

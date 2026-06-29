@@ -31,7 +31,7 @@ export const generateOnboardingGuide = async (
     await touchRepository(repoId);
 
     // Return the cached guide if it already exists AND is in the new format
-    if (repo.onboardingGuide && repo.onboardingGuide.sections) {
+    if (repo.onboardingGuide && repo.onboardingGuide.sections && req.query.force !== "true") {
       return res.status(200).json({
         success: true,
         guide: repo.onboardingGuide,

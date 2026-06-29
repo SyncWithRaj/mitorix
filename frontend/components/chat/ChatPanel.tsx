@@ -132,8 +132,9 @@ export default function ChatPanel({
   const animFrameRef = useRef<number | null>(null);
   const silenceStartRef = useRef<number | null>(null);
   const [audioLevel, setAudioLevel] = useState(0);
-  const SILENCE_THRESHOLD = 15; // Volume level below which counts as silence (0-255)
-  const SILENCE_DURATION = 1500; // ms of continuous silence before auto-send
+  const [audioBars, setAudioBars] = useState<number[]>(Array(7).fill(0));
+  const SILENCE_THRESHOLD = 20; // Volume level below which counts as silence (0-255)
+  const SILENCE_DURATION = 2000; // ms of continuous silence before auto-send
   const hasSpokenRef = useRef(false); // Track if user has spoken at all
 
   const editorContext = useContext(EditorContext);
@@ -271,7 +272,7 @@ export default function ChatPanel({
 
   const handleBlastRadiusClick = (file: string, name: string) => {
     const nodeId = name ? `${file}::${name}` : file;
-    router.push(`/codeflow/${repoId}?blastRadius=${encodeURIComponent(nodeId)}`);
+    router.push(`/mitorixSpace/${repoId}?blastRadius=${encodeURIComponent(nodeId)}`);
   };
 
   const stopSilenceDetection = () => {
@@ -316,6 +317,17 @@ export default function ChatPanel({
 
         setAudioLevel(avg);
 
+        const bars = [];
+        const step = Math.floor(60 / 7);
+        for (let i = 0; i < 7; i++) {
+          let bandSum = 0;
+          for (let j = 0; j < step; j++) {
+            bandSum += dataArray[i * step + j];
+          }
+          bars.push(bandSum / step);
+        }
+        setAudioBars(bars);
+
         if (avg > SILENCE_THRESHOLD) {
           // User is speaking
           hasSpokenRef.current = true;
@@ -324,12 +336,8 @@ export default function ChatPanel({
           // Silence detected AFTER user has spoken
           if (!silenceStartRef.current) {
             silenceStartRef.current = Date.now();
-          } else if (Date.now() - silenceStartRef.current >= SILENCE_DURATION) {
-            // Enough silence — auto-send
-            console.log("Silence detected — auto-sending audio");
-            triggerSendAudio();
-            return; // Stop the loop
-          }
+          } 
+          // Auto-send logic removed as user requested manual send
         }
 
         animFrameRef.current = requestAnimationFrame(checkAudio);
@@ -510,7 +518,7 @@ export default function ChatPanel({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#000000] relative">
+    <div className="flex flex-col h-full bg-transparent relative">
       <div className="border-b border-[#1a1a1a] bg-[#050505]/90 backdrop-blur-md sticky top-0 z-10 flex flex-col shadow-sm">
         <div className="p-4 flex flex-row items-center justify-between">
           <h3 className="text-xs font-bold tracking-widest uppercase text-[#e5e5e5] flex items-center gap-2">
@@ -520,7 +528,7 @@ export default function ChatPanel({
           <div className="flex items-center gap-2">
             {callState === "listening" && (
               <div className="text-xs text-[#ff6b00] font-semibold animate-pulse mr-2 flex items-center gap-1">
-                <Mic size={12} /> Recording
+                <Mic size={12} /> Listening
               </div>
             )}
             {callState === "processing" && (
@@ -586,7 +594,7 @@ export default function ChatPanel({
       </div>
 
       <div
-        className={`flex-1 overflow-y-auto p-4 space-y-6 bg-[#000000] custom-scrollbar relative z-0`}
+        className={`flex-1 overflow-y-auto p-4 space-y-6 bg-transparent custom-scrollbar relative z-0`}
         onScroll={handleScroll}
       >
         <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-l from-[#ff6b00]/5 to-transparent blur-3xl pointer-events-none -z-10"></div>
@@ -743,7 +751,7 @@ export default function ChatPanel({
       {activeTab === "chat" ? (
         <div
           ref={chatInputAreaRef}
-          className="px-4 py-4 bg-gradient-to-t from-[#000000] via-[#000000] to-[#000000]/10 relative z-10 w-full pt-10 mt-auto"
+          className="px-4 py-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent relative z-10 w-full pt-10 mt-auto"
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragEnter={handleDragOver}
@@ -852,12 +860,13 @@ export default function ChatPanel({
                 <div className="flex items-end justify-center gap-[3px] h-10 mb-1">
                   {Array.from({ length: 7 }).map((_, i) => {
                     const barScale = [0.5, 0.7, 0.85, 1, 0.85, 0.7, 0.5][i];
-                    const normalizedLevel = Math.min(audioLevel / 60, 1);
+                    const jitter = Math.random() * 2; 
+                    const normalizedLevel = Math.min(((audioBars[i] || 0) + jitter) / 80, 1);
                     const barHeight = Math.max(4, normalizedLevel * 32 * barScale);
                     return (
                       <div
                         key={i}
-                        className="w-[4px] rounded-full bg-[#ff6b00] transition-all duration-100"
+                        className="w-[4px] rounded-full bg-[#ff6b00] transition-all duration-75"
                         style={{ height: `${barHeight}px`, opacity: 0.5 + normalizedLevel * 0.5 }}
                       />
                     );
@@ -886,13 +895,25 @@ export default function ChatPanel({
                   )}
                 </div>
 
-                <button
-                  onClick={cleanupCall}
-                  className="cursor-pointer w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 bg-[#ff3300] text-white shadow-[0_4px_15px_rgba(255,51,0,0.4)] hover:bg-[#cc2900] hover:scale-105 active:scale-95"
-                  title="End Call"
-                >
-                  <PhoneOff size={24} />
-                </button>
+                <div className="flex gap-4">
+                  {callState === "listening" && (
+                    <button
+                      onClick={triggerSendAudio}
+                      className="cursor-pointer w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 bg-[#ff6b00] text-white shadow-[0_4px_15px_rgba(255,107,0,0.4)] hover:bg-[#ff8c00] hover:scale-105 active:scale-95"
+                      title="Send Audio"
+                    >
+                      <Send size={24} className="ml-1" />
+                    </button>
+                  )}
+
+                  <button
+                    onClick={cleanupCall}
+                    className="cursor-pointer w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 bg-[#ff3300] text-white shadow-[0_4px_15px_rgba(255,51,0,0.4)] hover:bg-[#cc2900] hover:scale-105 active:scale-95"
+                    title="End Call"
+                  >
+                    <PhoneOff size={24} />
+                  </button>
+                </div>
               </div>
 
               <span
@@ -904,9 +925,9 @@ export default function ChatPanel({
                       : "text-[#ffa800]"
                 }`}
               >
-                {callState === "listening" && "Listening... speak now"}
-                {callState === "processing" && "Processing..."}
-                {callState === "speaking" && "Agent Speaking..."}
+                {callState === "listening" && "Listening..."}
+                {callState === "processing" && "Thinking..."}
+                {callState === "speaking" && "Speaking..."}
               </span>
             </div>
           )}

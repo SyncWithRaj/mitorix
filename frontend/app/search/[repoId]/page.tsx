@@ -355,7 +355,7 @@ export default function SearchPage({
   };
 
   const navigateToResult = (result: SearchResult) => {
-    router.push(`/codeflow/${repoId}`);
+    router.push(`/mitorixSpace/${repoId}`);
   };
 
   return (
@@ -368,7 +368,7 @@ export default function SearchPage({
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
-            onClick={() => router.push(`/codeflow/${repoId}`)}
+            onClick={() => router.push(`/mitorixSpace/${repoId}`)}
             className="p-2 rounded-xl text-[#737373] hover:text-white hover:bg-[#1a1a1a] transition-all cursor-pointer"
           >
             <ArrowLeft size={20} />

@@ -216,7 +216,7 @@ export default function MatrixView() {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full relative bg-[#000000] flex items-center justify-center"
+      className="w-full h-full relative bg-transparent flex items-center justify-center"
     />
   );
 }

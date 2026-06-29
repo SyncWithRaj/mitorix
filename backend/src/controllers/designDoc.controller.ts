@@ -23,7 +23,8 @@ export const generateSystemDesignDoc = async (
     if (
       repo.systemDesignDoc &&
       repo.systemDesignDoc.includes("graph") &&
-      !repo.systemDesignDoc.includes("experiencing high load")
+      !repo.systemDesignDoc.includes("experiencing high load") &&
+      req.query.force !== "true"
     ) {
       return res.status(200).json({
         success: true,
@@ -52,7 +53,7 @@ export const generateSystemDesignDoc = async (
       prompt += `- ${r.fromName} (${r.fromFilePath}) -> ${r.toName} (${r.toFilePath}) [${r.relationType}]\n`;
     });
 
-    prompt += `\nBased on this structural data, create a high-level system architecture Mermaid.js flowchart. Output ONLY the raw Mermaid code block (starting with \`\`\`mermaid and ending with \`\`\`). Do not include any explanations. Make it beautiful and logically grouped.
+    prompt += `\nBased on this structural data, create a high-level system architecture Mermaid.js flowchart. Output ONLY the raw Mermaid code block (starting with \`\`\`mermaid and ending with \`\`\`). Do not include any explanations. Logically group the components using subgraphs.
 
 IMPORTANT MERMAID FLOWCHART RULES:
 1. Node IDs and Subgraph IDs MUST NOT contain spaces or special characters (e.g., use \`subgraph FrontendApp\` instead of \`subgraph Frontend (React Application)\`).
@@ -60,7 +61,8 @@ IMPORTANT MERMAID FLOWCHART RULES:
 3. Use labels for subgraphs like this: \`subgraph SubgraphID ["My Subgraph Label"]\`.
 4. FOR LINK LABELS: Use the syntax: \`A -- "Label" --> B\`.
 5. CRITICAL: DO NOT use the colon syntax for flowchart labels (e.g., NEVER do \`A --> B: Label\`).
-6. Ensure all parentheses, brackets, and quotes are properly balanced.`;
+6. CRITICAL: DO NOT add any inline styles, colors, or classes to the nodes (e.g., NO \`style A fill:#fff\`). Keep the diagram purely structural so it uses the default theme.
+7. Ensure all parentheses, brackets, and quotes are properly balanced.`;
 
     const mermaidMarkdown = await generateAnswer(prompt);
 

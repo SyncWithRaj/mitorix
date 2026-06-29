@@ -90,10 +90,10 @@ export default function ForceGraph() {
     const svg = d3
       .select(el)
       .append("svg")
-      .attr("width", w)
-      .attr("height", h)
+      .attr("width", "100%")
+      .attr("height", "100%")
       .style("cursor", "grab")
-      .style("background", "#000000");
+      .style("background", "transparent");
 
     const container = svg.append("g");
     const defs = svg.append("defs");
@@ -676,5 +676,5 @@ export default function ForceGraph() {
     );
   }
 
-  return <div ref={containerRef} className="w-full h-full relative overflow-hidden bg-[#000000]" />;
+  return <div ref={containerRef} className="w-full h-full relative overflow-hidden bg-transparent" />;
 }
