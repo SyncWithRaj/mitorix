@@ -13,8 +13,11 @@ import {
   Cog,
   Shapes,
   FlaskConical,
+  RefreshCw,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import BorderGlow from "@/components/ui/BorderGlow";
+import { useSubscription } from "@/context/SubscriptionContext";
 
 interface SectionItem {
   name: string;
@@ -126,31 +129,41 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "walkthrough">("overview");
 
-  useEffect(() => {
+  const { hasFeature } = useSubscription();
+
+  const fetchGuide = React.useCallback(async (force = false) => {
     if (!isOpen) return;
-
-    const fetchGuide = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await api.get(`/repos/${repoId}/onboarding`);
-        if (res.data.success && res.data.guide) {
-          // Normalize legacy or new format
-          const normalized = normalizeLegacyGuide(res.data.guide);
-          setGuide(normalized);
-        } else {
-          setError("Failed to parse guide data.");
-        }
-      } catch (err: any) {
-        console.error("Error generating onboarding guide:", err);
-        setError(err.response?.data?.message || err.message || "An error occurred");
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    setError(null);
+    if (force) setGuide(null);
+    try {
+      const res = await api.get(`/repos/${repoId}/onboarding${force ? "?force=true" : ""}`);
+      if (res.data.success && res.data.guide) {
+        // Normalize legacy or new format
+        const normalized = normalizeLegacyGuide(res.data.guide);
+        setGuide(normalized);
+      } else {
+        setError("Failed to parse guide data.");
       }
-    };
-
-    fetchGuide();
+    } catch (err: any) {
+      console.error("Error generating onboarding guide:", err);
+      setError(err.response?.data?.message || err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
   }, [repoId, isOpen]);
+
+  useEffect(() => {
+    fetchGuide();
+  }, [fetchGuide]);
+
+  const handleRegenerate = () => {
+    if (!hasFeature('repo:onboarding')) {
+      toast.error("🔒 Regenerating requires the PRO plan. Upgrade to unlock.");
+      return;
+    }
+    fetchGuide(true);
+  };
 
   if (!isOpen) return null;
 
@@ -177,12 +190,23 @@ export default function OnboardingModal({ repoId, isOpen, onClose }: OnboardingM
               <p className="text-xs text-gray-400 mt-0.5">AI-generated repository walkthrough</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition rounded-lg p-1.5 hover:bg-white/10"
-          >
-            <X size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRegenerate}
+              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#ff6b00] transition rounded-lg px-2.5 py-1.5 hover:bg-white/5 border border-transparent hover:border-[#ff6b00]/30"
+              disabled={loading}
+            >
+              <RefreshCw size={14} className={loading ? "animate-spin text-[#ff6b00]" : ""} />
+              {loading ? "Regenerating..." : "Regenerate"}
+            </button>
+            <div className="w-px h-4 bg-white/10 mx-1"></div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white transition rounded-lg p-1.5 hover:bg-white/10"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Content */}

@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import api from "@/lib/axios";
-import { X, Copy, Check, FileText, ZoomIn, ZoomOut, Maximize } from "lucide-react";
+import { X, Copy, Check, FileText, ZoomIn, ZoomOut, Maximize, RefreshCw } from "lucide-react";
+import toast from "react-hot-toast";
 import mermaid from "mermaid";
 import BorderGlow from "@/components/ui/BorderGlow";
+import { useSubscription } from "@/context/SubscriptionContext";
 
 interface DesignDocModalProps {
   repoId: string;
@@ -75,51 +77,60 @@ export default function DesignDocModal({ repoId, isOpen, onClose }: DesignDocMod
     });
   }, []);
 
-  useEffect(() => {
+  const { hasFeature } = useSubscription();
+
+  const fetchDesignDoc = useCallback(async (force = false) => {
     if (!isOpen) return;
+    setLoading(true);
+    setError(null);
+    if (force) setMermaidSyntax("");
+    try {
+      const res = await api.get(`/repos/${repoId}/design-doc${force ? "?force=true" : ""}`);
+      if (res.data.success && res.data.mermaid) {
+        let rawMermaid = res.data.mermaid;
 
-    const fetchDesignDoc = async () => {
-      setLoading(true);
-      setError(null);
-      setMermaidSyntax("");
-      try {
-        const res = await api.get(`/repos/${repoId}/design-doc`);
-        if (res.data.success && res.data.mermaid) {
-          let rawMermaid = res.data.mermaid;
-
-          if (
-            rawMermaid.includes("Mitorix AI is currently experiencing high load") ||
-            (!rawMermaid.includes("```") &&
-              !rawMermaid.trim().startsWith("graph") &&
-              !rawMermaid.trim().startsWith("flowchart"))
-          ) {
-            setError(rawMermaid);
-            setLoading(false);
-            return;
-          }
-
-          if (rawMermaid.includes("```mermaid")) {
-            rawMermaid = rawMermaid.split("```mermaid")[1].split("```")[0].trim();
-          } else if (rawMermaid.includes("```")) {
-            rawMermaid = rawMermaid.split("```")[1].trim();
-            if (rawMermaid.startsWith("mermaid")) {
-              rawMermaid = rawMermaid.substring(7).trim();
-            }
-          }
-          setMermaidSyntax(rawMermaid);
-        } else {
-          setError("Failed to generate design doc format.");
+        if (
+          rawMermaid.includes("Mitorix AI is currently experiencing high load") ||
+          (!rawMermaid.includes("```") &&
+            !rawMermaid.trim().startsWith("graph") &&
+            !rawMermaid.trim().startsWith("flowchart"))
+        ) {
+          setError(rawMermaid);
+          setLoading(false);
+          return;
         }
-      } catch (err: any) {
-        console.error("Error generating design doc:", err);
-        setError("Error: " + (err.response?.data?.message || err.message));
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchDesignDoc();
+        if (rawMermaid.includes("```mermaid")) {
+          rawMermaid = rawMermaid.split("```mermaid")[1].split("```")[0].trim();
+        } else if (rawMermaid.includes("```")) {
+          rawMermaid = rawMermaid.split("```")[1].trim();
+          if (rawMermaid.startsWith("mermaid")) {
+            rawMermaid = rawMermaid.substring(7).trim();
+          }
+        }
+        setMermaidSyntax(rawMermaid);
+      } else {
+        setError("Failed to generate design doc format.");
+      }
+    } catch (err: any) {
+      console.error("Error generating design doc:", err);
+      setError("Error: " + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
+    }
   }, [repoId, isOpen]);
+
+  useEffect(() => {
+    fetchDesignDoc();
+  }, [fetchDesignDoc]);
+
+  const handleRegenerate = () => {
+    if (!hasFeature('repo:design-doc')) {
+      toast.error("🔒 Regenerating requires the PRO plan. Upgrade to unlock.");
+      return;
+    }
+    fetchDesignDoc(true);
+  };
 
   useEffect(() => {
     if (mermaidSyntax && mermaidRef.current) {
@@ -170,12 +181,23 @@ export default function DesignDocModal({ repoId, isOpen, onClose }: DesignDocMod
             <FileText className="text-[#ff6b00]" size={20} />
             <h2 className="text-gray-100 font-semibold tracking-wide">System Design Architecture</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition rounded-lg p-1.5 hover:bg-white/10"
-          >
-            <X size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRegenerate}
+              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#ff6b00] transition rounded-lg px-2.5 py-1.5 hover:bg-white/5 border border-transparent hover:border-[#ff6b00]/30"
+              disabled={loading}
+            >
+              <RefreshCw size={14} className={loading ? "animate-spin text-[#ff6b00]" : ""} />
+              {loading ? "Regenerating..." : "Regenerate"}
+            </button>
+            <div className="w-px h-4 bg-white/10 mx-1"></div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white transition rounded-lg p-1.5 hover:bg-white/10"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Content */}

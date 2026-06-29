@@ -23,7 +23,8 @@ export const generateSystemDesignDoc = async (
     if (
       repo.systemDesignDoc &&
       repo.systemDesignDoc.includes("graph") &&
-      !repo.systemDesignDoc.includes("experiencing high load")
+      !repo.systemDesignDoc.includes("experiencing high load") &&
+      req.query.force !== "true"
     ) {
       return res.status(200).json({
         success: true,
