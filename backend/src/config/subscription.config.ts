@@ -129,15 +129,14 @@ export const PLAN_DETAILS: Record<Exclude<SubscriptionTier, "FREE">, PlanInfo> =
     currency: "INR",
     durationDays: 30,
     features: [
+      "Everything in FREE",
       "Up to 5 repositories",
       "Local folder/ZIP upload",
-      "Qdrant vector embeddings",
       "All 8 visualizations",
       "50 AI chat queries/day",
       "Unlimited semantic search",
       "Blast radius & impact analysis",
-      "Suggestions & action items",
-      "Export analysis data",
+      "Export Analysis Data",
     ],
   },
   PRO: {
@@ -148,8 +147,8 @@ export const PLAN_DETAILS: Record<Exclude<SubscriptionTier, "FREE">, PlanInfo> =
     currency: "INR",
     durationDays: 30,
     features: [
+      "Everything in BASIC",
       "Unlimited repositories",
-      "Everything in Basic",
       "Unlimited AI chat queries",
       "Voice call mode (STT + TTS)",
       "System design doc generation",

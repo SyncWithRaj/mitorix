@@ -38,7 +38,7 @@ const generateInvoicePDF = (
       doc.rect(0, 0, 612, 100).fill("#111111");
 
       // Header Text
-      doc.fontSize(28).fillColor("#ffffff").text("MITORIX", 50, 40, { continued: true }).fillColor("#ff6b00").text("AI");
+      doc.fontSize(28).fillColor("#ffffff").text("MITORI", 50, 40, { continued: true }).fillColor("#ff6b00").text("X");
       doc.fontSize(12).fillColor("#a1a1aa").text("RECEIPT / INVOICE", 400, 48, { align: "right" });
       
       // Move down below header
@@ -50,9 +50,9 @@ const generateInvoicePDF = (
       doc.fontSize(10).fillColor("#71717a")
         .text("FROM:", 50, topSectionY)
         .fillColor("#18181b").font("Helvetica-Bold")
-        .text("MitorixAI Inc.", 50, topSectionY + 15)
+        .text("Mitorix Inc.", 50, topSectionY + 15)
         .font("Helvetica").fillColor("#52525b")
-        .text("support@mitorix.ai", 50, topSectionY + 30);
+        .text("ribadiyaraj18@gmail.com", 50, topSectionY + 30);
       
       doc.fontSize(10).fillColor("#71717a")
         .text("INVOICE DETAILS:", 350, topSectionY)
@@ -83,7 +83,7 @@ const generateInvoicePDF = (
       
       // Table Row
       doc.font("Helvetica").fontSize(11).fillColor("#18181b");
-      doc.text(`MitorixAI ${planName} Subscription`, 60, tableTop + 45);
+      doc.text(`Mitorix ${planName} Subscription`, 60, tableTop + 45);
       doc.font("Helvetica-Bold").text(`Rs ${(amountInPaise / 100).toFixed(2)}`, 450, tableTop + 45, { width: 100, align: "right" });
       
       doc.moveTo(50, tableTop + 75).lineTo(562, tableTop + 75).strokeColor("#e4e4e7").stroke();
@@ -94,7 +94,7 @@ const generateInvoicePDF = (
       doc.fillColor("#ff6b00").text(`Rs ${(amountInPaise / 100).toFixed(2)}`, 450, tableTop + 95, { width: 100, align: "right" });
 
       doc.moveDown(6);
-      doc.font("Helvetica").fontSize(10).fillColor("#a1a1aa").text("Thank you for choosing MitorixAI. If you have any questions, please contact support@mitorix.ai.", 50, doc.y, { align: "center", width: 512 });
+      doc.font("Helvetica").fontSize(10).fillColor("#a1a1aa").text("Thank you for choosing Mitorix. If you have any questions, please contact ribadiyaraj18@gmail.com.", 50, doc.y, { align: "center", width: 512 });
 
       doc.end();
     } catch (err) {
@@ -125,7 +125,7 @@ export const sendSubscriptionReceipt = async (
           </div>
           <div style="padding: 40px 30px;">
             <h2 style="margin-top: 0; color: #18181b;">Hi ${user.name},</h2>
-            <p style="color: #555555; font-size: 16px;">Thank you for upgrading to <strong>MitorixAI ${plan.name}</strong>! Your payment was successful and your account has been fully upgraded.</p>
+            <p style="color: #555555; font-size: 16px;">Thank you for upgrading to <strong>Mitorix ${plan.name}</strong>! Your payment was successful and your account has been fully upgraded.</p>
             
             <div style="background-color: #fafafa; border: 1px solid #f4f4f5; border-radius: 8px; padding: 25px; margin: 25px 0;">
               <h3 style="margin-top: 0; color: #ff6b00; font-size: 16px;">Your ${plan.name} Capabilities:</h3>
@@ -138,16 +138,16 @@ export const sendSubscriptionReceipt = async (
             <p style="color: #555555; font-size: 15px;">Ready to dive in? <a href="https://www.mitorix.site/dashboard" style="color: #ff6b00; text-decoration: none; font-weight: 600;">Go to your Dashboard &rarr;</a></p>
           </div>
           <div style="padding: 20px; text-align: center; background-color: #fafafa; border-top: 1px solid #f4f4f5;">
-            <p style="margin: 0; color: #a1a1aa; font-size: 12px;">This is an automated message from MitorixAI.</p>
+            <p style="margin: 0; color: #a1a1aa; font-size: 12px;">This is an automated message from Mitorix.</p>
           </div>
         </div>
       </div>
     `;
 
     await transporter.sendMail({
-      from: `"MitorixAI Support" <${process.env.SMTP_USER}>`,
+      from: `"Mitorix Support" <${process.env.SMTP_USER}>`,
       to: user.email,
-      subject: `Welcome to MitorixAI ${plan.name} - Receipt Attached`,
+      subject: `Welcome to Mitorix ${plan.name} - Receipt Attached`,
       html,
       attachments: [
         {
@@ -201,7 +201,7 @@ export const sendContactEmail = async (
           </div>
         </div>
         <div style="padding: 20px; text-align: center; background-color: #fafafa; border-top: 1px solid #f4f4f5;">
-          <p style="margin: 0; color: #a1a1aa; font-size: 12px;">This is an automated message from the MitorixAI Contact Form.</p>
+          <p style="margin: 0; color: #a1a1aa; font-size: 12px;">This is an automated message from the Mitorix Contact Form.</p>
         </div>
       </div>
     </div>
@@ -211,7 +211,7 @@ export const sendContactEmail = async (
     from: `"${firstName} ${lastName}" <${email}>`,
     replyTo: email,
     to: targetEmail,
-    subject: `MitorixAI Contact Inquiry from ${firstName} ${lastName}`,
+    subject: `Mitorix Contact Inquiry from ${firstName} ${lastName}`,
     html,
   });
 };
