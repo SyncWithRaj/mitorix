@@ -32,19 +32,28 @@ export default function Footer() {
             </p>
             <div className="flex space-x-4 pt-2">
               <a
-                href="#"
+                href="https://github.com/SyncWithRaj"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub"
                 className="w-9 h-9 flex items-center justify-center rounded-full bg-[#050505] border border-[#1a1a1a] text-[#737373] hover:bg-[#0a0a0a] hover:text-[#e5e5e5] hover:border-[#ff6b00]/50 transition-all duration-300"
               >
                 <Github size={16} />
               </a>
               <a
-                href="#"
+                href="https://x.com/ribadiya_rajj"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="X (Twitter)"
                 className="w-9 h-9 flex items-center justify-center rounded-full bg-[#050505] border border-[#1a1a1a] text-[#737373] hover:bg-[#0a0a0a] hover:text-[#e5e5e5] hover:border-[#ff6b00]/50 transition-all duration-300"
               >
                 <Twitter size={16} />
               </a>
               <a
-                href="#"
+                href="https://www.linkedin.com/in/raj-ribadiya/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
                 className="w-9 h-9 flex items-center justify-center rounded-full bg-[#050505] border border-[#1a1a1a] text-[#737373] hover:bg-[#0a0a0a] hover:text-[#e5e5e5] hover:border-[#ff6b00]/50 transition-all duration-300"
               >
                 <Linkedin size={16} />
