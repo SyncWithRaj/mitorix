@@ -8,9 +8,6 @@ import { Repository } from "../models/repo.model.js";
 import { scanCodeFiles } from "../modules/indexer/fileScanner.js";
 import { processRepositoryParsing } from "../services/parser.service.js";
 
-import { CodeEntity } from "../models/codeEntity.model.js";
-import { CodeRelationship } from "../models/relationship.model.js";
-import { FileMetadata } from "../models/fileMetadata.model.js";
 import { FileContent } from "../models/fileContent.model.js";
 import { cleanupTempRepo, getTempRepoPath } from "../utils/cleanup.util.js";
 import logger from "../lib/logger.js";
@@ -246,9 +243,6 @@ export async function parseRepoController(req: Request, res: Response, next: Nex
     await repo.save();
     logger.info({ repoId: id }, "Status set to indexing");
 
-    await CodeEntity.deleteMany({ repoId: repo._id });
-    await CodeRelationship.deleteMany({ repoId: repo._id });
-    await FileMetadata.deleteMany({ repoId: repo._id });
     logger.debug({ repoId: id }, "Old data cleared from MongoDB");
 
     const scannedFiles = scanCodeFiles(repoPath);
