@@ -7,6 +7,8 @@ export interface IFileContent extends Document {
   fileName: string;
   isDirectory: boolean;
   content: string | null;
+  /** Encoding of the content field: 'plain' (raw text) or 'gzip' (gzip + base64) */
+  contentEncoding: "plain" | "gzip";
   fileSize: number;
 }
 
@@ -24,7 +26,7 @@ const fileContentSchema = new Schema<IFileContent>(
     },
     fileName: {
       type: String,
-      required: true,
+      required: false, // Derivable from relativePath, kept for backward compat
     },
     isDirectory: {
       type: Boolean,
@@ -33,6 +35,11 @@ const fileContentSchema = new Schema<IFileContent>(
     content: {
       type: String,
       default: null,
+    },
+    contentEncoding: {
+      type: String,
+      enum: ["plain", "gzip"],
+      default: "plain",
     },
     fileSize: {
       type: Number,
