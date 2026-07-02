@@ -3,8 +3,17 @@ import axios from "axios";
 import CircuitBreaker from "opossum";
 import logger from "../lib/logger.js";
 
+// ── API Key Parsing ──
+const rawKeys = process.env.GOOGLE_API_KEY || "";
+export const geminiApiKeys = rawKeys.split(",").map(k => k.trim()).filter(Boolean);
+
+if (geminiApiKeys.length === 0) {
+  logger.warn("No GOOGLE_API_KEY provided in .env");
+}
+
 // ── Active provider: Gemini ──
-export const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+// We use the first key as the default for the main LLM instance
+export const genAI = new GoogleGenerativeAI(geminiApiKeys[0] || "");
 
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",

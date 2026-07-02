@@ -51,7 +51,7 @@ export class VectorInitService {
 
     await this.client.createCollection(COLLECTION, {
       vectors: {
-        size: 3072,
+        size: 1024, // Cohere embed-english-v3.0 outputs 1024-dimensional vectors
         distance: "Cosine",
       },
       hnsw_config: {
