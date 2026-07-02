@@ -8,7 +8,7 @@ import { FileMetadata } from "../models/fileMetadata.model.js";
 import { RepoParsedData, type IParsedEntity, type IParsedRelationship, type IParsedFileMetadata } from "../models/repoParsedData.model.js";
 import logger from "../lib/logger.js";
 
-dotenv.config({ path: "../../.env" });
+dotenv.config({ path: "../.env" });
 
 const qdrant = new QdrantClient({
   url: process.env.QDRANT_URL || "http://localhost:6333",
@@ -19,7 +19,7 @@ const COLLECTION = "repo_entities";
 
 async function migrate() {
   logger.info("Connecting to MongoDB...");
-  await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/repolens");
+  await mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/repolens");
   logger.info("Connected to MongoDB.");
 
   const repos = await Repository.find({}).lean();
