@@ -4,6 +4,28 @@ import axios from "axios";
 
 dotenv.config();
 
+const cohereApiKeys = (process.env.COHERE_API_KEY || "")
+  .split(",")
+  .map((k) => k.trim())
+  .filter((k) => k.length > 0);
+
+if (cohereApiKeys.length === 0) {
+  logger.warn("No COHERE_API_KEY provided in .env");
+}
+
+let currentKeyIndex = 0;
+
+const rotateKey = () => {
+  if (cohereApiKeys.length <= 1) return;
+  currentKeyIndex = (currentKeyIndex + 1) % cohereApiKeys.length;
+  logger.warn(`[API KEY ROTATOR] Switched to Cohere API Key #${currentKeyIndex + 1} of ${cohereApiKeys.length}`);
+};
+
+const getApiKey = () => {
+  if (cohereApiKeys.length === 0) throw new Error("COHERE_API_KEY is not defined in .env");
+  return cohereApiKeys[currentKeyIndex];
+};
+
 /**
  * Gemini embedding limit is 2048 tokens.
  * ~1 token ≈ 4 chars for code → safe limit is ~8000 chars.
@@ -37,8 +59,7 @@ function truncateForEmbedding(text: string): string {
 export async function embedDirect(text: string, attempt = 1): Promise<number[]> {
   try {
     const truncated = truncateForEmbedding(text);
-    const apiKey = process.env.COHERE_API_KEY;
-    if (!apiKey) throw new Error("COHERE_API_KEY is not defined in .env");
+    const apiKey = getApiKey();
 
     const response = await axios.post(
       "https://api.cohere.ai/v1/embed",
@@ -57,9 +78,16 @@ export async function embedDirect(text: string, attempt = 1): Promise<number[]> 
     
     return response.data.embeddings[0];
   } catch (err: any) {
-    if (attempt <= 3 && err.response && err.response.status === 429) {
-      logger.warn(`429 Too Many Requests. Waiting 5s before retrying... (Attempt ${attempt}/3)`);
-      await new Promise(resolve => setTimeout(resolve, 5000));
+    const maxAttempts = Math.max(3, cohereApiKeys.length * 3);
+    if (attempt < maxAttempts && err.response && err.response.status === 429) {
+      rotateKey();
+      logger.warn(`429 Too Many Requests. Instantly retrying with new key... (Attempt ${attempt}/${maxAttempts})`);
+      
+      if (attempt % cohereApiKeys.length === 0) {
+        logger.warn(`All ${cohereApiKeys.length} API keys currently exhausted! Sleeping for 15s before continuing...`);
+        await new Promise(resolve => setTimeout(resolve, 15000));
+      }
+      
       return embedDirect(text, attempt + 1);
     }
     throw err;
@@ -77,24 +105,18 @@ export async function embedBatch(
 
   const results: (number[] | null)[] = new Array(texts.length).fill(null);
   const BATCH_SIZE = 90; // Safe batch size for Cohere (limit is 96)
-  const apiKey = process.env.COHERE_API_KEY;
-  if (!apiKey) throw new Error("COHERE_API_KEY is not defined in .env");
 
   for (let i = 0; i < texts.length; i += BATCH_SIZE) {
-    if (i > 0) {
-      logger.info(`Throttling: Waiting 5 seconds before batch ${Math.floor(i/BATCH_SIZE) + 1}...`);
-      await new Promise(resolve => setTimeout(resolve, 5000));
-    }
-
     const chunk = texts.slice(i, i + BATCH_SIZE);
     const indices = Array.from({ length: chunk.length }, (_, idx) => i + idx);
     const requests = chunk.map(text => truncateForEmbedding(text));
     
     let attempt = 1;
-    const maxAttempts = 5;
+    const maxAttempts = Math.max(5, cohereApiKeys.length * 5);
     
     while (attempt <= maxAttempts) {
       try {
+        const apiKey = getApiKey();
         const response = await axios.post(
           "https://api.cohere.ai/v1/embed",
           {
@@ -117,8 +139,14 @@ export async function embedBatch(
         break; // Success, break the retry loop
       } catch (err: any) {
         if (attempt < maxAttempts && err.response && err.response.status === 429) {
-          logger.warn(`429 Too Many Requests in batch ${Math.floor(i/BATCH_SIZE) + 1}. Waiting 15s before retrying... (Attempt ${attempt}/${maxAttempts})`);
-          await new Promise(resolve => setTimeout(resolve, 15000));
+          rotateKey();
+          logger.warn(`429 Too Many Requests in batch ${Math.floor(i/BATCH_SIZE) + 1}. Instantly retrying with new key... (Attempt ${attempt}/${maxAttempts})`);
+          
+          if (attempt % cohereApiKeys.length === 0) {
+            logger.warn(`All ${cohereApiKeys.length} API keys currently exhausted! Sleeping for 15s before continuing...`);
+            await new Promise(resolve => setTimeout(resolve, 15000));
+          }
+          
           attempt++;
         } else {
            logger.error({ err: err.response?.data || err.message, batchIndex: Math.floor(i/BATCH_SIZE) }, "Batch embedding failed");

@@ -29,7 +29,7 @@ export const embeddingEvents = new EventEmitter();
 //                    Matches OLLAMA_NUM_PARALLEL=4 in docker-compose.
 // QDRANT_UPLOAD_BATCH: Points per Qdrant upsert call.
 // ─────────────────────────────────────────────────────────────────────────────
-const EMBED_BATCH_SIZE = 50;
+const EMBED_BATCH_SIZE = 90;
 const EMBED_CONCURRENCY = 1;
 const QDRANT_UPLOAD_BATCH = 200;
 
