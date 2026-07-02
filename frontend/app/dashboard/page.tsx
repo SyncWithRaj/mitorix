@@ -185,9 +185,18 @@ export default function Dashboard() {
       const res = await api.get("/repos");
       const fetchedRepos = res.data.repos || [];
       setRepos(fetchedRepos);
-    } catch (err) {
+    } catch (err: any) {
+      // If the backend is restarting (Network Error), don't wipe the UI or throw scary errors.
+      if (err.message === "Network Error" || err.code === "ECONNREFUSED") {
+        console.warn("Backend temporarily unreachable (likely restarting). Will retry automatically.");
+        return;
+      }
+      
       console.error("Fetch repos error:", err);
-      setRepos([]);
+      // Only clear repos on genuine auth/access errors, not transient network drops
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setRepos([]);
+      }
     }
   }, []);
 
