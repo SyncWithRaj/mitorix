@@ -130,14 +130,10 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
       logger.info({ repoId }, "Generating AST");
 
       // Clean up old data to prevent duplicates on re-analysis
-      const { CodeEntity } = await import("../models/codeEntity.model.js");
-      const { CodeRelationship } = await import("../models/relationship.model.js");
-      const { FileMetadata } = await import("../models/fileMetadata.model.js");
+      const { RepoParsedData } = await import("../models/repoParsedData.model.js");
       const { FileContent } = await import("../models/fileContent.model.js");
 
-      await CodeEntity.deleteMany({ repoId });
-      await CodeRelationship.deleteMany({ repoId });
-      await FileMetadata.deleteMany({ repoId });
+      await RepoParsedData.deleteMany({ repoId });
       await FileContent.deleteMany({ repoId });
 
       // scanCodeFiles automatically ignores node_modules, .git, etc.

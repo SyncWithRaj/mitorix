@@ -7,11 +7,14 @@ import logger from "./lib/logger.js";
 
 // Import workers so they start with the server process
 import "./workers/repoWorker.js";
+import { startCleanupWorker } from "./workers/cleanupWorker.js";
 
 const port = process.env.PORT || 3000;
 
 const startServer = async () => {
   await connectDB();
+  
+  startCleanupWorker();
 
   app.listen(port, () => {
     logger.info({ port }, `Mitorix server is running`);
