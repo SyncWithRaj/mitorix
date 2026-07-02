@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 
-import { FileMetadata } from "../models/fileMetadata.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
+import { expandFileMetadata } from "../utils/repoParsedData.helpers.js";
 import logger from "../lib/logger.js";
 import { getOwnedRepositoryOrThrow, ensureValidRepoId } from "../utils/repositoryAccess.util.js";
 
@@ -10,7 +11,11 @@ export async function getRepoFilesController(req: Request, res: Response, next: 
 
     await getOwnedRepositoryOrThrow(repoId, req.user);
 
-    const files = await FileMetadata.find({ repoId }).sort({ filePath: 1 }).lean();
+    const parsedData = await RepoParsedData.findOne({ repoId }).lean();
+    const files = parsedData ? expandFileMetadata(parsedData as any) : [];
+
+    // Sort by filePath (same as old .sort({ filePath: 1 }))
+    files.sort((a, b) => a.filePath.localeCompare(b.filePath));
 
     return res.status(200).json({
       success: true,

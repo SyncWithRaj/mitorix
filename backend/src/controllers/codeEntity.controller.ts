@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
-import { CodeEntity } from "../models/codeEntity.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
+import { expandEntities } from "../utils/repoParsedData.helpers.js";
 import { getOwnedRepositoryOrThrow, ensureValidRepoId } from "../utils/repositoryAccess.util.js";
 
 export async function getRepositoryEntities(req: Request, res: Response, next: NextFunction) {
@@ -9,27 +10,28 @@ export async function getRepositoryEntities(req: Request, res: Response, next: N
 
     await getOwnedRepositoryOrThrow(repoId, req.user);
 
-    const query: any = { repoId };
+    const parsedData = await RepoParsedData.findOne({ repoId }).lean();
+    let entities = parsedData ? expandEntities(parsedData as any) : [];
 
+    // Apply type filter
     if (type) {
-      query.type = type;
+      entities = entities.filter((e) => e.type === type);
     }
 
+    const total = entities.length;
     const pageNumber = parseInt(page as string);
     const limitNumber = parseInt(limit as string);
     const skip = (pageNumber - 1) * limitNumber;
 
-    const [entities, total] = await Promise.all([
-      CodeEntity.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNumber).lean(),
-      CodeEntity.countDocuments(query),
-    ]);
+    // Sort by entityIndex (creation order) descending and paginate
+    const paginatedEntities = entities.slice(skip, skip + limitNumber);
 
     return res.status(200).json({
       success: true,
       total,
       page: pageNumber,
       totalPages: Math.ceil(total / limitNumber),
-      data: entities,
+      data: paginatedEntities,
     });
   } catch (error) {
     next(error);

@@ -1,7 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
-import { FileMetadata } from "../models/fileMetadata.model.js";
-import { CodeRelationship } from "../models/relationship.model.js";
-import { CodeEntity } from "../models/codeEntity.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
+import {
+  expandEntities,
+  expandRelationships,
+  expandFileMetadata,
+} from "../utils/repoParsedData.helpers.js";
 import { Repository, touchRepository } from "../models/repo.model.js";
 import path from "path";
 import logger from "../lib/logger.js";
@@ -20,14 +23,12 @@ export const getRepositoryGraph = async (
 
     await touchRepository(repoId);
 
-    // Fetch all files metadata for this repo
-    const files = await FileMetadata.find({ repoId }).lean();
+    // ── Single query replaces 3 parallel find() calls ──
+    const parsedData = await RepoParsedData.findOne({ repoId }).lean();
 
-    // Fetch all relationships for this repo
-    const relationships = await CodeRelationship.find({ repoId }).lean();
-
-    // Fetch all code entities for this repo
-    const entities = await CodeEntity.find({ repoId }).lean();
+    const files = parsedData ? expandFileMetadata(parsedData as any) : [];
+    const relationships = parsedData ? expandRelationships(parsedData as any) : [];
+    const entities = parsedData ? expandEntities(parsedData as any) : [];
 
     const nodes: any[] = [];
     const edges: any[] = [];
@@ -125,7 +126,6 @@ export const getRepositoryGraph = async (
         val: 5, // smaller base size for code entities
         group: entity.filePath.split("/")[0] || "root",
         metadata: {
-          content: entity.content,
           parameters: entity.parameters,
           returnType: entity.returnType,
           startLine: entity.startLine,
@@ -145,7 +145,6 @@ export const getRepositoryGraph = async (
       }
     }
 
-    // 3. Add structural Code Dependencies (imports, calls, etc.)
     // 3. Resolve and Add structural Code Dependencies (imports, calls, etc.)
     const fnToFile: Record<string, string> = Object.create(null);
     for (const entity of entities) {

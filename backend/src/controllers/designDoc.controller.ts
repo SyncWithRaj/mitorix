@@ -1,7 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
-import { FileMetadata } from "../models/fileMetadata.model.js";
-import { CodeRelationship } from "../models/relationship.model.js";
-import { CodeEntity } from "../models/codeEntity.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
+import {
+  expandEntities,
+  expandRelationships,
+  expandFileMetadata,
+} from "../utils/repoParsedData.helpers.js";
 import { Repository, touchRepository } from "../models/repo.model.js";
 import { generateAnswer } from "../services/llm.service.js";
 import logger from "../lib/logger.js";
@@ -32,10 +35,17 @@ export const generateSystemDesignDoc = async (
       });
     }
 
-    // Fetch limited data to avoid exceeding context limits
-    const files = await FileMetadata.find({ repoId }).limit(100).lean();
-    const entities = await CodeEntity.find({ repoId }).limit(200).lean();
-    const relationships = await CodeRelationship.find({ repoId }).limit(200).lean();
+    // ── Single query replaces 3 separate find().limit() calls ──
+    const parsedData = await RepoParsedData.findOne({ repoId }).lean();
+
+    const allFiles = parsedData ? expandFileMetadata(parsedData as any) : [];
+    const allEntities = parsedData ? expandEntities(parsedData as any) : [];
+    const allRelationships = parsedData ? expandRelationships(parsedData as any) : [];
+
+    // Apply limits in JS (same as old .limit(100/200))
+    const files = allFiles.slice(0, 100);
+    const entities = allEntities.slice(0, 200);
+    const relationships = allRelationships.slice(0, 200);
 
     let prompt = `Generate a Mermaid.js flowchart (graph TD) that represents the system architecture of the repository '${repo.name}'.\n\n`;
     prompt += `### Files:\n`;
