@@ -33,7 +33,8 @@ export const generateSystemDesignDoc = async (
       // Sanitize cached doc to fix previously saved LLM hallucinations
       cachedMermaid = cachedMermaid
         .replace(/-->\|([^|]+)\|>/g, '-->|"$1"|')
-        .replace(/-->\s*:\s*(.+)/g, '-- "$1" -->');
+        .replace(/-->\s*:\s*(.+)/g, '-- "$1" -->')
+        .replace(/(?<!%)%\s+(.*)/g, '%% $1');
 
       return res.status(200).json({
         success: true,
@@ -79,14 +80,16 @@ IMPORTANT MERMAID FLOWCHART RULES:
 5. CRITICAL: DO NOT use the colon syntax for flowchart labels (e.g., NEVER do \`A --> B: Label\`).
 6. CRITICAL: DO NOT add any inline styles, colors, or classes to the nodes. Keep the diagram purely structural so it uses the default theme.
 7. CRITICAL: NEVER use invalid trailing arrowheads on text labels (e.g., NEVER do \`A -->|uses|> B\`). Use \`A -->|uses| B\` instead.
-8. Ensure all parentheses, brackets, and quotes are properly balanced.`;
+8. Ensure all parentheses, brackets, and quotes are properly balanced.
+9. CRITICAL: For comments in Mermaid, you MUST use \`%%\`. A single \`%\` is invalid syntax and will cause a parse error.`;
 
     let mermaidMarkdown = await generateAnswer(prompt);
 
     // Sanitize common LLM hallucinations
     mermaidMarkdown = mermaidMarkdown
       .replace(/-->\|([^|]+)\|>/g, '-->|"$1"|') // Fixes A -->|uses|> B
-      .replace(/-->\s*:\s*(.+)/g, '-- "$1" -->'); // Fixes A --> B: label (if it still does it)
+      .replace(/-->\s*:\s*(.+)/g, '-- "$1" -->') // Fixes A --> B: label (if it still does it)
+      .replace(/(?<!%)%\s+(.*)/g, '%% $1'); // Fixes single % comments
 
     logger.debug({ repoId, mermaidLength: mermaidMarkdown.length }, "Mermaid diagram generated");
 

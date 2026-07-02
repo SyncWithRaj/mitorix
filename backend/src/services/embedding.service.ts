@@ -34,13 +34,25 @@ function truncateForEmbedding(text: string): string {
 /**
  * Embed a single text using Gemini's native embedContent endpoint.
  */
-export async function embedDirect(text: string): Promise<number[]> {
-  const truncated = truncateForEmbedding(text);
-
-  const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
-  const result = await model.embedContent(truncated);
-
-  return result.embedding.values;
+export async function embedDirect(text: string, attempt = 1): Promise<number[]> {
+  try {
+    const truncated = truncateForEmbedding(text);
+    const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
+    const result = await model.embedContent(truncated);
+    return result.embedding.values;
+  } catch (err: any) {
+    if (attempt <= 3 && (err.status === 429 || (err.message && err.message.includes("429 Too Many Requests")))) {
+      let delayMs = 60000;
+      const match = err.message.match(/retry in (\d+(?:\.\d+)?)s/);
+      if (match) {
+        delayMs = parseFloat(match[1]) * 1000 + 1000; // Add 1s buffer
+      }
+      logger.warn(`429 Too Many Requests. Retrying in ${delayMs}ms... (Attempt ${attempt}/3)`);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+      return embedDirect(text, attempt + 1);
+    }
+    throw err;
+  }
 }
 
 /**
@@ -57,28 +69,47 @@ export async function embedBatch(
   if (texts.length === 0) return [];
 
   const results: (number[] | null)[] = new Array(texts.length).fill(null);
-  let nextIndex = 0;
-  let errorOccurred: Error | null = null;
+  const BATCH_SIZE = 100; // Gemini max batch size
+  
+  const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
 
-  async function worker() {
-    while (nextIndex < texts.length && !errorOccurred) {
-      const idx = nextIndex++;
-      if (idx >= texts.length) break;
-
+  for (let i = 0; i < texts.length; i += BATCH_SIZE) {
+    const chunk = texts.slice(i, i + BATCH_SIZE);
+    const indices = Array.from({ length: chunk.length }, (_, idx) => i + idx);
+    
+    const requests = chunk.map(text => ({
+      content: { role: "user", parts: [{ text: truncateForEmbedding(text) }] }
+    }));
+    
+    let attempt = 1;
+    const maxAttempts = 5;
+    
+    while (attempt <= maxAttempts) {
       try {
-        results[idx] = await embedDirect(texts[idx]!);
+        const response = await model.batchEmbedContents({ requests });
+        
+        response.embeddings.forEach((emb, idx) => {
+          results[indices[idx]] = emb.values;
+        });
+        
+        break; // Success, break the retry loop
       } catch (err: any) {
-        errorOccurred = err;
-        logger.error({ err, textIndex: idx }, "Concurrent embed worker failed");
-        throw err;
+        if (attempt < maxAttempts && (err.status === 429 || (err.message && err.message.includes("429 Too Many Requests")))) {
+          let delayMs = 60000;
+          const match = err.message.match(/retry in (\d+(?:\.\d+)?)s/);
+          if (match) {
+            delayMs = parseFloat(match[1]) * 1000 + 1000;
+          }
+          logger.warn(`429 Too Many Requests in batch ${Math.floor(i/BATCH_SIZE) + 1}. Retrying in ${delayMs}ms... (Attempt ${attempt}/${maxAttempts})`);
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          attempt++;
+        } else {
+           logger.error({ err, batchIndex: Math.floor(i/BATCH_SIZE) }, "Batch embedding failed");
+           throw err;
+        }
       }
     }
   }
-
-  // Launch concurrent workers — cap at actual text count
-  const workerCount = Math.min(concurrency, texts.length);
-  const workers = Array.from({ length: workerCount }, () => worker());
-  await Promise.all(workers);
 
   // Verify all results are populated
   for (let i = 0; i < results.length; i++) {
