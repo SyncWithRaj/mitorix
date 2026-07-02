@@ -21,23 +21,39 @@ const callGroqCompletion = async (messages: Array<{ role: string; content: strin
   
   logger.info({ model: GROQ_MODEL }, "Routing LLM request to Groq fallback");
 
-  const res = await axios.post(
-    `https://api.groq.com/openai/v1/chat/completions`,
-    {
-      model: GROQ_MODEL,
-      messages,
-      temperature: 0.1,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${GROQ_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      timeout: 45000,
+  // Groq has strict payload/token limits. Truncate massive prompts.
+  const safeMessages = messages.map(msg => {
+    if (msg.content.length > 24000) {
+      return { ...msg, content: msg.content.substring(0, 24000) + "\n\n[Content truncated due to length limits]" };
     }
-  );
+    return msg;
+  });
 
-  return res.data?.choices?.[0]?.message?.content || "No response from Groq fallback.";
+  try {
+    const res = await axios.post(
+      `https://api.groq.com/openai/v1/chat/completions`,
+      {
+        model: GROQ_MODEL,
+        messages: safeMessages,
+        temperature: 0.1,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        timeout: 45000,
+      }
+    );
+
+    return res.data?.choices?.[0]?.message?.content || "No response from Groq fallback.";
+  } catch (error: any) {
+    // Prevent massive Axios error objects from flooding the logs
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Groq API Error: ${error.response?.status} - ${error.response?.statusText || error.message}`);
+    }
+    throw error;
+  }
 };
 
 // ── Legacy single-shot call (used by design docs, diagrams, etc.) ──

@@ -90,8 +90,8 @@ async function seed() {
     success("Old seed data cleaned");
   }
 
-  // 4. Determine the test project path
-  const testProjectPath = path.resolve(__dirname, "test_project");
+  // 4. Determine the test project path (use the backend/src directory itself as a realistic test case)
+  const testProjectPath = path.resolve(__dirname, "../../../");
   info(`Using test project at: ${testProjectPath}`);
 
   // 5. Create or update repository record
@@ -129,17 +129,17 @@ async function seed() {
   const result: any = await processRepositoryParsing(repoId, filePaths);
   success(`Parsed ${result.totalEntities} entities and ${result.totalRelationships} relationships`);
 
-  // 8. Generate Vector Embeddings
-  info("Generating vector embeddings (this might take a few moments)...");
-  const { embedRepository } = await import("../../services/embedRepository.service.js");
-  await embedRepository(repoId);
-  success("Vector embeddings generated successfully");
+  // 8. Generate Vector Embeddings (SKIPPED)
+  info("Skipping vector embeddings generation (to avoid rate limits). You can embed manually from the dashboard.");
+  // const { embedRepository } = await import("../../services/embedRepository.service.js");
+  // await embedRepository(repoId);
+  // success("Vector embeddings generated successfully");
 
   // 9. Update repo status
   repo.status = "indexed";
-  repo.isEmbedded = true;
+  repo.isEmbedded = false; // User will embed manually from dashboard
   await repo.save();
-  success("Repository status set to 'indexed' and 'isEmbedded'");
+  success("Repository status set to 'indexed' (embedding deferred)");
 
   // 10. Summary
   const parsedData = await RepoParsedData.findOne({ repoId: repo._id }).lean();

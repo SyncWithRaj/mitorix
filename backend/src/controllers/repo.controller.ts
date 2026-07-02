@@ -6,8 +6,7 @@ import path from "path";
 import { scanCodeFiles } from "../modules/indexer/fileScanner.js";
 import { processRepositoryParsing } from "../services/parser.service.js";
 import { Repository, touchRepository } from "../models/repo.model.js";
-import { CodeEntity } from "../models/codeEntity.model.js";
-import { CodeRelationship } from "../models/relationship.model.js";
+
 import { FileContent } from "../models/fileContent.model.js";
 import { RepoParsedData } from "../models/repoParsedData.model.js";
 import { expandFileMetadata } from "../utils/repoParsedData.helpers.js";
