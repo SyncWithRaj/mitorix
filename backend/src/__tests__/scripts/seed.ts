@@ -17,9 +17,7 @@ dotenv.config({ path: path.join(repoRoot, ".env") } as any);
 
 import { User } from "../../models/auth.model.js";
 import { Repository } from "../../models/repo.model.js";
-import { CodeEntity } from "../../models/codeEntity.model.js";
-import { CodeRelationship } from "../../models/relationship.model.js";
-import { FileMetadata } from "../../models/fileMetadata.model.js";
+import { RepoParsedData } from "../../models/repoParsedData.model.js";
 import { FileContent } from "../../models/fileContent.model.js";
 import { scanCodeFiles } from "../../modules/indexer/fileScanner.js";
 import { processRepositoryParsing, saveRepoFilesToDB } from "../../services/parser.service.js";
@@ -87,9 +85,7 @@ async function seed() {
   if (repo) {
     warn("Seed repository already exists — cleaning old data before re-seeding...");
     const repoId = repo._id.toString();
-    await CodeEntity.deleteMany({ repoId: repo._id });
-    await CodeRelationship.deleteMany({ repoId: repo._id });
-    await FileMetadata.deleteMany({ repoId: repo._id });
+    await RepoParsedData.deleteMany({ repoId: repo._id });
     await FileContent.deleteMany({ repoId: repo._id });
     success("Old seed data cleaned");
   }
@@ -146,8 +142,9 @@ async function seed() {
   success("Repository status set to 'indexed' and 'isEmbedded'");
 
   // 10. Summary
-  const entityCount = await CodeEntity.countDocuments({ repoId: repo._id });
-  const relCount = await CodeRelationship.countDocuments({ repoId: repo._id });
+  const parsedData = await RepoParsedData.findOne({ repoId: repo._id }).lean();
+  const entityCount = parsedData ? parsedData.entities.length : 0;
+  const relCount = parsedData ? parsedData.relationships.length : 0;
 
   console.log(`\n${BOLD}${GREEN}✔ Seed complete!${NC}`);
   console.log(`  User:          ${DEMO_USER.username} (${DEMO_USER.githubId})`);

@@ -21,9 +21,7 @@ dotenv.config({ path: path.join(repoRoot, ".env") } as any);
 
 import { User } from "../../models/auth.model.js";
 import { Repository } from "../../models/repo.model.js";
-import { CodeEntity } from "../../models/codeEntity.model.js";
-import { CodeRelationship } from "../../models/relationship.model.js";
-import { FileMetadata } from "../../models/fileMetadata.model.js";
+import { RepoParsedData } from "../../models/repoParsedData.model.js";
 import { FileContent } from "../../models/fileContent.model.js";
 import ChatHistory from "../../models/chatHistory.model.js";
 
@@ -75,17 +73,9 @@ async function unseed() {
   if (repo) {
     const repoId = repo._id;
 
-    info("Removing code entities...");
-    const entitiesResult = await CodeEntity.deleteMany({ repoId });
-    success(`Deleted ${entitiesResult.deletedCount} code entities`);
-
-    info("Removing relationships...");
-    const relsResult = await CodeRelationship.deleteMany({ repoId });
-    success(`Deleted ${relsResult.deletedCount} relationships`);
-
-    info("Removing file metadata...");
-    const metaResult = await FileMetadata.deleteMany({ repoId });
-    success(`Deleted ${metaResult.deletedCount} file metadata records`);
+    info("Removing parsed repository data...");
+    const parsedDataResult = await RepoParsedData.deleteMany({ repoId });
+    success(`Deleted ${parsedDataResult.deletedCount} parsed repo data records`);
 
     info("Removing file contents...");
     const filesResult = await FileContent.deleteMany({ repoId });
