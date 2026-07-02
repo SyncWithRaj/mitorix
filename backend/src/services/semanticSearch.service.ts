@@ -15,8 +15,9 @@
 
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { embedDirect } from "./embedding.service.js";
-import { CodeEntity } from "../models/codeEntity.model.js";
-import { FileContent } from "../models/fileContent.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
+import { expandEntities } from "../utils/repoParsedData.helpers.js";
+import { getCachedFileContentBatch } from "../utils/fileContentCache.util.js";
 import { Repository } from "../models/repo.model.js";
 import mongoose from "mongoose";
 import path from "path";
@@ -248,31 +249,43 @@ export async function semanticSearch(
   );
 
   // ── Step 4: Batch-fetch full entity data from MongoDB ──
-  const mongoIds = searchResults
-    .map((r: any) => r.payload?.metadata?.mongoId)
-    .filter(Boolean);
-
-  const entities = await CodeEntity.find(
-    { _id: { $in: mongoIds } },
-    { name: 1, type: 1, filePath: 1, language: 1, startLine: 1, endLine: 1, parameters: 1, returnType: 1 }
-  ).lean();
-  const entityMap = new Map(entities.map((e: any) => [e._id.toString(), e]));
-
-  // ── Step 4b: Batch-fetch file contents for code display + keyword scoring ──
-  const uniqueRelativePaths = new Set<string>();
-  for (const entity of entities) {
-    const relPath = path.relative(repo.localPath, (entity as any).filePath).replace(/\\/g, "/");
-    uniqueRelativePaths.add(relPath);
+  const parsedData = await RepoParsedData.findOne({ repoId }).lean();
+  const allEntities = parsedData ? expandEntities(parsedData as any) : [];
+  
+  // Create lookups for both new format (entityIndex) and old format (mongoId)
+  const entityByIndex = new Map<number, any>();
+  const entityByMongoId = new Map<string, any>();
+  
+  for (const e of allEntities) {
+    if (e.entityIndex !== undefined) entityByIndex.set(e.entityIndex, e);
+    if (e._id) entityByMongoId.set(e._id.toString(), e);
   }
 
-  const repoObjectId = new mongoose.Types.ObjectId(repoId);
-  const fileContents = await FileContent.find({
-    repoId: repoObjectId,
-    relativePath: { $in: [...uniqueRelativePaths] },
-  }).lean();
-  const fileContentMap = new Map(
-    fileContents.map((f: any) => [f.relativePath, f.content || ""])
-  );
+  const matchedEntities: any[] = [];
+  const uniqueRelativePaths = new Set<string>();
+
+  for (const hit of searchResults) {
+    const meta = (hit.payload as any)?.metadata;
+    if (!meta) continue;
+    
+    let entity = null;
+    if (meta.entityIndex !== undefined) {
+      entity = entityByIndex.get(meta.entityIndex);
+    } else if (meta.mongoId) {
+      entity = entityByMongoId.get(meta.mongoId);
+    }
+    
+    if (entity) {
+      matchedEntities.push(entity);
+      const relPath = path.relative(repo.localPath, entity.filePath).replace(/\\/g, "/");
+      uniqueRelativePaths.add(relPath);
+    }
+  }
+
+  const entityMap = new Map(matchedEntities.map((e: any) => [e._id ? e._id.toString() : `idx_${e.entityIndex}`, e]));
+
+  // ── Step 4b: Batch-fetch file contents for code display + keyword scoring ──
+  const fileContentMap = await getCachedFileContentBatch(repoId, [...uniqueRelativePaths]);
 
   // ── Step 5: Score, re-rank, and build results ──
   const VECTOR_WEIGHT = 0.65; // Weight for Qdrant's cosine similarity
@@ -292,10 +305,13 @@ export async function semanticSearch(
   const candidates: ScoredCandidate[] = [];
 
   for (const hit of searchResults) {
-    const mongoId = (hit.payload as any)?.metadata?.mongoId;
-    if (!mongoId) continue;
+    const meta = (hit.payload as any)?.metadata || {};
+    const mongoId = meta.mongoId;
+    const entityIndex = meta.entityIndex;
+    if (!mongoId && entityIndex === undefined) continue;
 
-    const entity = entityMap.get(mongoId);
+    const entityKey = mongoId || `idx_${entityIndex}`;
+    const entity = entityMap.get(entityKey);
     if (!entity) continue;
 
     // Apply entity type filter (post-filter)

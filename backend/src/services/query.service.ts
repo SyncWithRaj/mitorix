@@ -1,4 +1,6 @@
-import { CodeEntity } from "../models/codeEntity.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
+import { findEntitiesInDoc, findEntitiesByIds } from "../utils/repoParsedData.helpers.js";
+import { getCachedFileContent } from "../utils/fileContentCache.util.js";
 import { FileContent } from "../models/fileContent.model.js";
 import { Repository } from "../models/repo.model.js";
 import { generateChatAnswer, type ChatMessage } from "./llm.service.js";
@@ -64,19 +66,10 @@ export const askQuestion = async (
   history: any[] = [],
   attachedNodes: any[] = []
 ) => {
-  const fileContentCache = new Map<string, string>();
-  
-  const getEntityContentSliced = async (repoObjectId: any, relativePath: string, startLine: number, endLine: number): Promise<string> => {
-    if (!fileContentCache.has(relativePath)) {
-      const fileDoc = await FileContent.findOne({
-        repoId: repoObjectId,
-        relativePath: relativePath,
-      }).select("content");
-      fileContentCache.set(relativePath, fileDoc?.content || "");
-    }
-    const content = fileContentCache.get(relativePath) || "";
+  const getEntityContentSliced = async (repoId: string, relativePath: string, startLine: number, endLine: number): Promise<string> => {
+    const content = await getCachedFileContent(repoId, relativePath);
     const lines = content.split("\n");
-    return lines.slice(startLine - 1, endLine).join("\n");
+    return lines.slice(Math.max(0, startLine - 1), endLine).join("\n");
   };
   const repo = await getRepositoryForUserOrThrow(repoId, requesterUserId);
 
@@ -89,6 +82,10 @@ export const askQuestion = async (
     // Refresh repo object
     repo.isEmbedded = true;
   }
+  
+  // Pre-load parsed data once for this chat request
+  const parsedData = await RepoParsedData.findOne({ repoId }).lean();
+  if (!parsedData) throw new AppError("Repository data not found", 404);
 
   // ── 1.5. Build EXPLICIT context from drag-dropped items ──
   let explicitContextStr = "";
@@ -159,15 +156,14 @@ export const askQuestion = async (
           const filePathForQuery: string = filePathPart;
           const entityNameForQuery: string = entityNamePart;
 
-          const entities = await CodeEntity.find({
-            repoId,
+          const entities = findEntitiesInDoc(parsedData as any, {
             filePath: filePathForQuery,
             name: entityNameForQuery,
-          }).limit(5);
+          }).slice(0, 5);
 
           for (const e of entities) {
             const relativePath = path.relative(repo.localPath, e.filePath).replace(/\\/g, "/");
-            const entityContent = await getEntityContentSliced(repo._id, relativePath, e.startLine, e.endLine);
+            const entityContent = await getEntityContentSliced(repoId, relativePath, e.startLine, e.endLine);
             explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${e.type}] ${e.name}\nFile: ${relativePath}\nLines: ${e.startLine}-${e.endLine}\n\n${entityContent}\n`;
             pushExplicitRef(relativePath, e.startLine, e.endLine);
             addAttachedPathHint(relativePath);
@@ -180,17 +176,14 @@ export const askQuestion = async (
 
           // Try absolute path first
           const fullPath = path.join(repo.localPath, searchPath);
-          let entities = await CodeEntity.find({
-            repoId,
+          let entities = findEntitiesInDoc(parsedData as any, {
             filePath: fullPath,
-          }).limit(20);
+          }).slice(0, 20);
 
-          // If no results with absolute path, try as suffix match
           if (entities.length === 0) {
-            entities = await CodeEntity.find({
-              repoId,
-              filePath: { $regex: searchPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$" },
-            }).limit(20);
+            const rx = new RegExp(searchPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$");
+            const allEntities = findEntitiesInDoc(parsedData as any, {});
+            entities = allEntities.filter((e: any) => rx.test(e.filePath)).slice(0, 20);
           }
 
           if (entities.length > 0) {
@@ -217,17 +210,14 @@ export const askQuestion = async (
           const searchPath = node.path || node.id;
           addAttachedPathHint(searchPath);
           const fullPath = path.join(repo.localPath, searchPath);
-          const entityQuery: { repoId: string; filePath: string; name?: string } = {
-            repoId,
-            filePath: fullPath,
-          };
+          const entityQuery: any = { filePath: fullPath };
           if (node.name) entityQuery.name = node.name;
 
-          const entities = await CodeEntity.find(entityQuery).limit(5);
+          const entities = findEntitiesInDoc(parsedData as any, entityQuery).slice(0, 5);
 
           for (const e of entities) {
             const relativePath = path.relative(repo.localPath, e.filePath).replace(/\\/g, "/");
-            const entityContent = await getEntityContentSliced(repo._id, relativePath, e.startLine, e.endLine);
+            const entityContent = await getEntityContentSliced(repoId, relativePath, e.startLine, e.endLine);
             explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${e.type}] ${e.name}\nFile: ${relativePath}\nLines: ${e.startLine}-${e.endLine}\n\n${entityContent}\n`;
             pushExplicitRef(relativePath, e.startLine, e.endLine);
             addAttachedPathHint(relativePath);
@@ -281,9 +271,7 @@ export const askQuestion = async (
     (p) => new RegExp(`${p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i")
   );
 
-  const entities = await CodeEntity.find({
-    _id: { $in: entityIds },
-  });
+  const entities = findEntitiesByIds(parsedData as any, entityIds);
 
   const entityMap = new Map(entities.map((e: any) => [e._id.toString(), e]));
 
@@ -295,7 +283,7 @@ export const askQuestion = async (
     if (!resultAtIndex) return null;
 
     const relativePath = path.relative(repo.localPath, entity.filePath).replace(/\\/g, "/");
-    const codeContent = await getEntityContentSliced(repo._id, relativePath, entity.startLine, entity.endLine);
+    const codeContent = await getEntityContentSliced(repoId, relativePath, entity.startLine, entity.endLine);
 
     return {
       filePath: relativePath,

@@ -1,10 +1,11 @@
 import { embedBatch } from "./embedding.service.js";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import mongoose from "mongoose";
-import { CodeEntity } from "../models/codeEntity.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
+import { expandEntities } from "../utils/repoParsedData.helpers.js";
 import { v4 as uuidv4 } from "uuid";
 import { Repository } from "../models/repo.model.js";
-import { FileContent } from "../models/fileContent.model.js";
+import { getCachedFileContentBatch } from "../utils/fileContentCache.util.js";
 import { VectorInitService } from "./vectorInit.service.js";
 import logger from "../lib/logger.js";
 
@@ -67,9 +68,11 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
 
   logger.info({ repoId }, "Starting vector embedding (optimized pipeline)");
 
-  const entities = await CodeEntity.find({
+  const parsedData = await RepoParsedData.findOne({
     repoId: new mongoose.Types.ObjectId(repoId),
-  });
+  }).lean();
+  
+  const entities = parsedData ? expandEntities(parsedData as any) : [];
 
   const total = entities.length;
 
@@ -90,8 +93,7 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
   let pendingUpload: Promise<void> | null = null;
   const startTime = Date.now();
 
-  // Cache to prevent duplicate MongoDB lookups
-  const fileContentCache = new Map<string, string>();
+  // We now use getCachedFileContentBatch which handles LRU and DB fetch
   const repoObjectId = new mongoose.Types.ObjectId(repoId);
 
   for (let batchStart = 0; batchStart < total; batchStart += EMBED_BATCH_SIZE) {
@@ -101,23 +103,12 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
 
     logger.debug({ repoId, progress: `${batchStart}/${total}`, batchSize: batch.length }, "Embedding batch");
 
-    // Pre-fetch all necessary file contents for this batch
     const filePaths = [...new Set(batch.map(e => e.filePath))];
-    const missingPaths = filePaths.filter(fp => !fileContentCache.has(fp));
-    
-    if (missingPaths.length > 0) {
-      const files = await FileContent.find({
-        repoId: repoObjectId,
-        relativePath: { $in: missingPaths }
-      });
-      for (const file of files) {
-        fileContentCache.set(file.relativePath, file.content || "");
-      }
-    }
+    const fileContentBatch = await getCachedFileContentBatch(repoId, filePaths);
 
     // Prepare all texts for this batch
     const texts = batch.map((entity) => {
-      const fullFileContent = fileContentCache.get(entity.filePath) || "";
+      const fullFileContent = fileContentBatch.get(entity.filePath) || "";
       const lines = fullFileContent.split("\n");
       const entityContent = lines.slice(entity.startLine - 1, entity.endLine).join("\n");
 
@@ -146,7 +137,8 @@ ${entityContent}
         vector: vectors[j],
         payload: {
           metadata: {
-            mongoId: entity._id.toString(),
+            mongoId: entity._id ? entity._id.toString() : "",
+            entityIndex: entity.entityIndex, // New format for fast array lookup
             repoId: repoId.toString(),
             fingerprint: repo.fingerprint,
             filePath: entity.filePath,

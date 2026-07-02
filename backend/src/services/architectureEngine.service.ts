@@ -1,5 +1,6 @@
 import path from "path";
-import { CodeRelationship } from "../models/relationship.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
+import { expandRelationships } from "../utils/repoParsedData.helpers.js";
 import { ArchitectureViolation } from "../models/architectureViolation.model.js";
 import logger from "../lib/logger.js";
 
@@ -53,8 +54,10 @@ export async function runArchitectureCheck(repoId: string): Promise<number> {
     // 1. Clean up old violations for this repository
     await ArchitectureViolation.deleteMany({ repoId });
 
-    // 2. Fetch all code relations for this repository
-    const relationships = await CodeRelationship.find({ repoId }).lean();
+    // 2. Fetch relationships from consolidated RepoParsedData
+    const parsedData = await RepoParsedData.findOne({ repoId }).lean();
+    const relationships = parsedData ? expandRelationships(parsedData as any) : [];
+
     if (relationships.length === 0) {
       logger.info({ repoId }, "No relations found for repository — skipping architecture check");
       return 0;

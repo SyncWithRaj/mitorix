@@ -7,9 +7,13 @@
  */
 
 import { FileContent } from "../../models/fileContent.model.js";
-import { FileMetadata } from "../../models/fileMetadata.model.js";
-import { CodeEntity } from "../../models/codeEntity.model.js";
-import { CodeRelationship } from "../../models/relationship.model.js";
+import { RepoParsedData } from "../../models/repoParsedData.model.js";
+import {
+  expandEntities,
+  expandRelationships,
+  expandFileMetadata,
+} from "../../utils/repoParsedData.helpers.js";
+import { decompressContent } from "../../utils/contentCompression.util.js";
 import { Repository } from "../../models/repo.model.js";
 import { SecurityIssue } from "../../models/securityIssue.model.js";
 import { ArchitectureViolation } from "../../models/architectureViolation.model.js";
@@ -127,12 +131,16 @@ export async function runAnalysisPipeline(
 
   const basePath = (repo as any).localPath || "";
 
-  const [dbFiles, dbEntities, dbRelationships, allContents] = await Promise.all([
-    FileMetadata.find({ repoId }).lean(),
-    CodeEntity.find({ repoId }).lean(),
-    CodeRelationship.find({ repoId }).lean(),
-    FileContent.find({ repoId }).lean(), // Fetch all files, not just those with content
+  // ── 2 queries instead of 4 ──
+  const [parsedData, allContents] = await Promise.all([
+    RepoParsedData.findOne({ repoId }).lean(),
+    FileContent.find({ repoId }).lean(),
   ]);
+
+  // Expand consolidated data back to the shapes pipeline expects
+  const dbFiles = parsedData ? expandFileMetadata(parsedData as any) : [];
+  const dbEntities = parsedData ? expandEntities(parsedData as any) : [];
+  const dbRelationships = parsedData ? expandRelationships(parsedData as any) : [];
 
   // Build metadata lookup for fast access
   const fileMetaByPath: Record<string, any> = {};
@@ -168,12 +176,15 @@ export async function runAnalysisPipeline(
     // Note: In a real implementation with async processing, we would yield here
     // For Node.js backend, we rely on event loop for non-blocking behavior
 
-    const fileName = (fc as any).fileName;
+    const fileName = (fc as any).fileName || path.basename(relativePath);
     const fp = basePath ? path.join(basePath, relativePath) : relativePath;
     let folder = path.dirname(relativePath).replace(/\\/g, "/");
     if (folder === ".") folder = "";
 
-    const content = (fc as any).content || null;
+    // Decompress content transparently
+    const rawContent = (fc as any).content || null;
+    const contentEncoding = (fc as any).contentEncoding;
+    const content = rawContent ? decompressContent(rawContent, contentEncoding) : null;
 
     const fileMeta = fileMetaByPath[fp];
     const totalLines = fileMeta?.totalLines || (content ? content.split("\n").length : 0);
