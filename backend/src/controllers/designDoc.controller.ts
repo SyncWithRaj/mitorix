@@ -29,9 +29,15 @@ export const generateSystemDesignDoc = async (
       !repo.systemDesignDoc.includes("experiencing high load") &&
       req.query.force !== "true"
     ) {
+      let cachedMermaid = repo.systemDesignDoc;
+      // Sanitize cached doc to fix previously saved LLM hallucinations
+      cachedMermaid = cachedMermaid
+        .replace(/-->\|([^|]+)\|>/g, '-->|"$1"|')
+        .replace(/-->\s*:\s*(.+)/g, '-- "$1" -->');
+
       return res.status(200).json({
         success: true,
-        mermaid: repo.systemDesignDoc,
+        mermaid: cachedMermaid,
       });
     }
 
@@ -71,10 +77,16 @@ IMPORTANT MERMAID FLOWCHART RULES:
 3. Use labels for subgraphs like this: \`subgraph SubgraphID ["My Subgraph Label"]\`.
 4. FOR LINK LABELS: Use the syntax: \`A -- "Label" --> B\`.
 5. CRITICAL: DO NOT use the colon syntax for flowchart labels (e.g., NEVER do \`A --> B: Label\`).
-6. CRITICAL: DO NOT add any inline styles, colors, or classes to the nodes (e.g., NO \`style A fill:#fff\`). Keep the diagram purely structural so it uses the default theme.
-7. Ensure all parentheses, brackets, and quotes are properly balanced.`;
+6. CRITICAL: DO NOT add any inline styles, colors, or classes to the nodes. Keep the diagram purely structural so it uses the default theme.
+7. CRITICAL: NEVER use invalid trailing arrowheads on text labels (e.g., NEVER do \`A -->|uses|> B\`). Use \`A -->|uses| B\` instead.
+8. Ensure all parentheses, brackets, and quotes are properly balanced.`;
 
-    const mermaidMarkdown = await generateAnswer(prompt);
+    let mermaidMarkdown = await generateAnswer(prompt);
+
+    // Sanitize common LLM hallucinations
+    mermaidMarkdown = mermaidMarkdown
+      .replace(/-->\|([^|]+)\|>/g, '-->|"$1"|') // Fixes A -->|uses|> B
+      .replace(/-->\s*:\s*(.+)/g, '-- "$1" -->'); // Fixes A --> B: label (if it still does it)
 
     logger.debug({ repoId, mermaidLength: mermaidMarkdown.length }, "Mermaid diagram generated");
 
