@@ -181,15 +181,34 @@ export const askQuestion = async (
           }).slice(0, 20);
 
           if (entities.length === 0) {
-            const rx = new RegExp(searchPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$");
+            // Match exactly this path, OR any path that starts with this path + "/"
+            const escapedPath = searchPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const rx = new RegExp(`^${escapedPath}(/.*)?$`, "i");
             const allEntities = findEntitiesInDoc(parsedData as any, {});
             entities = allEntities.filter((e: any) => rx.test(e.filePath)).slice(0, 20);
+          }
+
+          if (node.type === "FOLDER" && parsedData && (parsedData as any).filePaths) {
+            const escapedPath = searchPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const rx = new RegExp(`^${escapedPath}(/.*)?$`, "i");
+            
+            const filesInFolder = ((parsedData as any).filePaths as string[])
+              .map(p => toRelativePath(p))
+              .filter(p => rx.test(p));
+              
+            if (filesInFolder.length > 0) {
+              const fileList = filesInFolder.slice(0, 50).join("\n");
+              const truncation = filesInFolder.length > 50 ? `\n...and ${filesInFolder.length - 50} more files` : "";
+              explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: FOLDER] ${node.name}\nPath: ${searchPath}\nTotal files in this folder structure: ${filesInFolder.length}\nFiles:\n${fileList}${truncation}\n\n`;
+            }
           }
 
           if (entities.length > 0) {
             for (const e of entities) {
               const relativePath = path.relative(repo.localPath, e.filePath).replace(/\\/g, "/");
-              explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${e.type}] ${e.name}\nFile: ${relativePath}\nLines: ${e.startLine}-${e.endLine}\n\n${e.content}\n`;
+              // Check if e.content exists (it was removed in the new schema, so use getEntityContentSliced)
+              const entityContent = await getEntityContentSliced(repoId, relativePath, e.startLine, e.endLine);
+              explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${e.type}] ${e.name}\nFile: ${relativePath}\nLines: ${e.startLine}-${e.endLine}\n\n${entityContent}\n`;
               pushExplicitRef(relativePath, e.startLine, e.endLine);
               addAttachedPathHint(relativePath);
 
@@ -198,11 +217,13 @@ export const askQuestion = async (
             }
           } else {
             const beforeLen = explicitContextStr.length;
-            await appendFileContentForPath(searchPath);
+            if (node.type === "FILE") {
+              await appendFileContentForPath(searchPath);
+            }
 
             if (explicitContextStr.length === beforeLen) {
               // No entities/file content found — still mention the path for awareness
-              explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${node.type}] ${node.name}\nPath: ${searchPath}\n(No parsed entities found for this file)\n`;
+              explicitContextStr += `\n[EXPLICITLY ATTACHED BY USER: ${node.type}] ${node.name}\nPath: ${searchPath}\n(No parsed entities found for this path)\n`;
             }
           }
         } else {
