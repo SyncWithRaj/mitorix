@@ -1,3 +1,4 @@
+import path from "path";
 import { embedBatch } from "./embedding.service.js";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import mongoose from "mongoose";
@@ -53,6 +54,10 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
           key: "metadata.fingerprint",
           match: { value: repo.fingerprint },
         },
+        {
+          key: "metadata.repoId",
+          match: { value: repoId.toString() },
+        },
       ],
     },
   });
@@ -81,6 +86,77 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
   if (!total) {
     throw new Error("No entities found for this repository");
   }
+
+  // ── Fast Path: Copy existing embeddings if fingerprint matches ─────────────
+  const anyExisting = await qdrant.scroll(COLLECTION, {
+    limit: 1,
+    filter: { must: [{ key: "metadata.fingerprint", match: { value: repo.fingerprint } }] },
+  });
+
+  if (anyExisting.points.length > 0) {
+    logger.info({ repoId }, "Fast path: Found existing embeddings for this fingerprint. Copying vectors...");
+    
+    let nextOffset: string | number | null | undefined = undefined;
+    const allPointsToCopy: any[] = [];
+    do {
+      const scrollResult: any = await qdrant.scroll(COLLECTION, {
+        filter: { must: [{ key: "metadata.fingerprint", match: { value: repo.fingerprint } }] },
+        with_payload: true,
+        with_vector: true,
+        limit: 500,
+        ...(nextOffset !== undefined ? { offset: nextOffset } : {}),
+      });
+      allPointsToCopy.push(...scrollResult.points);
+      nextOffset = scrollResult.next_page_offset;
+    } while (nextOffset !== null && nextOffset !== undefined);
+    
+    // Pick one source repoId to prevent duplication if multiple repos share it
+    const sourceRepoId = allPointsToCopy[0]?.payload?.metadata?.repoId;
+    if (sourceRepoId) {
+      const pointsFromSource = allPointsToCopy.filter(p => p.payload?.metadata?.repoId === sourceRepoId);
+      const newPoints = [];
+
+      for (const p of pointsFromSource) {
+        const oldMeta = p.payload.metadata;
+        const entityIndex = oldMeta.entityIndex;
+        const entity = entities[entityIndex];
+        
+        if (!entity) continue;
+
+        newPoints.push({
+          id: uuidv4(),
+          vector: p.vector,
+          payload: {
+            metadata: {
+              mongoId: entity._id ? entity._id.toString() : "",
+              entityIndex: entity.entityIndex,
+              repoId: repoId.toString(),
+              fingerprint: repo.fingerprint,
+              filePath: entity.filePath,
+              relativePath: path.relative(repo.localPath, entity.filePath).replace(/\\/g, "/"),
+              language: entity.language || "unknown",
+              startLine: entity.startLine,
+              endLine: entity.endLine,
+              entityType: entity.type,
+              symbolName: entity.name,
+            }
+          }
+        });
+      }
+
+      for (let i = 0; i < newPoints.length; i += QDRANT_UPLOAD_BATCH) {
+        const chunk = newPoints.slice(i, i + QDRANT_UPLOAD_BATCH);
+        await qdrant.upsert(COLLECTION, {
+          wait: (i + QDRANT_UPLOAD_BATCH >= newPoints.length),
+          points: chunk,
+        });
+      }
+
+      logger.info({ repoId, copiedCount: newPoints.length }, "Fast path embedding complete.");
+      return { success: true, embedded: newPoints.length };
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────────
 
   embeddingProgressTracker.set(repoId, { current: 0, total });
   embeddingEvents.emit(`progress-${repoId}`, 0, total);
@@ -142,6 +218,7 @@ ${entityContent}
             repoId: repoId.toString(),
             fingerprint: repo.fingerprint,
             filePath: entity.filePath,
+            relativePath: path.relative(repo.localPath, entity.filePath).replace(/\\/g, "/"),
             language: language,
             startLine: entity.startLine,
             endLine: entity.endLine,

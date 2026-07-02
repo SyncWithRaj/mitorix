@@ -254,13 +254,23 @@ export async function computeDrift(
     const oldMeta = oldPoint.payload?.metadata;
     if (!oldMeta) continue;
 
+    const oldRelativePath = oldMeta.relativePath || (oldMeta.filePath ? (
+      (oldMeta.filePath.startsWith("/") || /^[A-Z]:\\/i.test(oldMeta.filePath))
+        ? path.relative(repo.localPath, oldMeta.filePath).replace(/\\/g, "/")
+        : oldMeta.filePath
+    ) : "unknown");
+
     // Enforce file path matching: a function should only be compared against code in the same file.
     // If the file doesn't exist in the new repo, the entity is correctly flagged as 100% deleted.
     const pointSearchFilter = JSON.parse(JSON.stringify(newSearchFilter));
-    if (oldMeta.filePath) {
+    if (oldRelativePath !== "unknown") {
+      // Use 'should' to match either the new relativePath field, or fallback to the exact filePath
+      // This ensures cross-repo (different temp clone paths) still match!
       pointSearchFilter.must.push({
-        key: "metadata.filePath",
-        match: { value: oldMeta.filePath },
+        should: [
+          { key: "metadata.relativePath", match: { value: oldRelativePath } },
+          { key: "metadata.filePath", match: { value: oldMeta.filePath } }
+        ]
       });
     }
 
@@ -272,9 +282,7 @@ export async function computeDrift(
       score_threshold: 0.50, // Raised from 0.1 — below 50% similarity means truly unrelated code
     });
 
-    const relativePath = oldMeta.filePath
-      ? path.relative(repo.localPath, oldMeta.filePath).replace(/\\/g, "/")
-      : "unknown";
+    const relativePath = oldRelativePath;
 
     const entityInfo: DriftEntity = {
       name: oldMeta.symbolName || oldPoint.payload?.pageContent?.substring(0, 100) || "Unknown",
