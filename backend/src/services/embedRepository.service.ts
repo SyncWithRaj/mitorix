@@ -1,10 +1,12 @@
+import path from "path";
 import { embedBatch } from "./embedding.service.js";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import mongoose from "mongoose";
-import { CodeEntity } from "../models/codeEntity.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
+import { expandEntities } from "../utils/repoParsedData.helpers.js";
 import { v4 as uuidv4 } from "uuid";
 import { Repository } from "../models/repo.model.js";
-import { FileContent } from "../models/fileContent.model.js";
+import { getCachedFileContentBatch } from "../utils/fileContentCache.util.js";
 import { VectorInitService } from "./vectorInit.service.js";
 import logger from "../lib/logger.js";
 
@@ -52,6 +54,10 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
           key: "metadata.fingerprint",
           match: { value: repo.fingerprint },
         },
+        {
+          key: "metadata.repoId",
+          match: { value: repoId.toString() },
+        },
       ],
     },
   });
@@ -67,9 +73,11 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
 
   logger.info({ repoId }, "Starting vector embedding (optimized pipeline)");
 
-  const entities = await CodeEntity.find({
+  const parsedData = await RepoParsedData.findOne({
     repoId: new mongoose.Types.ObjectId(repoId),
-  });
+  }).lean();
+  
+  const entities = parsedData ? expandEntities(parsedData as any) : [];
 
   const total = entities.length;
 
@@ -78,6 +86,77 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
   if (!total) {
     throw new Error("No entities found for this repository");
   }
+
+  // ── Fast Path: Copy existing embeddings if fingerprint matches ─────────────
+  const anyExisting = await qdrant.scroll(COLLECTION, {
+    limit: 1,
+    filter: { must: [{ key: "metadata.fingerprint", match: { value: repo.fingerprint } }] },
+  });
+
+  if (anyExisting.points.length > 0) {
+    logger.info({ repoId }, "Fast path: Found existing embeddings for this fingerprint. Copying vectors...");
+    
+    let nextOffset: string | number | null | undefined = undefined;
+    const allPointsToCopy: any[] = [];
+    do {
+      const scrollResult: any = await qdrant.scroll(COLLECTION, {
+        filter: { must: [{ key: "metadata.fingerprint", match: { value: repo.fingerprint } }] },
+        with_payload: true,
+        with_vector: true,
+        limit: 500,
+        ...(nextOffset !== undefined ? { offset: nextOffset } : {}),
+      });
+      allPointsToCopy.push(...scrollResult.points);
+      nextOffset = scrollResult.next_page_offset;
+    } while (nextOffset !== null && nextOffset !== undefined);
+    
+    // Pick one source repoId to prevent duplication if multiple repos share it
+    const sourceRepoId = allPointsToCopy[0]?.payload?.metadata?.repoId;
+    if (sourceRepoId) {
+      const pointsFromSource = allPointsToCopy.filter(p => p.payload?.metadata?.repoId === sourceRepoId);
+      const newPoints = [];
+
+      for (const p of pointsFromSource) {
+        const oldMeta = p.payload.metadata;
+        const entityIndex = oldMeta.entityIndex;
+        const entity = entities[entityIndex];
+        
+        if (!entity) continue;
+
+        newPoints.push({
+          id: uuidv4(),
+          vector: p.vector,
+          payload: {
+            metadata: {
+              mongoId: entity._id ? entity._id.toString() : "",
+              entityIndex: entity.entityIndex,
+              repoId: repoId.toString(),
+              fingerprint: repo.fingerprint,
+              filePath: entity.filePath,
+              relativePath: path.relative(repo.localPath, entity.filePath).replace(/\\/g, "/"),
+              language: entity.language || "unknown",
+              startLine: entity.startLine,
+              endLine: entity.endLine,
+              entityType: entity.type,
+              symbolName: entity.name,
+            }
+          }
+        });
+      }
+
+      for (let i = 0; i < newPoints.length; i += QDRANT_UPLOAD_BATCH) {
+        const chunk = newPoints.slice(i, i + QDRANT_UPLOAD_BATCH);
+        await qdrant.upsert(COLLECTION, {
+          wait: (i + QDRANT_UPLOAD_BATCH >= newPoints.length),
+          points: chunk,
+        });
+      }
+
+      logger.info({ repoId, copiedCount: newPoints.length }, "Fast path embedding complete.");
+      return { success: true, embedded: newPoints.length };
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────────
 
   embeddingProgressTracker.set(repoId, { current: 0, total });
   embeddingEvents.emit(`progress-${repoId}`, 0, total);
@@ -90,8 +169,7 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
   let pendingUpload: Promise<void> | null = null;
   const startTime = Date.now();
 
-  // Cache to prevent duplicate MongoDB lookups
-  const fileContentCache = new Map<string, string>();
+  // We now use getCachedFileContentBatch which handles LRU and DB fetch
   const repoObjectId = new mongoose.Types.ObjectId(repoId);
 
   for (let batchStart = 0; batchStart < total; batchStart += EMBED_BATCH_SIZE) {
@@ -101,23 +179,12 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
 
     logger.debug({ repoId, progress: `${batchStart}/${total}`, batchSize: batch.length }, "Embedding batch");
 
-    // Pre-fetch all necessary file contents for this batch
     const filePaths = [...new Set(batch.map(e => e.filePath))];
-    const missingPaths = filePaths.filter(fp => !fileContentCache.has(fp));
-    
-    if (missingPaths.length > 0) {
-      const files = await FileContent.find({
-        repoId: repoObjectId,
-        relativePath: { $in: missingPaths }
-      });
-      for (const file of files) {
-        fileContentCache.set(file.relativePath, file.content || "");
-      }
-    }
+    const fileContentBatch = await getCachedFileContentBatch(repoId, filePaths);
 
     // Prepare all texts for this batch
     const texts = batch.map((entity) => {
-      const fullFileContent = fileContentCache.get(entity.filePath) || "";
+      const fullFileContent = fileContentBatch.get(entity.filePath) || "";
       const lines = fullFileContent.split("\n");
       const entityContent = lines.slice(entity.startLine - 1, entity.endLine).join("\n");
 
@@ -146,10 +213,12 @@ ${entityContent}
         vector: vectors[j],
         payload: {
           metadata: {
-            mongoId: entity._id.toString(),
+            mongoId: entity._id ? entity._id.toString() : "",
+            entityIndex: entity.entityIndex, // New format for fast array lookup
             repoId: repoId.toString(),
             fingerprint: repo.fingerprint,
             filePath: entity.filePath,
+            relativePath: path.relative(repo.localPath, entity.filePath).replace(/\\/g, "/"),
             language: language,
             startLine: entity.startLine,
             endLine: entity.endLine,

@@ -8,8 +8,9 @@ import { processRepositoryParsing } from "../services/parser.service.js";
 import { Repository, touchRepository } from "../models/repo.model.js";
 import { CodeEntity } from "../models/codeEntity.model.js";
 import { CodeRelationship } from "../models/relationship.model.js";
-import { FileMetadata } from "../models/fileMetadata.model.js";
 import { FileContent } from "../models/fileContent.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
+import { expandFileMetadata } from "../utils/repoParsedData.helpers.js";
 import ChatHistory from "../models/chatHistory.model.js";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { getTempRepoPath } from "../utils/cleanup.util.js";
@@ -186,8 +187,9 @@ export const scanRepository = async (req: Request, res: Response, next: NextFunc
 
     if (!repo) throw new AppError("Repository not found", 404);
 
-    // Read from FileMetadata in DB instead of disk
-    const files = await FileMetadata.find({ repoId: repo._id }).select("-__v").lean();
+    // Read from RepoParsedData in DB instead of disk
+    const parsedData = await RepoParsedData.findOne({ repoId: repo._id }).lean();
+    const files = parsedData ? expandFileMetadata(parsedData as any) : [];
 
     return res.json({
       success: true,

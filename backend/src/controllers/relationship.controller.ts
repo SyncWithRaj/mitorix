@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 
-import { CodeRelationship } from "../models/relationship.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
+import { expandRelationships } from "../utils/repoParsedData.helpers.js";
 import { getOwnedRepositoryOrThrow, ensureValidRepoId } from "../utils/repositoryAccess.util.js";
 import logger from "../lib/logger.js";
 
@@ -11,14 +12,17 @@ export async function getRepositoryoRelations(req: Request, res: Response, next:
 
     await getOwnedRepositoryOrThrow(repoId, req.user);
 
-    const filter: any = { repoId };
+    const parsedData = await RepoParsedData.findOne({ repoId }).lean();
+    let relations = parsedData ? expandRelationships(parsedData as any) : [];
 
-    if (from) filter.fromName = from;
-    if (to) filter.toName = to;
-    if (type) filter.relationType = type;
-    if (file) filter.fromFilePath = file;
+    // Apply filters in JS (replaces MongoDB query filters)
+    if (from) relations = relations.filter((r) => r.fromName === from);
+    if (to) relations = relations.filter((r) => r.toName === to);
+    if (type) relations = relations.filter((r) => r.relationType === type);
+    if (file) relations = relations.filter((r) => r.fromFilePath === file);
 
-    const relations = await CodeRelationship.find(filter).sort({ line: 1 }).lean();
+    // Sort by line number (same as old .sort({ line: 1 }))
+    relations.sort((a, b) => a.line - b.line);
 
     return res.status(200).json({
       success: true,

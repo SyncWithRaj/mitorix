@@ -108,6 +108,16 @@ export const TIER_REPO_LIMITS: Record<SubscriptionTier, number> = {
   PRO: -1,
 };
 
+/** 
+ * Repository TTL (Time To Live) in days before inactive repos are purged. 
+ * -1 = no automatic cleanup (kept indefinitely).
+ */
+export const TIER_REPO_TTL_DAYS: Record<SubscriptionTier, number> = {
+  FREE: 7,
+  BASIC: 30,
+  PRO: -1,
+};
+
 // ── Plan Pricing (in paise for Razorpay) ──
 
 export interface PlanInfo {

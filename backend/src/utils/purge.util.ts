@@ -1,8 +1,6 @@
 import fs from "fs";
 import { Repository } from "../models/repo.model.js";
-import { CodeEntity } from "../models/codeEntity.model.js";
-import { CodeRelationship } from "../models/relationship.model.js";
-import { FileMetadata } from "../models/fileMetadata.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
 import { FileContent } from "../models/fileContent.model.js";
 import ChatHistory from "../models/chatHistory.model.js";
 import { QdrantClient } from "@qdrant/js-client-rest";
@@ -89,9 +87,7 @@ export const purgeRepository = async (repoId: string): Promise<boolean> => {
     }
 
     // 3. Clean up MongoDB data
-    await CodeEntity.deleteMany({ repoId: repoId });
-    await CodeRelationship.deleteMany({ repoId: repoId });
-    await FileMetadata.deleteMany({ repoId: repoId });
+    await RepoParsedData.deleteMany({ repoId: repoId });
     await FileContent.deleteMany({ repoId: repoId });
     await ChatHistory.deleteMany({ repoId: repoId });
 

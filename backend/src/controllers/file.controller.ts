@@ -2,6 +2,7 @@ import path from "path";
 import type { Request, Response, NextFunction } from "express";
 import { Repository, touchRepository } from "../models/repo.model.js";
 import { FileContent } from "../models/fileContent.model.js";
+import { getCachedFileContent } from "../utils/fileContentCache.util.js";
 import logger from "../lib/logger.js";
 import { AppError } from "../middlewares/error.middleware.js";
 import { getOwnedRepositoryOrThrow } from "../utils/repositoryAccess.util.js";
@@ -14,8 +15,9 @@ function buildFileTree(docs: any[]): any[] {
   const roots: any[] = [];
 
   for (const doc of docs) {
+    const fileName = doc.fileName || path.basename(doc.relativePath);
     const node: any = {
-      name: doc.fileName,
+      name: fileName,
       path: doc.relativePath,
       type: doc.isDirectory ? "folder" : "file",
     };
@@ -83,15 +85,33 @@ export const getFileContent = async (req: Request, res: Response, next: NextFunc
       safePath = filePath.substring(repo.localPath.length).replace(/^\/+/, "");
     }
 
-    const fileDoc = await FileContent.findOne({
+    // Check if the file is a directory first (directories don't have content)
+    const isDirDoc = await FileContent.exists({
+      repoId: repo._id,
+      relativePath: safePath,
+      isDirectory: true,
+    });
+
+    if (isDirDoc) {
+      return res.status(200).json({
+        success: true,
+        content: "// [Directory]",
+      });
+    }
+    
+    // Check if it's a file but might not be found
+    const fileExists = await FileContent.exists({
       repoId: repo._id,
       relativePath: safePath,
       isDirectory: false,
-    }).lean();
+    });
 
-    if (!fileDoc) throw new AppError("File not found", 404);
+    if (!fileExists) throw new AppError("File not found", 404);
 
-    if (fileDoc.content === null) {
+    // Read through LRU cache (handles decompression)
+    const content = await getCachedFileContent(repo._id.toString(), safePath);
+
+    if (!content) {
       return res.status(200).json({
         success: true,
         content: "// [Binary file or content not stored]",
@@ -100,7 +120,7 @@ export const getFileContent = async (req: Request, res: Response, next: NextFunc
 
     res.json({
       success: true,
-      content: fileDoc.content,
+      content: content,
     });
   } catch (err) {
     next(err);

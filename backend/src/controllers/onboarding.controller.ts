@@ -1,7 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
 import { Repository, touchRepository } from "../models/repo.model.js";
-import { FileMetadata } from "../models/fileMetadata.model.js";
-import { CodeEntity } from "../models/codeEntity.model.js";
+import { RepoParsedData } from "../models/repoParsedData.model.js";
+import {
+  expandEntities,
+  expandFileMetadata,
+} from "../utils/repoParsedData.helpers.js";
 import { generateAnswer } from "../services/llm.service.js";
 import logger from "../lib/logger.js";
 import { AppError } from "../middlewares/error.middleware.js";
@@ -38,9 +41,15 @@ export const generateOnboardingGuide = async (
       });
     }
 
-    // ── Step 1: Detect what's in this repo ──
-    const files = await FileMetadata.find({ repoId }).limit(200).lean();
-    const entities = await CodeEntity.find({ repoId }).limit(300).lean();
+    // ── Single query replaces 2 separate find().limit() calls ──
+    const parsedData = await RepoParsedData.findOne({ repoId }).lean();
+
+    const allFiles = parsedData ? expandFileMetadata(parsedData as any) : [];
+    const allEntities = parsedData ? expandEntities(parsedData as any) : [];
+
+    // Apply limits in JS (same as old .limit(200/300))
+    const files = allFiles.slice(0, 200);
+    const entities = allEntities.slice(0, 300);
 
     // Detect languages
     const languages = [...new Set(entities.map((e) => e.language).filter(Boolean))];
