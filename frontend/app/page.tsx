@@ -892,6 +892,10 @@ export default function Home() {
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
                 <span>Unused Function Detection</span>
               </li>
+              <li className="flex items-start gap-3 text-sm text-[#a3a3a3]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#737373] shrink-0" />
+                <span>All data deleted after 7 days inactivity</span>
+              </li>
               <li className="flex items-start gap-3 text-sm text-[#525252]">
                 <X className="w-4 h-4 mt-0.5 text-[#333] shrink-0" />
                 <span>Local folder/ZIP upload</span>
@@ -1006,6 +1010,10 @@ export default function Home() {
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
                 <span>Unused Function Detection</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
+                <span>All data deleted after 30 days inactivity</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ff6b00] shrink-0" />
@@ -1138,6 +1146,10 @@ export default function Home() {
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
                 <span>Unused Function Detection</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />
+                <span>Never deleted due to inactivity</span>
               </li>
               <li className="flex items-start gap-3 text-sm text-[#e5e5e5]">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#ffa800] shrink-0" />

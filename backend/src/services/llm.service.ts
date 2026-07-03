@@ -3,8 +3,17 @@ import axios from "axios";
 import CircuitBreaker from "opossum";
 import logger from "../lib/logger.js";
 
+// ── API Key Parsing ──
+const rawKeys = process.env.GOOGLE_API_KEY || "";
+export const geminiApiKeys = rawKeys.split(",").map(k => k.trim()).filter(Boolean);
+
+if (geminiApiKeys.length === 0) {
+  logger.warn("No GOOGLE_API_KEY provided in .env");
+}
+
 // ── Active provider: Gemini ──
-export const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+// We use the first key as the default for the main LLM instance
+export const genAI = new GoogleGenerativeAI(geminiApiKeys[0] || "");
 
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
@@ -16,10 +25,8 @@ const GROQ_MODEL = "llama-3.3-70b-versatile"; // Latest stable fast model
 
 const callGroqCompletion = async (messages: Array<{ role: string; content: string }>) => {
   if (!GROQ_API_KEY) {
-    throw new Error("GROQ_API_KEY is missing for fallback");
+    throw new Error("GROQ_API_KEY is missing");
   }
-  
-  logger.info({ model: GROQ_MODEL }, "Routing LLM request to Groq fallback");
 
   // Groq has strict payload/token limits. Truncate massive prompts.
   const safeMessages = messages.map(msg => {
@@ -113,13 +120,28 @@ export interface ChatMessage {
   parts: { text: string }[];
 }
 
-const callGeminiChatAPI = async (
+const callChatAPI = async (
   systemInstruction: string,
   history: ChatMessage[],
   userMessage: string
 ): Promise<string> => {
   try {
-    logger.info({ provider: "Gemini" }, "Routing LLM request to Gemini (chat)");
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error("GROQ_API_KEY is missing");
+    }
+    logger.info({ provider: "Groq" }, "Routing LLM request to Groq (chat)");
+    
+    const groqMessages = [
+      { role: "system", content: systemInstruction },
+      ...history.map(msg => ({
+        role: msg.role === "model" ? "assistant" : "user",
+        content: msg.parts.map(p => p.text).join("\n")
+      })),
+      { role: "user", content: userMessage }
+    ];
+    return await callGroqCompletion(groqMessages);
+  } catch (error: any) {
+    logger.warn({ err: error.message }, "Groq Chat API failed, attempting Gemini fallback...");
     
     const chatModel = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
@@ -132,38 +154,24 @@ const callGeminiChatAPI = async (
 
     const result = await chat.sendMessage(userMessage);
     return result.response.text();
-  } catch (error: any) {
-    logger.warn({ err: error.message }, "Gemini Chat API failed, attempting Groq fallback...");
-    if (process.env.GROQ_API_KEY) {
-      const groqMessages = [
-        { role: "system", content: systemInstruction },
-        ...history.map(msg => ({
-          role: msg.role === "model" ? "assistant" : "user",
-          content: msg.parts.map(p => p.text).join("\n")
-        })),
-        { role: "user", content: userMessage }
-      ];
-      return await callGroqCompletion(groqMessages);
-    }
-    throw error;
   }
 };
 
-const chatBreaker = new CircuitBreaker(callGeminiChatAPI, breakerOptions);
+const chatBreaker = new CircuitBreaker(callChatAPI, breakerOptions);
 
 chatBreaker.fallback((_sys: string, _hist: ChatMessage[], _msg: string, error?: Error) => {
-  logger.error({ err: error }, "[Circuit Breaker] Gemini Chat API is down or timing out");
-  return "Mitorix AI is currently experiencing high load or the LLM provider is down. Please try again later.";
+  logger.error({ err: error }, "[Circuit Breaker] Chat APIs are down or timing out");
+  return "Mitorix AI is currently experiencing high load or the LLM providers are down. Please try again later.";
 });
 
 chatBreaker.on("open", () =>
-  logger.warn("[Circuit Breaker] OPEN: Gemini Chat API is struggling")
+  logger.warn("[Circuit Breaker] OPEN: Chat API is struggling")
 );
 chatBreaker.on("halfOpen", () =>
-  logger.info("[Circuit Breaker] HALF-OPEN: Testing if Gemini Chat API is back online")
+  logger.info("[Circuit Breaker] HALF-OPEN: Testing if Chat API is back online")
 );
 chatBreaker.on("close", () =>
-  logger.info("[Circuit Breaker] CLOSED: Gemini Chat API is healthy again")
+  logger.info("[Circuit Breaker] CLOSED: Chat API is healthy again")
 );
 
 export const generateChatAnswer = async (

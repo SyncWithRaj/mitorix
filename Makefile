@@ -2,7 +2,7 @@
 
 # Start infrastructure (MongoDB, Redis, Qdrant, Ollama) for local development
 dev:
-	docker compose up -d mongodb redis qdrant ollama
+	docker compose up -d redis qdrant
 
 redis:
 	docker compose up -d redis
@@ -60,3 +60,6 @@ nomic:
 # Deploy only Backend and Redis for EC2 (Cloud architecture)
 deploy-ec2:
 	docker compose up -d --build backend redis
+
+mongo:
+	sudo systemctl start mongod

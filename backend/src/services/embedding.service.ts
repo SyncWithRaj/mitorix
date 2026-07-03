@@ -1,8 +1,30 @@
 import dotenv from "dotenv";
 import logger from "../lib/logger.js";
-import { genAI } from "./llm.service.js";
+import axios from "axios";
 
 dotenv.config();
+
+const cohereApiKeys = (process.env.COHERE_API_KEY || "")
+  .split(",")
+  .map((k) => k.trim())
+  .filter((k) => k.length > 0);
+
+if (cohereApiKeys.length === 0) {
+  logger.warn("No COHERE_API_KEY provided in .env");
+}
+
+let currentKeyIndex = 0;
+
+const rotateKey = () => {
+  if (cohereApiKeys.length <= 1) return;
+  currentKeyIndex = (currentKeyIndex + 1) % cohereApiKeys.length;
+  logger.warn(`[API KEY ROTATOR] Switched to Cohere API Key #${currentKeyIndex + 1} of ${cohereApiKeys.length}`);
+};
+
+const getApiKey = () => {
+  if (cohereApiKeys.length === 0) throw new Error("COHERE_API_KEY is not defined in .env");
+  return cohereApiKeys[currentKeyIndex];
+};
 
 /**
  * Gemini embedding limit is 2048 tokens.
@@ -26,29 +48,46 @@ function truncateForEmbedding(text: string): string {
     : truncated;
 }
 
-// ─── Gemini API Embedding ───────────────────────────────────────────────────
-// Bypasses LangChain and calls Gemini API directly.
+// ─── Cohere AI Embedding ──────────────────────────────────────────────────────
+// Bypasses LangChain and calls Cohere AI directly.
 // Used by all embedding and search operations.
 // ────────────────────────────────────────────────────────────────────────────
 
 /**
- * Embed a single text using Gemini's native embedContent endpoint.
+ * Embed a single text using Cohere AI's native embed endpoint.
  */
 export async function embedDirect(text: string, attempt = 1): Promise<number[]> {
   try {
     const truncated = truncateForEmbedding(text);
-    const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
-    const result = await model.embedContent(truncated);
-    return result.embedding.values;
-  } catch (err: any) {
-    if (attempt <= 3 && (err.status === 429 || (err.message && err.message.includes("429 Too Many Requests")))) {
-      let delayMs = 60000;
-      const match = err.message.match(/retry in (\d+(?:\.\d+)?)s/);
-      if (match) {
-        delayMs = parseFloat(match[1]) * 1000 + 1000; // Add 1s buffer
+    const apiKey = getApiKey();
+
+    const response = await axios.post(
+      "https://api.cohere.ai/v1/embed",
+      {
+        model: "embed-english-v3.0",
+        texts: [truncated],
+        input_type: "search_query" // query type for searching
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        }
       }
-      logger.warn(`429 Too Many Requests. Retrying in ${delayMs}ms... (Attempt ${attempt}/3)`);
-      await new Promise(resolve => setTimeout(resolve, delayMs));
+    );
+    
+    return response.data.embeddings[0];
+  } catch (err: any) {
+    const maxAttempts = Math.max(3, cohereApiKeys.length * 3);
+    if (attempt < maxAttempts && err.response && err.response.status === 429) {
+      rotateKey();
+      logger.warn(`429 Too Many Requests. Instantly retrying with new key... (Attempt ${attempt}/${maxAttempts})`);
+      
+      if (attempt % cohereApiKeys.length === 0) {
+        logger.warn(`All ${cohereApiKeys.length} API keys currently exhausted! Sleeping for 15s before continuing...`);
+        await new Promise(resolve => setTimeout(resolve, 15000));
+      }
+      
       return embedDirect(text, attempt + 1);
     }
     throw err;
@@ -56,11 +95,7 @@ export async function embedDirect(text: string, attempt = 1): Promise<number[]> 
 }
 
 /**
- * Embed multiple texts using a worker pool.
- *
- * @param texts       - Array of raw texts to embed (will be truncated internally)
- * @param concurrency - Number of parallel Ollama requests (default: 1 for laptop CPUs)
- * @returns Array of embedding vectors in the same order as input texts
+ * Embed multiple texts using Cohere AI batch API.
  */
 export async function embedBatch(
   texts: string[],
@@ -69,42 +104,52 @@ export async function embedBatch(
   if (texts.length === 0) return [];
 
   const results: (number[] | null)[] = new Array(texts.length).fill(null);
-  const BATCH_SIZE = 100; // Gemini max batch size
-  
-  const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
+  const BATCH_SIZE = 90; // Safe batch size for Cohere (limit is 96)
 
   for (let i = 0; i < texts.length; i += BATCH_SIZE) {
     const chunk = texts.slice(i, i + BATCH_SIZE);
     const indices = Array.from({ length: chunk.length }, (_, idx) => i + idx);
-    
-    const requests = chunk.map(text => ({
-      content: { role: "user", parts: [{ text: truncateForEmbedding(text) }] }
-    }));
+    const requests = chunk.map(text => truncateForEmbedding(text));
     
     let attempt = 1;
-    const maxAttempts = 5;
+    const maxAttempts = Math.max(5, cohereApiKeys.length * 5);
     
     while (attempt <= maxAttempts) {
       try {
-        const response = await model.batchEmbedContents({ requests });
+        const apiKey = getApiKey();
+        const response = await axios.post(
+          "https://api.cohere.ai/v1/embed",
+          {
+            model: "embed-english-v3.0",
+            texts: requests,
+            input_type: "search_document" // document type for storing in db
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
         
-        response.embeddings.forEach((emb, idx) => {
-          results[indices[idx]] = emb.values;
+        response.data.embeddings.forEach((emb: any, idx: number) => {
+          results[indices[idx]] = emb;
         });
         
         break; // Success, break the retry loop
       } catch (err: any) {
-        if (attempt < maxAttempts && (err.status === 429 || (err.message && err.message.includes("429 Too Many Requests")))) {
-          let delayMs = 60000;
-          const match = err.message.match(/retry in (\d+(?:\.\d+)?)s/);
-          if (match) {
-            delayMs = parseFloat(match[1]) * 1000 + 1000;
+        if (attempt < maxAttempts && err.response && err.response.status === 429) {
+          rotateKey();
+          logger.warn(`429 Too Many Requests in batch ${Math.floor(i/BATCH_SIZE) + 1}. Instantly retrying with new key... (Attempt ${attempt}/${maxAttempts})`);
+          
+          if (attempt % cohereApiKeys.length === 0) {
+            logger.warn(`All ${cohereApiKeys.length} API keys currently exhausted! Sleeping for 15s before continuing...`);
+            await new Promise(resolve => setTimeout(resolve, 15000));
           }
-          logger.warn(`429 Too Many Requests in batch ${Math.floor(i/BATCH_SIZE) + 1}. Retrying in ${delayMs}ms... (Attempt ${attempt}/${maxAttempts})`);
-          await new Promise(resolve => setTimeout(resolve, delayMs));
+          
           attempt++;
         } else {
-           logger.error({ err, batchIndex: Math.floor(i/BATCH_SIZE) }, "Batch embedding failed");
+           logger.error({ err: err.response?.data || err.message, batchIndex: Math.floor(i/BATCH_SIZE) }, "Batch embedding failed");
            throw err;
         }
       }
