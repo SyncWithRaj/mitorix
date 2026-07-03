@@ -264,13 +264,14 @@ export async function computeDrift(
     // If the file doesn't exist in the new repo, the entity is correctly flagged as 100% deleted.
     const pointSearchFilter = JSON.parse(JSON.stringify(newSearchFilter));
     if (oldRelativePath !== "unknown") {
-      // Use 'should' to match either the new relativePath field, or fallback to the exact filePath
-      // This ensures cross-repo (different temp clone paths) still match!
+      const shouldConditions: any[] = [
+        { key: "metadata.relativePath", match: { value: oldRelativePath } }
+      ];
+      if (oldMeta.filePath !== undefined && oldMeta.filePath !== null) {
+        shouldConditions.push({ key: "metadata.filePath", match: { value: oldMeta.filePath } });
+      }
       pointSearchFilter.must.push({
-        should: [
-          { key: "metadata.relativePath", match: { value: oldRelativePath } },
-          { key: "metadata.filePath", match: { value: oldMeta.filePath } }
-        ]
+        should: shouldConditions
       });
     }
 
