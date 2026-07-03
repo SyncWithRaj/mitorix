@@ -179,12 +179,13 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
 
     logger.debug({ repoId, progress: `${batchStart}/${total}`, batchSize: batch.length }, "Embedding batch");
 
-    const filePaths = [...new Set(batch.map(e => e.filePath))];
-    const fileContentBatch = await getCachedFileContentBatch(repoId, filePaths);
+    const relativePaths = [...new Set(batch.map(e => path.relative(repo.localPath, e.filePath).replace(/\\/g, "/")))];
+    const fileContentBatch = await getCachedFileContentBatch(repoId, relativePaths);
 
     // Prepare all texts for this batch
     const texts = batch.map((entity) => {
-      const fullFileContent = fileContentBatch.get(entity.filePath) || "";
+      const relativePath = path.relative(repo.localPath, entity.filePath).replace(/\\/g, "/");
+      const fullFileContent = fileContentBatch.get(relativePath) || "";
       const lines = fullFileContent.split("\n");
       const entityContent = lines.slice(entity.startLine - 1, entity.endLine).join("\n");
 
