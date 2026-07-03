@@ -54,9 +54,9 @@ export async function parseRepository(
       const content = fs.readFileSync(filePath, "utf-8");
       let parser: LanguageParser | null = null;
 
-      if (filePath.endsWith(".ts") || filePath.endsWith(".js")) {
+      if (filePath.endsWith(".ts")) {
         parser = tsParser;
-      } else if (filePath.endsWith(".tsx") || filePath.endsWith(".jsx")) {
+      } else if (filePath.endsWith(".tsx") || filePath.endsWith(".jsx") || filePath.endsWith(".js")) {
         parser = tsxParser;
       } else if (filePath.endsWith(".py")) {
         if (!pyParser) pyParser = new PythonParser();

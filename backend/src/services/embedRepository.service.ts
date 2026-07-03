@@ -7,6 +7,7 @@ import { expandEntities } from "../utils/repoParsedData.helpers.js";
 import { v4 as uuidv4 } from "uuid";
 import { Repository } from "../models/repo.model.js";
 import { getCachedFileContentBatch } from "../utils/fileContentCache.util.js";
+import { generateSparseVector } from "../utils/sparseVector.util.js";
 import { VectorInitService } from "./vectorInit.service.js";
 import logger from "../lib/logger.js";
 
@@ -179,12 +180,13 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
 
     logger.debug({ repoId, progress: `${batchStart}/${total}`, batchSize: batch.length }, "Embedding batch");
 
-    const filePaths = [...new Set(batch.map(e => e.filePath))];
-    const fileContentBatch = await getCachedFileContentBatch(repoId, filePaths);
+    const relativePaths = [...new Set(batch.map(e => path.relative(repo.localPath, e.filePath).replace(/\\/g, "/")))];
+    const fileContentBatch = await getCachedFileContentBatch(repoId, relativePaths);
 
     // Prepare all texts for this batch
     const texts = batch.map((entity) => {
-      const fullFileContent = fileContentBatch.get(entity.filePath) || "";
+      const relativePath = path.relative(repo.localPath, entity.filePath).replace(/\\/g, "/");
+      const fullFileContent = fileContentBatch.get(relativePath) || "";
       const lines = fullFileContent.split("\n");
       const entityContent = lines.slice(entity.startLine - 1, entity.endLine).join("\n");
 
@@ -192,6 +194,7 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
 Entity Type: ${entity?.type}
 Name: ${entity?.name}
 File: ${entity?.filePath}
+Lines: ${entity.startLine}-${entity.endLine}
 
 Code:
 ${entityContent}
@@ -210,7 +213,10 @@ ${entityContent}
 
       batchPoints.push({
         id: uuidv4(),
-        vector: vectors[j],
+        vector: {
+          "": vectors[j],
+          "bm25": generateSparseVector(texts[j]!),
+        },
         payload: {
           metadata: {
             mongoId: entity._id ? entity._id.toString() : "",
