@@ -547,6 +547,15 @@ export default function Dashboard() {
             <span className="text-xs font-mono font-semibold text-[#52525b]">{repos.length} space(s) registered</span>
           </div>
 
+          {repos.length > 0 && (
+            <div className="px-4 py-3 bg-[#ffa800]/10 border border-[#ffa800]/30 rounded-xl relative z-10 flex items-start gap-3 shadow-[0_0_15px_rgba(255,168,0,0.1)]">
+              <Info size={16} className="text-[#ffa800] mt-0.5 shrink-0" />
+              <p className="text-xs text-[#e4e4e7] leading-relaxed">
+                <strong className="text-white">Crucial Step:</strong> To unlock AI Chat, MitorixLabs and Semantic Search, you <strong className="text-[#ffa800] underline decoration-[#ffa800]/50 underline-offset-2">must</strong> click <strong className="text-[#ffa800] font-bold px-1.5 py-0.5 bg-black/50 rounded-md border border-[#ffa800]/30">Create Embeddings</strong> for your repository.
+              </p>
+            </div>
+          )}
+
           {repos.length === 0 ? (
             <div className="text-center py-32 px-6 bg-black/40 backdrop-blur-2xl border border-dashed border-white/10 rounded-3xl flex flex-col items-center shadow-lg">
               <div className="w-20 h-20 rounded-2xl bg-[#09090b] border border-[#1f1f23] flex items-center justify-center mb-6 shadow-inner relative">
@@ -689,14 +698,6 @@ export default function Dashboard() {
             </div>
           )}
 
-          {repos.length > 0 && (
-            <div className="mt-4 px-4 py-3 bg-[#18181b]/50 border border-[#27272a] rounded-lg relative z-10 flex items-start gap-3">
-              <Info size={16} className="text-[#a1a1aa] mt-0.5 shrink-0" />
-              <p className="text-xs text-[#a1a1aa] leading-relaxed">
-                <strong className="text-[#e4e4e7]">Note:</strong> For features like CodeFlow, AI Chat, Semantic Search, and MitorixLabs, you must click <strong className="text-[#ffa800]">Create Embeddings</strong> first for the repository.
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>
