@@ -54,6 +54,11 @@ export class VectorInitService {
         size: 1024, // Cohere embed-english-v3.0 outputs 1024-dimensional vectors
         distance: "Cosine",
       },
+      sparse_vectors: {
+        bm25: {
+          modifier: "idf",
+        },
+      },
       hnsw_config: {
         m: 16,
         ef_construct: 100,

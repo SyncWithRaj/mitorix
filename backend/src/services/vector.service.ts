@@ -1,6 +1,8 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { embedDirect } from "./embedding.service.js";
 
+import { generateSparseVector } from "../utils/sparseVector.util.js";
+
 const COLLECTION = "repo_entities";
 
 const qdrantDirect = new QdrantClient({
@@ -9,34 +11,44 @@ const qdrantDirect = new QdrantClient({
 });
 
 /**
- * Fast vector search using direct Ollama embed + direct Qdrant search.
+ * Fast vector search using direct Cohere embed + BM25 Hybrid Search.
  * Used by the RAG chat pipeline (query.service.ts).
  */
 export const searchVectors = async (repoId: string, query: string) => {
-  // Embed query directly via Ollama /api/embed
+  // Embed query directly via Cohere
   const queryVector = await embedDirect(query);
+  const sparseVector = generateSparseVector(query);
 
-  // Search Qdrant with HNSW params tuned for speed
-  const searchResults = await qdrantDirect.search(COLLECTION, {
-    vector: queryVector,
-    limit: 10,
-    filter: {
-      must: [
-        {
-          key: "metadata.repoId",
-          match: { value: repoId },
+  // Search Qdrant using Hybrid Search (Dense + Sparse via RRF)
+  const searchResults = await qdrantDirect.query(COLLECTION, {
+    prefetch: [
+      {
+        query: queryVector,
+        using: "", // default unnamed dense vector
+        limit: 20,
+        filter: {
+          must: [{ key: "metadata.repoId", match: { value: repoId } }],
         },
-      ],
+      },
+      {
+        query: sparseVector,
+        using: "bm25", // named sparse vector
+        limit: 20,
+        filter: {
+          must: [{ key: "metadata.repoId", match: { value: repoId } }],
+        },
+      }
+    ],
+    query: {
+      fusion: "rrf" // Reciprocal Rank Fusion
     },
+    limit: 10,
     with_payload: true,
-    params: {
-      hnsw_ef: 96,
-      exact: false,
-    },
   });
 
   // Transform to [Document, score] format expected by query.service.ts
-  return searchResults.map((hit) => {
+  const points = (searchResults as any).points || searchResults;
+  return points.map((hit: any) => {
     const payload = hit.payload as any;
     return [
       {

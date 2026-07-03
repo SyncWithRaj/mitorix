@@ -7,6 +7,7 @@ import { expandEntities } from "../utils/repoParsedData.helpers.js";
 import { v4 as uuidv4 } from "uuid";
 import { Repository } from "../models/repo.model.js";
 import { getCachedFileContentBatch } from "../utils/fileContentCache.util.js";
+import { generateSparseVector } from "../utils/sparseVector.util.js";
 import { VectorInitService } from "./vectorInit.service.js";
 import logger from "../lib/logger.js";
 
@@ -193,6 +194,7 @@ export async function embedRepository(repoId: string, onProgress?: (current: num
 Entity Type: ${entity?.type}
 Name: ${entity?.name}
 File: ${entity?.filePath}
+Lines: ${entity.startLine}-${entity.endLine}
 
 Code:
 ${entityContent}
@@ -211,7 +213,10 @@ ${entityContent}
 
       batchPoints.push({
         id: uuidv4(),
-        vector: vectors[j],
+        vector: {
+          "": vectors[j],
+          "bm25": generateSparseVector(texts[j]!),
+        },
         payload: {
           metadata: {
             mongoId: entity._id ? entity._id.toString() : "",
