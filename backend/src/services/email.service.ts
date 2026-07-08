@@ -52,7 +52,7 @@ const generateInvoicePDF = (
         .fillColor("#18181b").font("Helvetica-Bold")
         .text("Mitorix Inc.", 50, topSectionY + 15)
         .font("Helvetica").fillColor("#52525b")
-        .text("ribadiyaraj18@gmail.com", 50, topSectionY + 30);
+        .text("support@mitorix.site", 50, topSectionY + 30);
       
       doc.fontSize(10).fillColor("#71717a")
         .text("INVOICE DETAILS:", 350, topSectionY)
@@ -94,7 +94,7 @@ const generateInvoicePDF = (
       doc.fillColor("#ff6b00").text(`Rs ${(amountInPaise / 100).toFixed(2)}`, 450, tableTop + 95, { width: 100, align: "right" });
 
       doc.moveDown(6);
-      doc.font("Helvetica").fontSize(10).fillColor("#a1a1aa").text("Thank you for choosing Mitorix. If you have any questions, please contact ribadiyaraj18@gmail.com.", 50, doc.y, { align: "center", width: 512 });
+      doc.font("Helvetica").fontSize(10).fillColor("#a1a1aa").text("Thank you for choosing Mitorix. If you have any questions, please contact support@mitorix.site.", 50, doc.y, { align: "center", width: 512 });
 
       doc.end();
     } catch (err) {
