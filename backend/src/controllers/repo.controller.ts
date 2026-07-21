@@ -71,7 +71,7 @@ export const addRepository = async (req: Request, res: Response, next: NextFunct
       logger.info({ repoId: repo._id, githubUrl }, "Initiating repository clone");
 
       // Disable any stored credential helpers that might provide stale/bad creds
-      await git.clone(githubUrl, repoPath, ["--depth", "1", "-c", "credential.helper="]);
+      await git.clone(githubUrl, repoPath, ["--depth", "1"]);
 
       logger.info({ repoId: repo._id }, "Clone operation completed successfully");
 

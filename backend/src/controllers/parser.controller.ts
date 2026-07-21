@@ -202,7 +202,7 @@ export async function parseRepoController(req: Request, res: Response, next: Nex
 
       try {
         const git = simpleGit();
-        await git.clone(repo.githubUrl, repoPath, ["--depth", "1", "-c", "credential.helper="]);
+        await git.clone(repo.githubUrl, repoPath, ["--depth", "1"]);
         logger.info({ repoId: id, repoPath }, "Re-clone successful");
 
         // Update localPath in DB

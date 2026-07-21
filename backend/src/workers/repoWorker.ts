@@ -112,7 +112,7 @@ export const repoWorker = new Worker<JobData, JobResult, string>(
 
         logger.info({ safeUrl, repoPath, repoId }, "Cloning repository");
         const git = simpleGit();
-        await git.clone(cloneUrl, repoPath, ["--depth", "1", "-c", "credential.helper="]);
+        await git.clone(cloneUrl, repoPath, ["--depth", "1"]);
 
         const clonedRepo = simpleGit(repoPath);
         const latestCommit = await clonedRepo.revparse(["HEAD"]);
