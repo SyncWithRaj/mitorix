@@ -9,12 +9,13 @@ WORKDIR /app
 # tree-sitter requires native compilation (node-gyp)
 RUN apk add --no-cache python3 make g++ git
 
-# Tell node-gyp to use bundled headers (avoids network fetch in Docker)
-ENV npm_config_nodedir=/usr/local
+# Enable pnpm via corepack
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Install ALL dependencies (tsx is needed at runtime)
-COPY package.json package-lock.json ./
-RUN npm ci --legacy-peer-deps
+COPY package.json pnpm-lock.yaml ./
+COPY .npmrc* ./
+RUN pnpm install --frozen-lockfile
 
 
 # ---- Stage 2: Production ----

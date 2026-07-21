@@ -6,13 +6,21 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 
+# Enable pnpm via corepack
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 # Install dependencies for building
-COPY package.json package-lock.json ./
-RUN npm ci --legacy-peer-deps
+COPY package.json pnpm-lock.yaml ./
+COPY .npmrc* ./
+RUN pnpm install --frozen-lockfile
 
 # ---- Stage 2: Builder ----
 FROM node:22-alpine AS builder
 WORKDIR /app
+
+# Enable pnpm via corepack
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -23,7 +31,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_URL=/api/v1
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
-RUN npm run build
+RUN pnpm run build
 
 # ---- Stage 3: Runner ----
 FROM node:22-alpine AS runner
