@@ -33,19 +33,15 @@ ENV NODE_ENV=production
 # simple-git needs git at runtime; tree-sitter native bindings need libstdc++
 RUN apk add --no-cache git libstdc++
 
-# Enable pnpm for runtime (pnpm exec tsx)
-# RUN corepack enable && corepack prepare pnpm@10 --activate
-
-# Copy everything from builder (tsx + source needed at runtime)
-COPY --from=builder /app/backend/node_modules ./node_modules
-COPY --from=builder /app/backend/package.json ./
+# Copy the ENTIRE deps output (preserves pnpm symlink structure)
+COPY --from=builder /app ./
 
 # Copy TypeScript source (tsx runs directly from .ts files)
-COPY backend/tsconfig.json ./
-COPY backend/src/ ./src/
+COPY backend/tsconfig.json ./backend/
+COPY backend/src/ ./backend/src/
 
 # Create storage directory for cloned repos
-RUN mkdir -p /app/storage
+RUN mkdir -p /app/backend/storage
 
 # Don't run as root
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
@@ -57,6 +53,6 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:5000/api/v1/health || exit 1
 
-# Use tsx to run TypeScript directly (same as dev mode)
-# This avoids ESM import extension issues that tsc compilation produces
+# Run from backend directory using tsx directly
+WORKDIR /app/backend
 CMD ["./node_modules/.bin/tsx", "src/server.ts"]
