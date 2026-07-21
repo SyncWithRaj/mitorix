@@ -34,7 +34,7 @@ ENV NODE_ENV=production
 RUN apk add --no-cache git libstdc++
 
 # Enable pnpm for runtime (pnpm exec tsx)
-RUN corepack enable && corepack prepare pnpm@10 --activate
+# RUN corepack enable && corepack prepare pnpm@10 --activate
 
 # Copy everything from builder (tsx + source needed at runtime)
 COPY --from=builder /app/backend/node_modules ./node_modules
@@ -59,4 +59,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 # Use tsx to run TypeScript directly (same as dev mode)
 # This avoids ESM import extension issues that tsc compilation produces
-CMD ["pnpm", "exec", "tsx", "src/server.ts"]
+CMD ["./node_modules/.bin/tsx", "src/server.ts"]
