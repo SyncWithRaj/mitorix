@@ -1,6 +1,8 @@
 # ==============================================
 # Mitorix Backend — Production Dockerfile
 # ==============================================
+# Build context: project root (.)
+# Usage: docker compose build backend
 
 # ---- Stage 1: Build ----
 FROM node:22-alpine AS builder
@@ -13,8 +15,8 @@ RUN apk add --no-cache python3 make g++ git
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Install ALL dependencies (tsx is needed at runtime)
-COPY package.json pnpm-lock.yaml ./
-COPY .npmrc* ./
+COPY backend/package.json ./
+COPY pnpm-lock.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
 
 
@@ -27,13 +29,16 @@ ENV NODE_ENV=production
 # simple-git needs git at runtime; tree-sitter native bindings need libstdc++
 RUN apk add --no-cache git libstdc++
 
+# Enable pnpm for runtime (pnpm exec tsx)
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 # Copy everything from builder (tsx + source needed at runtime)
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
 
 # Copy TypeScript source (tsx runs directly from .ts files)
-COPY tsconfig.json ./
-COPY src/ ./src/
+COPY backend/tsconfig.json ./
+COPY backend/src/ ./src/
 
 # Create storage directory for cloned repos
 RUN mkdir -p /app/storage
@@ -50,4 +55,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 # Use tsx to run TypeScript directly (same as dev mode)
 # This avoids ESM import extension issues that tsc compilation produces
-CMD ["npx", "tsx", "src/server.ts"]
+CMD ["pnpm", "exec", "tsx", "src/server.ts"]

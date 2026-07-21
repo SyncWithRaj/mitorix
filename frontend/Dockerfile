@@ -1,6 +1,8 @@
 # ==============================================
 # Mitorix Frontend — Production Dockerfile
 # ==============================================
+# Build context: project root (.)
+# Usage: docker compose build frontend
 
 # ---- Stage 1: Dependencies ----
 FROM node:22-alpine AS deps
@@ -10,8 +12,8 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Install dependencies for building
-COPY package.json pnpm-lock.yaml ./
-COPY .npmrc* ./
+COPY frontend/package.json ./
+COPY pnpm-lock.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
 
 # ---- Stage 2: Builder ----
@@ -22,7 +24,7 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY frontend/ .
 
 # Build Next.js app (using standalone output)
 ENV NEXT_TELEMETRY_DISABLED=1
