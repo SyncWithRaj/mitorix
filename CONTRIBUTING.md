@@ -51,7 +51,7 @@ chmod +x setup.sh
 The setup script will:
 1. Validate Node.js v22+
 2. Install OS-level build tools (for tree-sitter native compilation)
-3. Run `npm ci` in `backend/` and `frontend/`
+3. Run `pnpm install` in `backend/` and `frontend/`
 4. Scaffold `.env` from the example template
 5. Skip reinstall on re-runs if dependencies haven't changed
 
@@ -78,7 +78,7 @@ Optional (for full functionality):
 docker compose up -d mongodb redis qdrant
 
 # Seed a demo user and a pre-parsed test repository
-cd backend && npm run seed
+cd backend && pnpm run seed
 ```
 
 The seed script:
@@ -91,10 +91,10 @@ The seed script:
 
 ```bash
 # Terminal 1: Backend (auto-reloads on changes)
-cd backend && npm run dev
+cd backend && pnpm run dev
 
 # Terminal 2: Frontend (auto-reloads on changes)
-cd frontend && npm run dev
+cd frontend && pnpm run dev
 ```
 
 ### Step 5: Open & Login
@@ -111,10 +111,10 @@ You'll be redirected to the dashboard with the seeded repository — graph, edit
 |---|---|
 | `./setup.sh` | Install all dependencies (smart — skips if up to date) |
 | `docker compose up -d mongodb redis qdrant` | Start infrastructure services |
-| `cd backend && npm run seed` | Seed demo user + test repository |
-| `cd backend && npm run unseed` | Remove all seeded data |
-| `cd backend && npm run dev` | Start backend dev server (tsx watch, port 5000) |
-| `cd frontend && npm run dev` | Start frontend dev server (Turbopack, port 3000) |
+| `cd backend && pnpm run seed` | Seed demo user + test repository |
+| `cd backend && pnpm run unseed` | Remove all seeded data |
+| `cd backend && pnpm run dev` | Start backend dev server (tsx watch, port 5000) |
+| `cd frontend && pnpm run dev` | Start frontend dev server (Turbopack, port 3000) |
 
 ---
 
@@ -259,8 +259,8 @@ chore: add setup.sh for one-command contributor onboarding
 
 - [ ] Your branch is up to date with the base branch
 - [ ] `./setup.sh` runs without errors
-- [ ] Backend starts without errors: `cd backend && npm run dev`
-- [ ] Frontend starts without errors: `cd frontend && npm run dev`
+- [ ] Backend starts without errors: `cd backend && pnpm run dev`
+- [ ] Frontend starts without errors: `cd frontend && pnpm run dev`
 - [ ] You've tested your changes manually
 - [ ] No unrelated changes are included
 

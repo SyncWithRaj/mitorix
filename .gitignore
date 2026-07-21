@@ -8,6 +8,7 @@
 node_modules/
 .pnp
 .pnp.js
+.pnpm-store/
 
 # ── Environment Variables ─────────────────────────────────────
 # NEVER commit real .env files — use .env.*.example as templates
@@ -95,3 +96,5 @@ dragdropmain.md
 codebase_analysis.md
 implementation_plan.md
 repolens.txt
+performance_improve.md
+DB.excalidraw

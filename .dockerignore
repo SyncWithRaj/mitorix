@@ -1,0 +1,44 @@
+# Docker build context: project root
+# This applies when building via docker-compose
+
+# Dependencies (each stage installs its own)
+**/node_modules
+**/.pnpm-store
+
+# Build outputs
+frontend/.next
+backend/dist
+
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Runtime storage (not needed in images)
+backend/qdrant_storage
+backend/storage
+
+# IDE
+.vscode
+.idea
+
+# Logs
+*.log
+
+# Keys
+*.pem
+*.key
+
+# Docs (not needed in images)
+*.md
+!frontend/README.md
+
+# Misc
+DB.excalidraw
+*.txt
+Makefile

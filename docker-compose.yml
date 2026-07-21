@@ -63,7 +63,9 @@ services:
 
   backend:
     image: mitorix-backend:latest
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: mitorix_backend
     ports:
       - "5000:5000"
@@ -92,7 +94,8 @@ services:
   frontend:
     image: mitorix-frontend:latest
     build:
-      context: ./frontend
+      context: .
+      dockerfile: frontend/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: /api/v1
     container_name: mitorix_frontend

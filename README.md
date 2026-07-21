@@ -193,7 +193,7 @@ mitorix/
    ```
 
 2. **Initialize Environment**
-   Execute the validation and setup script. This checks your Node version, installs native OS tools required by Tree-sitter compilers, runs `npm ci` for packages, and sets up a starter configuration:
+   Execute the validation and setup script. This checks your Node version, installs native OS tools required by Tree-sitter compilers, runs `pnpm install` for packages, and sets up a starter configuration:
    ```bash
    chmod +x setup.sh
    ./setup.sh
@@ -216,17 +216,17 @@ mitorix/
 5. **Seed Sandbox Data (Optional)**
    Verify everything is working by seeding a test user and analyzing a sample local repository:
    ```bash
-   cd backend && npm run seed
+   cd backend && pnpm run seed
    ```
 
 6. **Start Dev Servers**
    - **Backend (Terminal 1):**
      ```bash
-     cd backend && npm run dev
+     cd backend && pnpm run dev
      ```
    - **Frontend (Terminal 2):**
      ```bash
-     cd frontend && npm run dev
+     cd frontend && pnpm run dev
      ```
 
 7. **Access App**
