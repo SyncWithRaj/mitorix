@@ -12,12 +12,16 @@ WORKDIR /app
 RUN apk add --no-cache python3 make g++ git
 
 # Enable pnpm via corepack
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
-# Install ALL dependencies (tsx is needed at runtime)
-COPY backend/package.json ./
-COPY pnpm-lock.yaml .npmrc ./
-RUN pnpm install --frozen-lockfile
+# Copy workspace config + all package.json files for lockfile validation
+COPY pnpm-workspace.yaml .npmrc ./
+COPY pnpm-lock.yaml ./
+COPY frontend/package.json ./frontend/
+COPY backend/package.json ./backend/
+
+# Install only backend dependencies
+RUN pnpm install --frozen-lockfile --config.minimum-release-age=0s --filter backend
 
 
 # ---- Stage 2: Production ----
@@ -30,11 +34,11 @@ ENV NODE_ENV=production
 RUN apk add --no-cache git libstdc++
 
 # Enable pnpm for runtime (pnpm exec tsx)
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 # Copy everything from builder (tsx + source needed at runtime)
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
+COPY --from=builder /app/backend/node_modules ./node_modules
+COPY --from=builder /app/backend/package.json ./
 
 # Copy TypeScript source (tsx runs directly from .ts files)
 COPY backend/tsconfig.json ./

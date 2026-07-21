@@ -75,13 +75,13 @@ success "Node.js ${NODE_VERSION} ✓"
 if ! command -v pnpm &>/dev/null; then
   info "pnpm is not installed. Installing via corepack…"
   corepack enable
-  corepack prepare pnpm@latest --activate
+  corepack prepare pnpm@10 --activate
 fi
 
 if ! command -v pnpm &>/dev/null; then
   error "Failed to install pnpm. Please install manually:"
   echo "  npm install -g pnpm"
-  echo "  or: corepack enable && corepack prepare pnpm@latest --activate"
+  echo "  or: corepack enable && corepack prepare pnpm@10 --activate"
   exit 1
 fi
 
