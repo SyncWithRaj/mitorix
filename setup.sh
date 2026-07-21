@@ -5,10 +5,10 @@
 # Usage:  chmod +x setup.sh && ./setup.sh
 #
 # This script will:
-#   1. Verify Node.js v22 (LTS) and npm are installed
+#   1. Verify Node.js v22 (LTS) and pnpm are installed
 #   2. Install OS-level build tools needed by native addons (tree-sitter / node-gyp)
-#   3. Install backend npm dependencies
-#   4. Install frontend npm dependencies
+#   3. Install backend pnpm dependencies
+#   4. Install frontend pnpm dependencies
 #   5. Install Ollama and pull the nomic-embed-text model (local embeddings)
 #   6. Scaffold a starter .env for the project root (if missing)
 #
@@ -70,15 +70,23 @@ fi
 
 success "Node.js ${NODE_VERSION} ✓"
 
-# ─── Step 2: Verify npm ───────────────────────────────────────
+# ─── Step 2: Verify pnpm ───────────────────────────────────────
 
-if ! command -v npm &>/dev/null; then
-  error "npm is not installed (should ship with Node.js)."
+if ! command -v pnpm &>/dev/null; then
+  info "pnpm is not installed. Installing via corepack…"
+  corepack enable
+  corepack prepare pnpm@latest --activate
+fi
+
+if ! command -v pnpm &>/dev/null; then
+  error "Failed to install pnpm. Please install manually:"
+  echo "  npm install -g pnpm"
+  echo "  or: corepack enable && corepack prepare pnpm@latest --activate"
   exit 1
 fi
 
-NPM_VERSION="$(npm -v)"
-success "npm v${NPM_VERSION} ✓"
+PNPM_VERSION="$(pnpm -v)"
+success "pnpm v${PNPM_VERSION} ✓"
 
 # ─── Step 3: Install OS-level build tools ─────────────────────
 
@@ -155,24 +163,27 @@ install_build_deps() {
 
 install_build_deps
 
-# ─── Helper: Smart npm install (skip if lockfile unchanged) ───
+# ─── Helper: Smart pnpm install (skip if lockfile unchanged) ───
 
-# Computes an md5 hash of package-lock.json and stores it inside
+# Computes an md5 hash of pnpm-lock.yaml and stores it inside
 # node_modules/.lockfile-hash. On re-runs, if the hash matches,
 # we skip the install entirely.
-smart_npm_ci() {
+smart_pnpm_install() {
   local dir="$1"
   local label="$2"
-  local lockfile="${dir}/package-lock.json"
+  local lockfile="${SCRIPT_DIR}/pnpm-lock.yaml"
   local hashfile="${dir}/node_modules/.lockfile-hash"
 
   if [[ ! -f "$lockfile" ]]; then
-    error "${label}/package-lock.json not found. Are you in the project root?"
-    exit 1
+    info "No pnpm-lock.yaml found — running initial install…"
   fi
 
   local current_hash
-  current_hash="$(md5sum "$lockfile" | cut -d ' ' -f1)"
+  if [[ -f "$lockfile" ]]; then
+    current_hash="$(md5sum "$lockfile" | cut -d ' ' -f1)"
+  else
+    current_hash="no-lockfile"
+  fi
 
   if [[ -d "${dir}/node_modules" && -f "$hashfile" ]]; then
     local cached_hash
@@ -184,10 +195,13 @@ smart_npm_ci() {
     info "Lockfile changed since last install — reinstalling…"
   fi
 
-  info "Running npm ci in ${label}/ (this may take a minute)…"
-  (cd "$dir" && npm ci --legacy-peer-deps)
+  info "Running pnpm install in ${label}/ (this may take a minute)…"
+  (cd "$dir" && pnpm install)
 
   # Cache the hash so next run can skip
+  if [[ -f "$lockfile" ]]; then
+    current_hash="$(md5sum "$lockfile" | cut -d ' ' -f1)"
+  fi
   printf '%s' "$current_hash" > "$hashfile"
   success "${label} dependencies installed ✓"
 }
@@ -201,7 +215,7 @@ if [[ ! -f "${SCRIPT_DIR}/backend/package.json" ]]; then
   exit 1
 fi
 
-smart_npm_ci "${SCRIPT_DIR}/backend" "backend"
+smart_pnpm_install "${SCRIPT_DIR}/backend" "backend"
 
 # ─── Step 5: Install frontend dependencies ────────────────────
 
@@ -212,7 +226,7 @@ if [[ ! -f "${SCRIPT_DIR}/frontend/package.json" ]]; then
   exit 1
 fi
 
-smart_npm_ci "${SCRIPT_DIR}/frontend" "frontend"
+smart_pnpm_install "${SCRIPT_DIR}/frontend" "frontend"
 
 # ─── Step 5: Install Ollama & pull nomic-embed-text ──────────
 
@@ -305,14 +319,13 @@ printf "  3. Start Ollama (if not already running):\n"
 printf "     ${CYAN}ollama serve${NC}\n"
 printf "\n"
 printf "  4. Seed demo data (creates a test user + parses a sample project):\n"
-printf "     ${CYAN}cd backend && npm run seed${NC}\n"
+printf "     ${CYAN}cd backend && pnpm run seed${NC}\n"
 printf "\n"
 printf "  5. Run the backend:\n"
-printf "     ${CYAN}cd backend && npm run dev${NC}\n"
+printf "     ${CYAN}cd backend && pnpm run dev${NC}\n"
 printf "\n"
 printf "  6. Run the frontend (in a new terminal):\n"
-printf "     ${CYAN}cd frontend && npm run dev${NC}\n"
+printf "     ${CYAN}cd frontend && pnpm run dev${NC}\n"
 printf "\n"
 printf "  Once running, open http://localhost:3000/login and click \"Dev Login\"!\n"
 printf "\n"
-
