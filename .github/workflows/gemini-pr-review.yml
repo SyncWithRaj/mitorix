@@ -14,6 +14,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      issues: write
 
     steps:
       - name: Checkout PR Code
@@ -34,10 +35,16 @@ jobs:
         with:
           script: |
             const fs = require('fs');
+
+            if (!process.env.GEMINI_API_KEY) {
+              core.setFailed('GOOGLE_API_KEY secret is missing! Please add GOOGLE_API_KEY in GitHub Repo Settings -> Secrets -> Actions.');
+              return;
+            }
+
             const diff = fs.readFileSync('safe_diff.txt', 'utf8');
 
             if (!diff || !diff.trim()) {
-              console.log('No code changes found in diff.');
+              console.log('No code changes found in backend/ or frontend/ for this PR diff.');
               return;
             }
 
@@ -65,7 +72,8 @@ jobs:
               const reviewText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
               if (!reviewText) {
-                console.error('API Error Response:', JSON.stringify(data));
+                console.error('Gemini API Error Response:', JSON.stringify(data));
+                core.setFailed('Gemini API failed to return text response: ' + (data?.error?.message || 'Unknown error'));
                 return;
               }
 
@@ -77,6 +85,8 @@ jobs:
                 issue_number: context.issue.number,
                 body: commentBody
               });
+              console.log('Successfully posted Gemini AI code review comment on PR #' + context.issue.number);
             } catch (err) {
               console.error('Error running Gemini PR Review:', err);
+              core.setFailed('Gemini review action failed: ' + err.message);
             }
