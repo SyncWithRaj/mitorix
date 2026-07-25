@@ -88,13 +88,4 @@ frontend/**/*.md
 coverage/
 backend/coverage/
 
-architecture.md
-DEPLOYMENT_GUIDE.md
-PLANNING.md
-dragdrop.md
-dragdropmain.md
-codebase_analysis.md
-implementation_plan.md
-repolens.txt
-performance_improve.md
 DB.excalidraw
