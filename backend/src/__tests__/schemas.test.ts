@@ -10,59 +10,59 @@ import { processCallSchema } from "../schemas/call.schema.js";
 describe("addRepositorySchema", () => {
   it("should accept a valid GitHub URL", () => {
     const result = addRepositorySchema.safeParse({
-      githubUrl: "https://github.com/owner/repo",
+      body: { githubUrl: "https://github.com/owner/repo" },
     });
     expect(result.success).toBe(true);
   });
 
   it("should reject a missing githubUrl", () => {
-    const result = addRepositorySchema.safeParse({});
+    const result = addRepositorySchema.safeParse({ body: {} });
     expect(result.success).toBe(false);
   });
 
   it("should reject a non-GitHub URL", () => {
     const result = addRepositorySchema.safeParse({
-      githubUrl: "https://gitlab.com/owner/repo",
+      body: { githubUrl: "https://gitlab.com/owner/repo" },
     });
     expect(result.success).toBe(false);
   });
 
   it("should reject a malformed URL", () => {
-    const result = addRepositorySchema.safeParse({ githubUrl: "not-a-url" });
+    const result = addRepositorySchema.safeParse({ body: { githubUrl: "not-a-url" } });
     expect(result.success).toBe(false);
   });
 });
 
 describe("querySchema", () => {
   it("should accept valid repoId and question", () => {
-    const result = querySchema.safeParse({ repoId: "abc123", question: "What does this do?" });
+    const result = querySchema.safeParse({ body: { repoId: "abc123", question: "What does this do?" } });
     expect(result.success).toBe(true);
   });
 
   it("should reject an empty question", () => {
-    const result = querySchema.safeParse({ repoId: "abc123", question: "" });
+    const result = querySchema.safeParse({ body: { repoId: "abc123", question: "" } });
     expect(result.success).toBe(false);
   });
 
   it("should reject a question over 2000 characters", () => {
-    const result = querySchema.safeParse({ repoId: "abc123", question: "a".repeat(2001) });
+    const result = querySchema.safeParse({ body: { repoId: "abc123", question: "a".repeat(2001) } });
     expect(result.success).toBe(false);
   });
 
   it("should reject missing repoId", () => {
-    const result = querySchema.safeParse({ question: "What does this do?" });
+    const result = querySchema.safeParse({ body: { question: "What does this do?" } });
     expect(result.success).toBe(false);
   });
 });
 
 describe("processCallSchema", () => {
   it("should accept valid repoId and audioBase64", () => {
-    const result = processCallSchema.safeParse({ repoId: "abc123", audioBase64: "dGVzdA==" });
+    const result = processCallSchema.safeParse({ body: { repoId: "abc123", audioBase64: "dGVzdA==" } });
     expect(result.success).toBe(true);
   });
 
   it("should reject missing audioBase64", () => {
-    const result = processCallSchema.safeParse({ repoId: "abc123" });
+    const result = processCallSchema.safeParse({ body: { repoId: "abc123" } });
     expect(result.success).toBe(false);
   });
 });
