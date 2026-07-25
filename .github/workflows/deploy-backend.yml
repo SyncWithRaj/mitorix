@@ -22,6 +22,6 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/repolensmain
-            git pull https://${{ secrets.GIT_USERNAME }}:${{ secrets.GIT_TOKEN }}@github.com/SyncWithRaj/RepoLens-MurfAI.git main
+            cd ~/RepoLensMain/
+            git pull https://${{ secrets.GIT_USERNAME }}:${{ secrets.GIT_TOKEN }}@github.com/SyncWithRaj/RepoLensMain.git main
             make deploy-ec2
