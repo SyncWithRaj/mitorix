@@ -8,7 +8,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import api from "@/lib/axios";
+import { useAuth } from "@/context/AuthContext";
 
 // ── Types ──
 
@@ -60,28 +60,21 @@ const SubscriptionContext = createContext<SubscriptionContextType>({
 // ── Provider ──
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
+  const auth = useAuth();
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  const fetchSubscription = useCallback(async () => {
-    try {
-      const res = await api.get("/auth/me");
-      if (res.data.success && res.data.subscription) {
-        setSubscription(res.data.subscription);
-      } else {
-        setSubscription(defaultSubscription);
-      }
-    } catch {
-      // Not logged in or error — use defaults
-      setSubscription(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
+  // Derive subscription from the shared AuthContext data
   useEffect(() => {
-    fetchSubscription();
-  }, [fetchSubscription]);
+    if (auth.loading) return;
+
+    if (auth.authData?.success && auth.authData?.subscription) {
+      setSubscription(auth.authData.subscription);
+    } else if (auth.isAuthenticated) {
+      setSubscription(defaultSubscription);
+    } else {
+      setSubscription(null);
+    }
+  }, [auth.authData, auth.loading, auth.isAuthenticated]);
 
   const hasFeature = useCallback(
     (feature: string): boolean => {
@@ -97,8 +90,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     <SubscriptionContext.Provider
       value={{
         subscription,
-        loading,
-        refresh: fetchSubscription,
+        loading: auth.loading,
+        refresh: auth.refresh,
         hasFeature,
         tier,
       }}

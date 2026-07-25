@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import {
   GitBranch,
   Box,
@@ -87,14 +88,13 @@ function RepoProgressTracker({ jobId, onComplete }: { jobId: string; onComplete:
 
 export default function Dashboard() {
   const router = useRouter();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
 
   const [repos, setRepos] = useState<any[]>([]);
   const [githubUrl, setGithubUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
-  const [user, setUser] = useState<any>(null);
-  const [authLoading, setAuthLoading] = useState(true);
   const [greeting, setGreeting] = useState("Good Morning");
   const [embeddingStates, setEmbeddingStates] = useState<Record<string, { current: number; total: number; completed: boolean }>>({});
   const activeEventSources = useRef<Set<string>>(new Set());
@@ -200,20 +200,19 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Redirect to login if auth resolves as unauthenticated
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await api.get("/auth/me");
-        setUser(res.data.user);
-        fetchRepos();
-      } catch {
-        router.push("/login");
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-    checkAuth();
-  }, [fetchRepos, router]);
+    if (!authLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [authLoading, isAuthenticated, router]);
+
+  // Fetch repos once auth is confirmed
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      fetchRepos();
+    }
+  }, [authLoading, isAuthenticated, fetchRepos]);
 
   // Poll for missing AI descriptions generated asynchronously
   useEffect(() => {
@@ -267,23 +266,50 @@ export default function Dashboard() {
   };
 
   const deleteRepo = async (repoId: string) => {
-    let warningMsg = "NUCLEAR OPTION: Are you sure you want to nuke this repository? This will instantly and irreversibly delete all your code data, vectors, and chat history.";
-
+    let warningMsg = "Are you sure you want to delete this repository? This will instantly and irreversibly delete all your code data, vectors, and chat history.";
+    
     if (tier === "FREE" || tier === "BASIC") {
       warningMsg += `\n\n⚠️ RATE LIMIT WARNING:\nDeleting this repository DOES NOT reset your creation limit. You are allowed to provision up to ${repoLimit} repositor${repoLimit === 1 ? 'y' : 'ies'} every 3 days on the ${tier} plan. If you have reached this limit, you must wait before adding another one.`;
     }
 
-    const confirmDelete = confirm(warningMsg);
-    if (!confirmDelete) return;
-
-    try {
-      await api.delete(`/repos/${repoId}`);
-      toast.success("Repository deleted successfully");
-      fetchRepos();
-    } catch (err) {
-      console.error("Delete repo error:", err);
-      toast.error("Failed to delete repository");
-    }
+    toast.custom((t) => (
+      <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-[#18181b] shadow-xl rounded-2xl border border-white/10 pointer-events-auto flex flex-col overflow-hidden`}>
+        <div className="p-5 flex gap-4">
+          <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+            <AlertTriangle className="text-red-500 w-6 h-6" />
+          </div>
+          <div className="flex-1 pt-1">
+            <h3 className="text-base font-bold text-white mb-1.5 tracking-tight">Delete Repository</h3>
+            <p className="text-sm text-[#a1a1aa] whitespace-pre-wrap leading-relaxed">{warningMsg}</p>
+          </div>
+        </div>
+        <div className="flex border-t border-white/5 bg-[#09090b]/50">
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="cursor-pointer flex-1 py-3.5 text-sm font-semibold text-[#a1a1aa] hover:text-white hover:bg-white/5 transition-all border-r border-white/5"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                const loadingToast = toast.loading("Deleting repository...");
+                await api.delete(`/repos/${repoId}`);
+                toast.success("Repository deleted successfully", { id: loadingToast });
+                fetchRepos();
+              } catch (err: any) {
+                console.error("Delete repo error:", err);
+                toast.error(err.response?.data?.message || "Failed to delete repository");
+              }
+            }}
+            className="cursor-pointer flex-1 py-3.5 text-sm font-semibold text-red-500 hover:bg-red-500/10 transition-all flex items-center justify-center gap-2"
+          >
+            <Trash2 size={16} /> Delete
+          </button>
+        </div>
+      </div>
+    ), { duration: Infinity, position: "top-center" });
   };
 
   const embedRepo = async (repoId: string, silent: boolean = false) => {
@@ -359,7 +385,7 @@ export default function Dashboard() {
   const indexedRepos = repos.filter(r => r.status === "indexed");
   const embeddedCount = repos.filter(r => r.isEmbedded).length;
 
-  if (authLoading || !user) {
+  if (authLoading || !isAuthenticated) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-black">
         <Loader2 className="w-10 h-10 animate-spin text-[#ff6b00]" />
@@ -568,21 +594,25 @@ export default function Dashboard() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-6 [overflow-anchor:none]">
               {repos.map((repo, index) => (
                 <div
                   key={repo._id}
-                  className="group bg-black/40 backdrop-blur-2xl border border-white/10 p-4.5 sm:py-5 sm:px-6 rounded-2xl flex flex-col hover:border-[#ff6b00]/50 hover:shadow-[0_15px_40px_rgba(255,107,0,0.2)] transition-all duration-500 relative overflow-hidden"
+                  className="group relative rounded-2xl overflow-hidden"
                 >
+                  {/* Blur background — fixed layer, won't recalculate during expand */}
+                  <div className="absolute inset-0 bg-black/40 backdrop-blur-2xl rounded-2xl border border-white/10 group-hover:border-[#ff6b00]/50 transition-[border-color] duration-300 pointer-events-none" />
+                  {/* Card content — can expand freely without triggering blur recalc */}
+                  <div className="relative p-4.5 sm:py-5 sm:px-6 flex flex-col group-hover:shadow-[0_15px_40px_rgba(255,107,0,0.2)] transition-shadow duration-300">
                   {/* Glowing left bar */}
-                  <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#18181b] group-hover:bg-gradient-to-b from-[#ff6b00] to-[#ffa800] transition-all duration-500"></div>
+                  <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#18181b] group-hover:bg-gradient-to-b from-[#ff6b00] to-[#ffa800] transition-colors duration-300"></div>
 
                   {/* Main Card Content */}
                   <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6 w-full relative z-10">
                     <div className="flex-grow space-y-3 ml-2">
                       <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-xl bg-[#0d0d0f] border border-[#1f1f23] flex items-center justify-center shadow-inner group-hover:bg-[#ff6b00]/10 group-hover:border-[#ff6b00]/30 transition-all duration-500 shrink-0">
-                          <Github className="w-5.5 h-5.5 text-[#a1a1aa] group-hover:text-[#ff6b00] transition-colors duration-500" />
+                        <div className="w-11 h-11 rounded-xl bg-[#0d0d0f] border border-[#1f1f23] flex items-center justify-center shadow-inner group-hover:bg-[#ff6b00]/10 group-hover:border-[#ff6b00]/30 transition-colors duration-300 shrink-0">
+                          <Github className="w-5.5 h-5.5 text-[#a1a1aa] group-hover:text-[#ff6b00] transition-colors duration-300" />
                         </div>
                         <div className="space-y-1 min-w-0">
                           <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-[#ff6b00] transition-colors truncate">
@@ -639,59 +669,66 @@ export default function Dashboard() {
                             </div>
                           ) : !repo.isEmbedded && (
                             <button
-                              onClick={() => embedRepo(repo._id)}
-                              className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs font-semibold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#1f1f23] hover:border-[#ffa800]/40 text-[#a1a1aa] bg-[#0d0d0f] hover:bg-[#ffa800]/10"
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); embedRepo(repo._id); }}
+                              className="group/action flex-1 sm:flex-none flex items-center justify-center gap-2 text-xs font-semibold px-4.5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-[#1f1f23] hover:border-[#ffa800]/40 text-[#a1a1aa] bg-[#0d0d0f] hover:bg-[#ffa800]/10 relative z-20"
                               title="Create Embeddings"
                             >
-                              <Database size={14} className="text-[#ffa800]" />
-                              <span>Create Embeddings</span>
+                              <Database size={14} className="text-[#ffa800] pointer-events-none" />
+                              <span className="pointer-events-none">Create Embeddings</span>
                             </button>
                           )}
 
                           <button
-                            onClick={() => router.push(`/mitorixSpace/${repo._id}`)}
-                            className="group/launch cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm text-black font-bold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(255,107,0,0.2)] hover:shadow-[0_0_30px_rgba(255,107,0,0.45)] border border-[#ff6b00]/40 overflow-hidden bg-[#ff6b00] relative"
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); router.push(`/mitorixSpace/${repo._id}`); }}
+                            className="group/launch cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm text-black font-bold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(255,107,0,0.2)] hover:shadow-[0_0_30px_rgba(255,107,0,0.45)] border border-[#ff6b00]/40 overflow-hidden bg-[#ff6b00] relative z-20"
                           >
-                            <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/launch:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
-                            <Activity size={15} className="relative z-10 group-hover/launch:text-black transition-colors duration-500" />
-                            <span className="relative z-10 group-hover/launch:text-black transition-colors duration-500">Launch MitorixSpace</span>
+                            <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/launch:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0 pointer-events-none"></div>
+                            <Activity size={15} className="relative z-10 group-hover/launch:text-black transition-colors duration-500 pointer-events-none" />
+                            <span className="relative z-10 group-hover/launch:text-black transition-colors duration-500 pointer-events-none">Launch MitorixSpace</span>
                           </button>
 
                           <button
-                            onClick={() => router.push(`/mitorixlabs/${repo._id}`)}
-                            className="group/labs cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-white/10 bg-white/5 shadow-sm overflow-hidden relative"
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); router.push(`/mitorixlabs/${repo._id}`); }}
+                            className="group/labs cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 active:scale-95 border border-white/10 bg-white/5 shadow-sm overflow-hidden relative z-20"
                           >
-                            <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/labs:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
-                            <Search size={15} className="relative z-10 text-[#ffa800] group-hover/labs:text-[#ffa800] group-hover/labs:scale-110 transition-all duration-500" />
-                            <span className="relative z-10 text-white group-hover/labs:text-black transition-colors duration-500">MitorixLabs</span>
+                            <div className="absolute inset-0 bg-white origin-bottom scale-y-0 group-hover/labs:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0 pointer-events-none"></div>
+                            <Search size={15} className="relative z-10 text-[#ffa800] group-hover/labs:text-[#ffa800] group-hover/labs:scale-110 transition-all duration-500 pointer-events-none" />
+                            <span className="relative z-10 text-white group-hover/labs:text-black transition-colors duration-500 pointer-events-none">MitorixLabs</span>
                           </button>
                         </>
                       )}
 
                       <button
-                        onClick={() => deleteRepo(repo._id)}
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); deleteRepo(repo._id); }}
                         disabled={repo.status === "cloning" || repo.status === "indexing"}
-                        className="group/del cursor-pointer flex-1 sm:flex-none flex items-center justify-center w-auto sm:w-11 py-2.5 bg-white/5 border border-white/10 rounded-xl transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden relative shadow-sm"
+                        className="group/del cursor-pointer flex-1 sm:flex-none flex items-center justify-center w-auto sm:w-11 py-2.5 bg-white/5 border border-white/10 rounded-xl transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden relative z-20 shadow-sm"
                         title="Destroy Clone"
                       >
-                        <div className="absolute inset-0 bg-red-600 origin-bottom scale-y-0 group-hover/del:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0 disabled:hidden"></div>
-                        <Trash2 size={15} className="relative z-10 text-[#737373] group-hover/del:text-white transition-colors duration-500 group-hover/del:scale-110" />
+                        <div className="absolute inset-0 bg-red-600 origin-bottom scale-y-0 group-hover/del:scale-y-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0 disabled:hidden pointer-events-none"></div>
+                        <Trash2 size={15} className="relative z-10 text-[#737373] group-hover/del:text-white transition-colors duration-500 group-hover/del:scale-110 pointer-events-none" />
                       </button>
                     </div>
                   </div>
 
-                  {/* Expandable AI Insights Section */}
-                  <div className="w-full max-h-0 opacity-0 group-hover:max-h-[200px] group-hover:opacity-100 transition-all duration-500 ease-in-out overflow-hidden mt-0 group-hover:mt-5">
-                    <div className="pt-4 border-t border-white/10 ml-2">
-                      <div className="flex items-center gap-2 text-[#ff8c00] mb-2">
-                        <Sparkles size={14} />
-                        <span className="text-xs font-bold uppercase tracking-wider">AI Repository Summary</span>
+                  {/* Expandable AI Insights Section — shutter-style height animation */}
+                  <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-200 ease-out w-full">
+                    <div className="overflow-hidden">
+                      <div className="pt-4 mt-4 border-t border-white/10 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                        <div className="flex items-center gap-2 text-[#ff8c00] mb-2">
+                          <Sparkles size={14} />
+                          <span className="text-xs font-bold uppercase tracking-wider">AI Repository Summary</span>
+                        </div>
+                        <p className="text-xs text-[#a1a1aa] leading-relaxed max-w-4xl line-clamp-3 pb-1">
+                          {/* @ts-ignore - description added to backend model */}
+                          {repo.description || "AI description is currently being generated or not available. Please re-index the repository."}
+                        </p>
                       </div>
-                      <p className="text-xs text-[#a1a1aa] leading-relaxed max-w-4xl line-clamp-3">
-                        {/* @ts-ignore - description added to backend model */}
-                        {repo.description || "AI description is currently being generated or not available. Please re-index the repository."}
-                      </p>
                     </div>
+                  </div>
                   </div>
                 </div>
               ))}
