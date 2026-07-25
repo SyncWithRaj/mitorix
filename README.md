@@ -6,7 +6,6 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)
 ![MongoDB](https://img.shields.io/badge/MongoDB-7-4DB33D?style=for-the-badge&logo=mongodb)
 ![Google Gemini](https://img.shields.io/badge/Google_Gemini-LLM-4285F4?style=for-the-badge&logo=google)
-![Ollama](https://img.shields.io/badge/Ollama-Local_AI-000000?style=for-the-badge)
 ![Qdrant](https://img.shields.io/badge/Qdrant-Vector_DB-FF5252?style=for-the-badge)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)
 
@@ -42,10 +41,9 @@ The vector-powered advanced analytics suite running under the hood to perform de
 
 ## Key Features
 
-
 ### Contextual AI Chat & Drag-and-Drop RAG
 Ask natural language questions like *"Where is the database connection managed?"* or *"Walk me through the user registration lifecycle."* 
-- **Autoritative RAG Engine:** Powered by Google Gemini LLM with local Nomic-embed-text vector search via Ollama.
+- **Authoritative RAG Engine:** Powered by Google Gemini LLM & Cohere AI embeddings with multi-key automatic rate-limit rotation.
 - **Drag-and-Drop Context:** Attach files, folders, code entities, security issues, or architectural compliance warnings directly from the UI to serve as the primary prompt context.
 - **Hybrid Query Processing:** Falls back to vector search when no explicit context is provided.
 
@@ -112,12 +110,6 @@ graph TD
     BE -->|Cache & Session Cache| Cache[(Redis Cache)]
 ```
 
-### Key Architectural Decisions
-- **Ephemeral Filesystem footprint:** Repositories are cloned to temporary space, parsed, embedded into Qdrant/MongoDB, and immediately purged to ensure zero file retention.
-- **Asynchronous Task Processing:** BullMQ queues parsing tasks, giving immediate `202 Accepted` status responses to prevent connection timeouts during large repository clones.
-- **Scoped AST Resolvers:** Tree-sitter provides deep syntax tree inspection across 11 languages, identifying functions, exports, imports, and relationships.
-- **Temporal Vectors:** Qdrant collections maintain `repoId` and `fingerprint` payload fields to permit targeted semantic search, drift analysis, and clone queries.
-
 ---
 
 ## Technology Stack
@@ -130,12 +122,12 @@ graph TD
 | **Task Queue** | BullMQ + ioredis (High-throughput background job queue) |
 | **AST Parsers** | Tree-sitter (C, C#, C++, Go, Java, JavaScript, PHP, Python, Ruby, Rust, TypeScript native compilers) |
 | **Vector Engine** | Qdrant Vector DB (Dense similarity search and Cosine distance comparisons) |
-| **AI/LLM** | Google Gemini (`gemini-2.5-flash`) for chat/RAG, Nomic-embed-text via Ollama for local vector embeddings (768-dim) |
+| **AI/LLM** | Google Gemini (`gemini-2.5-flash`), Cohere AI (`embed-english-v3.0`), Groq (`llama-3.3-70b-versatile`) with dynamic multi-key rotation |
 | **Voice Engine** | AssemblyAI (Speech-to-Text), Murf AI (Text-to-Speech) |
 | **Ingress & Proxy** | Nginx Reverse Proxy (Dynamic routing, rate-limiting, connection buffering) |
-| **DevOps & Orchestration** | Docker, Docker Compose (Multi-container orchestration, automated health checks) |
+| **DevOps & Orchestration** | Docker, Docker Compose, GitHub Actions CI/CD |
 | **Infrastructure & Storage** | MongoDB Community Server (Persistent metadata), Redis alpine (Session caches & Queue store) |
-| **Dev Tools & Scripts** | `setup.sh` (Auto-dependency resolver), `Makefile` (Workflow task automation), `gcc`/`g++`/`make` (native compilers for tree-sitter bindings) |
+| **Dev Tools & Scripts** | `setup.sh` (Auto-dependency resolver), `Makefile` (Workflow task automation), `pnpm` v10 (Workspaces) |
 
 ---
 
@@ -143,9 +135,11 @@ graph TD
 
 ```
 mitorix/
+├── .github/workflows/          # CI/CD: PR test check + EC2 auto-deploy
 ├── docker-compose.yml           # Multi-container orchestration config
 ├── Makefile                     # Dev workflow shortcuts
 ├── setup.sh                     # System configuration & dependency setup script
+├── .env.example                 # Environment configuration template
 │
 ├── backend/
 │   ├── src/
@@ -154,20 +148,18 @@ mitorix/
 │   │   ├── config/              # Passport & Database configurations
 │   │   ├── controllers/         # REST API endpoints (Chat, graph, drift, clones, security)
 │   │   ├── models/              # MongoDB Schemas (CodeEntity, Relationships, Repos, Violations)
-│   │   ├── modules/
-│   │   │   ├── indexer/         # File system scanner and entity indexers
-│   │   │   └── parser/          # Language parsers and Tree-sitter mapping
+│   │   ├── modules/             # Indexer and Tree-sitter language parsers
 │   │   ├── queue/               # BullMQ connection definitions
 │   │   ├── workers/             # Async job workers (repoWorker, cleanupWorker)
-│   │   ├── services/            # Core business logic (RAG, Qdrant, Security, Compliance)
-│   │   ├── middlewares/         # Authorization, Error handler, LLM Rate Limiting
-│   │   └── routes/              # Express API route maps
+│   │   ├── services/            # Core business logic (RAG, Qdrant, Security, Compliance, LLM)
+│   │   ├── middlewares/         # Authorization, Error handler, Rate Limiting
+│   │   ├── routes/              # Express API route maps
+│   │   └── __tests__/           # Vitest unit tests & database scripts
 │   └── tsconfig.json            # Target NodeNext compile options
 │
 ├── frontend/
-│   ├── app/                     # Next.js App router views (dashboard, chat, graph, clones)
+│   ├── app/                     # Next.js App router views
 │   ├── components/              # Context panels, Monaco Editor wrapper, visualizers
-│   ├── context/                 # React Editor states
 │   └── package.json             # React 19 / Next.js 16 setup
 │
 └── nginx/
@@ -180,9 +172,9 @@ mitorix/
 
 ### Prerequisites
 - **Node.js v22 (LTS)**
+- **pnpm v10+** (or installed via corepack)
 - **Docker & Docker Compose**
 - **Git**
-- **Ollama** — [Install Ollama](https://ollama.com) and pull the embedding model: `ollama pull nomic-embed-text`
 
 ### Local Quickstart
 
@@ -193,28 +185,33 @@ mitorix/
    ```
 
 2. **Initialize Environment**
-   Execute the validation and setup script. This checks your Node version, installs native OS tools required by Tree-sitter compilers, runs `pnpm install` for packages, and sets up a starter configuration:
+   Execute the automated setup script. This verifies Node v22, enables `pnpm`, installs OS build tools (`python3`, `make`, `g++`, `git`), installs workspace dependencies, scaffolds `.env` from `.env.example`, and starts Docker infrastructure:
    ```bash
    chmod +x setup.sh
    ./setup.sh
    ```
 
 3. **Configure API Secrets**
-   Open `.env` and update the required credentials:
+   Open `.env` and fill in your API credentials (you can add multiple comma-separated keys for rate-limit rotation):
    ```env
-   GOOGLE_API_KEY=your_gemini_api_key
-   OLLAMA_BASE_URL=http://127.0.0.1:11434
+   GOOGLE_API_KEY=your_gemini_api_key_1,your_gemini_api_key_2
+   COHERE_API_KEY=your_cohere_api_key_1,your_cohere_api_key_2
+   GROQ_API_KEY=your_groq_api_key
    JWT_SECRET=use_a_strong_random_string_here
    ```
 
 4. **Boot Infrastructure Services**
-   Start the supporting databases (MongoDB, Redis, Qdrant) in the background:
-   ```bash
-   make dev
-   ```
+   - **Local DB (Redis + Qdrant):**
+     ```bash
+     make dev
+     ```
+   - **Full Docker DB (MongoDB + Redis + Qdrant):**
+     ```bash
+     make dev-full
+     ```
 
 5. **Seed Sandbox Data (Optional)**
-   Verify everything is working by seeding a test user and analyzing a sample local repository:
+   Verify everything is working by seeding a test user and analyzing a sample repository:
    ```bash
    cd backend && pnpm run seed
    ```
@@ -239,7 +236,10 @@ mitorix/
 To build and launch the production cluster (Frontend, Backend, MongoDB, Redis, Qdrant, and Nginx reverse proxy routing):
 
 ```bash
-# Build and launch all services
+# Deploy Backend & Redis for EC2
+make deploy-ec2
+
+# Build and launch all container services
 make build
 
 # View running container logs
@@ -259,36 +259,6 @@ make wipe
 ```
 
 Once running, navigate to **http://localhost** (Port 80). Nginx handles routing and proxying to the underlying Next.js client and Express API containers.
-
----
-
-## Environment Configuration
-
-### Secrets (`.env`)
-
-| Variable | Required | Description |
-|---|---|---|
-| `PORT` | Yes | App runtime port (defaults to `5000`) |
-| `NODE_ENV` | Yes | Execution mode (`development` or `production`) |
-| `MONGO_URI` | Yes | MongoDB connection URI |
-| `REDIS_URL` | Yes | Redis cluster connection URI |
-| `QDRANT_URL` | Yes | Qdrant vector database endpoint URL |
-| `QDRANT_API_KEY`| No | Optional API key for Qdrant Cloud setups |
-| `GOOGLE_API_KEY`| Yes | Google Gemini API credentials (LLM chat) |
-| `OLLAMA_BASE_URL`| No | Ollama server URL (defaults to `http://127.0.0.1:11434`) |
-| `JWT_SECRET` | Yes | Token signature secret key |
-| `GITHUB_CLIENT_ID`| Yes | GitHub OAuth Application Client ID |
-| `GITHUB_CLIENT_SECRET`| Yes | GitHub OAuth Application Secret Key |
-| `GITHUB_APP_ID` | No | Required to access private repositories |
-| `GITHUB_APP_PRIVATE_KEY`| No | RSA private key credential for GitHub App |
-| `MURF_API_KEY` | No | Text-To-Speech engine credential |
-| `ASSEMBLYAI_API_KEY`| No | Speech-To-Transcription endpoint key |
-
----
-
-## Contributing
-
-We welcome contributions! Please review the [CONTRIBUTING.md](CONTRIBUTING.md) guide to understand our coding standards, test coverage targets, and pulling process.
 
 ---
 
