@@ -7,10 +7,9 @@
 # This script will:
 #   1. Verify Node.js v22 (LTS) and pnpm are installed
 #   2. Install OS-level build tools needed by native addons (tree-sitter / node-gyp)
-#   3. Install backend pnpm dependencies
-#   4. Install frontend pnpm dependencies
-#   5. Install Ollama and pull the nomic-embed-text model (local embeddings)
-#   6. Scaffold a starter .env for the project root (if missing)
+#   3. Install pnpm workspace dependencies (backend + frontend)
+#   4. Scaffold a starter .env for the project root from .env.example (if missing)
+#   5. Start infrastructure (Redis, Qdrant) via Docker (`make dev`)
 #
 # Tested on: Ubuntu/Debian, Fedora/RHEL, Arch, macOS, Alpine
 # ==============================================
@@ -40,7 +39,7 @@ REQUIRED_NODE_MAJOR=22
 
 # ─── Step 1: Verify Node.js ───────────────────────────────────
 
-header "Step 1/6 — Checking Node.js"
+header "Step 1/5 — Checking Node.js"
 
 if ! command -v node &>/dev/null; then
   error "Node.js is not installed."
@@ -70,7 +69,9 @@ fi
 
 success "Node.js ${NODE_VERSION} ✓"
 
-# ─── Step 2: Verify pnpm ───────────────────────────────────────
+# ─── Step 2: Verify pnpm ──────────────────────────────────────
+
+header "Step 2/5 — Checking pnpm"
 
 if ! command -v pnpm &>/dev/null; then
   info "pnpm is not installed. Installing via corepack…"
@@ -90,7 +91,7 @@ success "pnpm v${PNPM_VERSION} ✓"
 
 # ─── Step 3: Install OS-level build tools ─────────────────────
 
-header "Step 2/6 — Checking native build tools"
+header "Step 3/5 — Checking native build tools"
 
 # tree-sitter (backend dep) compiles C/C++ via node-gyp, which needs:
 #   - python3, make, g++/gcc, git
@@ -206,126 +207,71 @@ smart_pnpm_install() {
   success "${label} dependencies installed ✓"
 }
 
-# ─── Step 4: Install backend dependencies ─────────────────────
+# ─── Step 4: Install workspace dependencies ────────────────────
 
-header "Step 3/6 — Installing backend dependencies"
+header "Step 4/5 — Installing project dependencies (pnpm workspace)"
 
-if [[ ! -f "${SCRIPT_DIR}/backend/package.json" ]]; then
-  error "backend/package.json not found. Are you in the project root?"
+if [[ ! -f "${SCRIPT_DIR}/backend/package.json" || ! -f "${SCRIPT_DIR}/frontend/package.json" ]]; then
+  error "package.json files missing in backend/ or frontend/. Are you in the project root?"
   exit 1
 fi
 
-smart_pnpm_install "${SCRIPT_DIR}/backend" "backend"
+smart_pnpm_install "${SCRIPT_DIR}" "workspace"
 
-# ─── Step 5: Install frontend dependencies ────────────────────
+# ─── Step 5: Scaffold .env & Start Infrastructure ─────────────
 
-header "Step 4/6 — Installing frontend dependencies"
-
-if [[ ! -f "${SCRIPT_DIR}/frontend/package.json" ]]; then
-  error "frontend/package.json not found. Are you in the project root?"
-  exit 1
-fi
-
-smart_pnpm_install "${SCRIPT_DIR}/frontend" "frontend"
-
-# ─── Step 5: Install Ollama & pull nomic-embed-text ──────────
-
-header "Step 5/6 — Setting up Ollama (local embedding model)"
-
-install_ollama() {
-  if command -v ollama &>/dev/null; then
-    OLLAMA_VERSION="$(ollama --version 2>/dev/null || echo 'installed')"
-    success "Ollama already installed (${OLLAMA_VERSION}) ✓"
-  else
-    info "Ollama is not installed. Installing…"
-
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-      # macOS
-      if command -v brew &>/dev/null; then
-        brew install ollama
-      else
-        warn "Install Ollama manually from: https://ollama.com/download"
-        warn "Then re-run this script or run: ollama pull nomic-embed-text"
-        return
-      fi
-    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-      # Linux — official install script
-      curl -fsSL https://ollama.com/install.sh | sh
-    else
-      warn "Unsupported OS for automatic Ollama install."
-      warn "Install from: https://ollama.com/download"
-      warn "Then run: ollama pull nomic-embed-text"
-      return
-    fi
-
-    if command -v ollama &>/dev/null; then
-      success "Ollama installed ✓"
-    else
-      warn "Ollama installation may have failed. Install manually from https://ollama.com"
-      return
-    fi
-  fi
-
-  # Pull the embedding model
-  info "Pulling nomic-embed-text model (137M parameters, ~270MB download)…"
-  info "This is the local embedding model used for vector search — no API key needed."
-
-  if ollama list 2>/dev/null | grep -q "nomic-embed-text"; then
-    success "nomic-embed-text model already available ✓"
-  else
-    ollama pull nomic-embed-text
-    success "nomic-embed-text model pulled ✓"
-  fi
-}
-
-install_ollama
-
-# ─── Step 6: Scaffold .env if missing ─────────────────────────
-
-header "Step 6/6 — Environment setup"
+header "Step 5/5 — Environment setup & Infrastructure"
 
 ROOT_ENV="${SCRIPT_DIR}/.env"
-ROOT_ENV_EXAMPLE="${SCRIPT_DIR}/.env.development.example"
+ROOT_ENV_EXAMPLE="${SCRIPT_DIR}/.env.example"
 
 if [[ -f "$ROOT_ENV" ]]; then
   success ".env already exists — skipping ✓"
 else
   if [[ -f "$ROOT_ENV_EXAMPLE" ]]; then
     cp "$ROOT_ENV_EXAMPLE" "$ROOT_ENV"
-    warn "Created .env from .env.development.example"
-    warn "→ Please edit .env and fill in your JWT_SECRET"
+    warn "Created .env from .env.example"
+    warn "→ Please edit .env and fill in your secrets"
   else
-    warn "No .env.development.example found in root."
+    warn "No .env.example found in root."
     warn "→ You will need to create .env manually before starting the server."
   fi
+fi
+
+# Start infrastructure via Make
+if command -v docker &>/dev/null; then
+  info "Starting infrastructure (Redis, Qdrant) via Docker…"
+  (cd "${SCRIPT_DIR}" && make dev)
+  success "Infrastructure is running (Redis, Qdrant) ✓"
+else
+  warn "Docker is not installed — skipping infrastructure startup."
+  warn "Install Docker from: https://docs.docker.com/get-docker/"
+  warn "Then run: make dev"
 fi
 
 # ─── Done ──────────────────────────────────────────────────────
 
 printf "\n"
 printf "${BOLD}${GREEN}╔══════════════════════════════════════════════════╗${NC}\n"
-printf "${BOLD}${GREEN}║             Mitorix setup complete!             ║${NC}\n"
+printf "${BOLD}${GREEN}║             Mitorix setup complete!              ║${NC}\n"
 printf "${BOLD}${GREEN}╚══════════════════════════════════════════════════╝${NC}\n"
+printf "\n"
 printf "\n"
 printf "  Next steps:\n"
 printf "\n"
 printf "  1. Configure your secrets:\n"
 printf "     ${CYAN}nano .env${NC}\n"
 printf "\n"
-printf "  2. Start infrastructure (MongoDB, Redis, Qdrant):\n"
-printf "     ${CYAN}docker compose up -d mongodb redis qdrant${NC}\n"
+printf "  2. Start infrastructure (optional — if not already running):\n"
+printf "     ${CYAN}make dev${NC}          # Redis + Qdrant\n"
+printf "     ${CYAN}make dev-full${NC}     # MongoDB + Redis + Qdrant (Mongo in Docker)\n"
 printf "\n"
-printf "  3. Start Ollama (if not already running):\n"
-printf "     ${CYAN}ollama serve${NC}\n"
-printf "\n"
-printf "  4. Seed demo data (creates a test user + parses a sample project):\n"
-printf "     ${CYAN}cd backend && pnpm run seed${NC}\n"
-printf "\n"
-printf "  5. Run the backend:\n"
+printf "  3. Run the backend:\n"
 printf "     ${CYAN}cd backend && pnpm run dev${NC}\n"
 printf "\n"
-printf "  6. Run the frontend (in a new terminal):\n"
+printf "  4. Run the frontend (in a new terminal):\n"
 printf "     ${CYAN}cd frontend && pnpm run dev${NC}\n"
 printf "\n"
 printf "  Once running, open http://localhost:3000/login and click \"Dev Login\"!\n"
 printf "\n"
+
