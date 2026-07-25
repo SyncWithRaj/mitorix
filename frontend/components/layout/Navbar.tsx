@@ -2,19 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { ArrowLeft, LogOut, Sparkles } from "lucide-react";
-import api from "@/lib/axios";
-import toast from "react-hot-toast";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { useSubscription } from "@/context/SubscriptionContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
-  const router = useRouter();
   const pathname = usePathname();
   const { tier } = useSubscription();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -35,30 +33,6 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await api.get("/auth/me");
-        setIsAuthenticated(true);
-      } catch {
-        setIsAuthenticated(false);
-      }
-    };
-    checkAuth();
-  }, [pathname]); // Re-verify on navigation
-
-  const handleLogout = async () => {
-    try {
-      await api.post("/auth/logout");
-      setIsAuthenticated(false);
-      toast.success("Logged out successfully");
-      router.push("/login");
-    } catch (err) {
-      console.error("Logout error:", err);
-      toast.error("Logout failed. Please try again.");
-    }
-  };
 
   const inMitorixSpace = pathname.startsWith("/chat") || pathname.startsWith("/mitorixSpace");
   const inMitorixLabs = pathname.startsWith("/mitorixlabs");
@@ -158,7 +132,7 @@ export default function Navbar() {
             </div>
 
             <button
-              onClick={handleLogout}
+              onClick={logout}
               title="Logout"
               className="cursor-pointer w-10 h-10 rounded-xl bg-[#ff6b00] border border-[#ff8c00]/30 text-black hover:shadow-[0_0_25px_rgba(255,107,0,0.5)] shadow-[0_0_15px_rgba(255,107,0,0.3)] overflow-hidden group flex items-center justify-center transition-all duration-300 relative"
             >
