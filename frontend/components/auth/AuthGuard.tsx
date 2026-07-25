@@ -1,29 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import api from "@/lib/axios";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await api.get("/auth/me");
-        setIsAuthorized(true);
-      } catch (err) {
-        router.push("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    checkAuth();
-  }, [router]);
+    if (!loading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [loading, isAuthenticated, router]);
 
   if (loading) {
     return (
@@ -33,7 +23,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!isAuthorized) {
+  if (!isAuthenticated) {
     return null; // Will redirect in useEffect
   }
 
