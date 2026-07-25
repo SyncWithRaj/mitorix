@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Github, Fingerprint, FlaskConical, ShieldCheck, Box, ArrowLeft } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
-
 
 export default function LoginPage() {
   const router = useRouter();
   const [devLoading, setDevLoading] = useState(false);
+  const { refresh } = useAuth();
 
   const loginWithGithub = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
@@ -22,6 +23,7 @@ export default function LoginPage() {
     try {
       const res = await api.post("/auth/dev-login");
       if (res.data.success) {
+        await refresh(); // Sync auth state before navigating
         toast.success("Dev login successful");
         router.replace("/dashboard");
       }
